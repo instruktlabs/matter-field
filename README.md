@@ -13,7 +13,8 @@ not promise that CPU and GPU floating-point results are identical. It gives
 you a restricted field vocabulary, CPU and TSL backends, analytic gradients,
 and a repeatable assay for measuring the remaining drift on real hardware.
 
-> **Public preview:** MIT licensed, zero runtime dependencies, and not yet
+> **Public preview:** MIT licensed, zero required core runtime dependencies,
+> and not yet
 > published to npm. Six receipts now cover three physical GPU adapters across
 > NVIDIA and AMD on Windows and Linux, through WebGPU and WebGL2. Intel and
 > Apple silicon remain open cells; this is multi-device evidence, not a
@@ -23,6 +24,49 @@ and a repeatable assay for measuring the remaining drift on real hardware.
 · [Inspect the receipts](https://instruktlabs.github.io/matter-field/#evidence)
 · [Contribute a hardware result](./docs/RECEIPTS.md)
 · [Read the hardware-lab plan](./docs/HARDWARE-LAB.md)
+
+## TypeGPU-first experiment
+
+The `codex/typegpu-first-class-spike` branch includes a precompiled
+`matter-field/typegpu` subpath. It rewrites the shipped fields as ordinary
+CPU-callable `'use gpu'` functions, exposes typed TypeGPU kernels, runs a native
+TypeGPU compute/readback assay, and provides an optional `@typegpu/three`
+bridge:
+
+```js
+import tgpu from 'typegpu';
+import { typegpuDunes, typegpuKernels } from 'matter-field/typegpu';
+
+const collisionHeight = typegpuDunes(playerX, playerZ); // direct JS f64 path
+const wgsl = tgpu.resolve({
+  template: 'field',
+  externals: { field: typegpuKernels.dunes },
+});
+```
+
+Install `typegpu@0.11.9` to use that subpath. Three integration additionally
+requires `@typegpu/three@0.11.0` and `three@0.185.1`. TypeScript consumers of
+the Three bridge also need `@types/three@0.185.4`:
+
+```sh
+npm install typegpu@0.11.9 @typegpu/three@0.11.0 three@0.185.1
+npm install --save-dev @types/three@0.185.4
+```
+
+```js
+import { typegpuDunesNode } from 'matter-field/typegpu/three';
+import * as tsl from 'three/tsl';
+
+const height = typegpuDunesNode(tsl.positionLocal.x, tsl.positionLocal.z);
+```
+
+The experiment works on WebGPU, but it is not a drop-in architectural win.
+The current `@typegpu/three` bridge is WebGPU-only; TypeGPU direct CPU calls do
+not replace the per-operation f32 diagnostic or generic analytic gradients;
+and this spike is a second handwritten implementation. The adapter source
+therefore remains authoritative while the TypeGPU lane is evaluated. Read the
+[full spike report](./docs/TYPEGPU-SPIKE.md) before treating it as a migration
+recommendation.
 
 ## The split-world problem
 
@@ -181,12 +225,12 @@ converts them to TSL for Three.js, and [`@typegpu/noise`](https://docs.swmansion
 provides procedural noise. TypeGPU owns a much broader typed WebGPU surface:
 data schemas, resources, pipelines, and application structure.
 
-Matter Field explores a smaller evidence-first contract: no transform step or
-runtime dependency, f64/f32-estimate/dual/TSL materializations, current Three
-WebGPU and WebGL2 probe paths, and public hardware-scoped numeric receipts.
-Those are distinctions, not proof that it is categorically better. A future
-TypeGPU adapter or integration may be more useful than duplicating its general
-framework.
+Matter Field's adapter core explores a smaller evidence-first contract: no
+transform step or required runtime dependency, f64/f32-estimate/dual/TSL
+materializations, current Three WebGPU and WebGL2 probe paths, and public
+hardware-scoped numeric receipts. The experimental TypeGPU subpath is
+precompiled, but it has optional pinned runtime peers. Those are distinctions,
+not proof that Matter Field is categorically better.
 
 At the application level, [Eternal Ride](https://discourse.threejs.org/t/eternal-ride-infinite-terrain-in-three-js-with-no-lod-no-seams/91868)
 is important Three.js prior art: it demonstrates CPU collision and GPU terrain

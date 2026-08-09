@@ -58,15 +58,19 @@ responsibility: typed shader authoring, data layouts, resources, pipelines,
 and WebGPU application structure. Matter Field should acknowledge that overlap
 and should not present itself as the first shared CPU/GPU source approach.
 
-The current Matter Field backend targets caller-supplied Three.js TSL because
-that is the concrete integration extracted and measured. A future TypeGPU
+The authoritative Matter Field backend targets caller-supplied Three.js TSL
+because that is the concrete integration extracted and measured. The
+experimental `matter-field/typegpu` subpath hand-ports the shipped fields into
+precompiled TypeGPU functions with pinned optional peers; it does not yet
+materialize arbitrary adapter-authored fields. A future generated TypeGPU
 backend could translate the same restricted adapter operations while leaving
 pipeline and resource ownership to TypeGPU. That would demonstrate another
 materialization target; it would not change Matter Field's core job.
 
-The honest present distinction is evidence and scope: Matter Field has a
-restricted no-transform adapter, f64/f32-estimate/dual/TSL materializations,
-Three WebGPU and WebGL2 probes, and source-bound public receipts. Whether that
+The honest present distinction is evidence and scope: Matter Field's core has
+a restricted no-transform adapter, f64/f32-estimate/dual/TSL materializations,
+Three WebGPU and WebGL2 probes, and source-bound public receipts. The optional
+TypeGPU integration is precompiled but adds runtime peers. Whether that
 combination deserves an independent package is a question for real users, not
 a conclusion established by the current benchmarks.
 

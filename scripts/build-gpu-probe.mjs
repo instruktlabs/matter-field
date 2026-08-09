@@ -41,7 +41,7 @@ export function sourceContentSha256(source) {
   return createHash('sha256').update(canonical, 'utf8').digest('hex');
 }
 
-function makeAssayPoints(count) {
+export function makeAssayPoints(count) {
   const fixed = ADVERSARIAL_COORDINATES.slice(0, count).map(([x, z], index) => ({
     id: `a${String(index).padStart(4, '0')}`,
     x: Math.fround(x),
