@@ -1,15 +1,16 @@
 // matter-field: plain-number backends.
 //
-// numberAdapter - f64, the authoritative CPU oracle. ECMAScript fully
-// specifies f64 +,-,*,/,sqrt (roundTiesToEven), so any two JS runtimes
-// (browser, Cloudflare Worker, Node) produce BIT-EXACT results for the same
-// tree. This is guarantee Tier 1.
+// numberAdapter - f64, the authoritative CPU oracle. ECMAScript specifies the
+// restricted arithmetic used here. The shipped example goldens are tested
+// bit-exact across the runtime configurations named in CI; that evidence does
+// not prove every user-authored field or input.
 //
 // makeF32Adapter - the same algebra with Math.fround after every operation:
 // a CPU-side emulation of GPU f32 arithmetic. Running a field on both number
 // backends measures the f64->f32 quantization drift WITHOUT a GPU, which
-// bounds (not exactly reproduces - GPUs may round differently per op, fuse,
-// or reassociate within spec) the CPU<->GPU divergence you should expect.
+// provides a useful CPU-side baseline for the CPU<->GPU divergence you might
+// observe. It is not a bound: GPUs may round differently per op, fuse, or
+// reassociate within spec.
 // Part of the assay kit, not a gameplay backend.
 
 import { LATTICE_OFFSET, hash01, hash01f32 } from './hash.js';

@@ -9,6 +9,7 @@ import { numberAdapter } from '../src/number.js';
 import { dunesField } from '../examples/dunes.js';
 import { swellField } from '../examples/swell.js';
 import { windField } from '../examples/wind.js';
+import { compareFields } from '../parity/gpu-probe-template.js';
 
 test('ulp arithmetic: identities and known distances', () => {
   assert.equal(ulpDelta32(1.0, 1.0), 0);
@@ -89,4 +90,68 @@ test('assay verdict fails loudly on a non-conformant field', () => {
   assert.equal(report.dual.bitExact, false);
   const verdict = assayVerdict(report);
   assert.equal(verdict.pass, false);
+});
+
+test('GPU field comparison fails closed on non-finite output', () => {
+  const points = [{ id: 'nan', x: 0, z: 0 }];
+  const cpu = new Float64Array([1, 2, 3, 4]);
+  const gpu = new Float32Array([Number.NaN, 2, 3, 4]);
+  const fields = compareFields(points, cpu, gpu);
+  assert.equal(fields[0].pass, false);
+  assert.equal(fields[0].nonFiniteCount, 1);
+  assert.equal(fields[0].finiteSamples, 0);
+  assert.deepEqual(fields[0].firstNonFiniteSample, {
+    id: 'nan', x: 0, z: 0, cpu: 1, gpu: Number.NaN,
+  });
+  assert.ok(fields.slice(1).every((field) => field.pass));
+});
+
+test('assay verdict fails closed on non-finite summaries', () => {
+  const report = {
+    deterministic: true,
+    dual: { bitExact: true },
+    f64VsF32: { maxAbs: Number.NaN, maxUlp: Number.NaN },
+    gradient: { mismatchFraction: Number.NaN },
+  };
+  const verdict = assayVerdict(report, { maxUlp: 100 });
+  assert.equal(verdict.pass, false);
+  assert.deepEqual(verdict.fails, [
+    'f32 drift is non-finite',
+    'f32 ULP drift is non-finite',
+    'gradient mismatch fraction is non-finite',
+  ]);
+});
+
+test('CPU assay records and rejects a non-finite sampled materialization', () => {
+  const isolatedNaN = (A, x, z) => {
+    const value = A.add(x, z);
+    return typeof value === 'number' && Object.is(value, 0) ? Number.NaN : value;
+  };
+  const report = runCpuAssay(isolatedNaN, {
+    points: [{ id: 'bad', x: 0, z: 0 }, { id: 'good', x: 1, z: 2 }],
+    benchN: 10,
+  });
+  assert.equal(report.f64VsF32.nonFiniteCount, 1);
+  assert.deepEqual(report.f64VsF32.firstNonFinite, {
+    id: 'bad', x: 0, z: 0, f64: Number.NaN, f32: Number.NaN,
+  });
+  const verdict = assayVerdict(report);
+  assert.equal(verdict.pass, false);
+  assert.match(verdict.fails.join('; '), /non-finite sampled materialization/u);
+});
+
+test('CPU assay records and rejects a non-finite gradient', () => {
+  const malformedGradient = (A, x) => {
+    const value = A.add(x, A.f(0));
+    return typeof value === 'number' ? value : { ...value, dx: Number.NaN };
+  };
+  const report = runCpuAssay(malformedGradient, {
+    points: [{ id: 'bad-gradient', x: 0, z: 0 }, { id: 'also-bad', x: 4, z: 0 }],
+    benchN: 10,
+  });
+  assert.equal(report.gradient.nonFiniteCount, 2);
+  assert.equal(report.gradient.firstNonFinite.id, 'bad-gradient');
+  const verdict = assayVerdict(report);
+  assert.equal(verdict.pass, false);
+  assert.match(verdict.fails.join('; '), /gradient assay produced 2 non-finite/u);
 });

@@ -75,6 +75,9 @@ button:focus-visible { outline: 2px solid var(--proof); outline-offset: 2px; }
 .mode-toggle[aria-pressed="true"] { color: #fff; border-color: var(--signal); background: var(--signal); }
 .drive-controls { flex-basis: 100%; display: grid; grid-template-columns: repeat(4, 48px); gap: 7px; }
 .hold-button { min-width: 48px; padding-inline: 0; font-size: 16px; }
+.field-camera { touch-action: none; }
+.camera-help { flex-basis: 100%; margin: 0; color: var(--ink-700); font: 600 10px/1.45 "Recursive", ui-monospace, monospace; font-variation-settings: "MONO" 1, "CASL" 0; }
+.camera-reset { border-color: var(--field); color: var(--field); }
 .rule { margin-top: 30px; padding: 20px 22px; border-left: 3px solid var(--signal); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: rgba(232, 225, 211, .72); color: var(--ink-700); }
 .rule b { color: var(--ink-950); }
 .identity-banner { margin: -12px 0 24px; padding: 12px 14px; border: 1px solid var(--rule); color: var(--field); background: rgba(232, 225, 211, .82); font: 600 11px/1.45 "Recursive", ui-monospace, monospace; font-variation-settings: "MONO" 1, "CASL" 0; overflow-wrap: anywhere; }

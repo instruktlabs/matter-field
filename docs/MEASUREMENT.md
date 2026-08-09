@@ -20,6 +20,12 @@ Current probes evaluate four scalar outputs:
 The serpent example builds through TSL in tests but is not yet included in the
 numeric GPU receipt. Do not imply that the current matrix measures it.
 
+The probe measures **field-evaluation drift at sampled coordinates**. It does
+not measure the distance between an analytic CPU field and the triangles,
+voxels, particles, or other geometry used to display it. Tessellation,
+interpolation, LOD, morphing, normal reconstruction, and collision-shape
+approximation need separate application-level assays and budgets.
+
 ## Receipt v2
 
 The current `matter-field-gpu-parity/v2` reports contain:
@@ -69,7 +75,10 @@ has actually been derived or exhaustively established over a declared domain.
 Field behavior is judged in application field units. For a height field, an
 absolute budget can be interpreted as vertical distance. For wind, it is a
 velocity component. The field author must choose a budget that is meaningful
-to gameplay, not merely convenient for the implementation.
+to gameplay, not merely convenient for the implementation. The current
+example budgets are regression thresholds set above previously observed
+values; they have not yet been derived from a particular game's contact,
+buoyancy, force, or targeting tolerance.
 
 ULP distance remains useful diagnostic evidence, but it is a poor universal
 pass criterion. Near zero crossings, the spacing between representable f32
@@ -107,8 +116,12 @@ Workers.
 
 The raw hash is compared before the intentionally lossy u32-to-f32 conversion.
 Its exactness depends on matching u32 operation sequences and the sanctioned
-`floor -> latt` input path. Reports identify the finite vectors actually
-tested.
+`floor -> latt` input path. The conservative supported domain for the floored
+value entering `latt` is `[-131072, 131071]`; after the offset and current
+corner-channel offsets, those remain exactly represented non-negative f32
+integers. Reports identify the finite raw-u32 vectors actually tested. The v2
+probe does not yet exercise float values immediately around lattice boundaries,
+so it establishes the hash core rather than the entire float-to-hash path.
 
 ### Float expression tree
 

@@ -63,15 +63,22 @@ function webGpuAdapterInfo(adapter) {
   };
 }
 
-function compareFields(points, cpu, gpu) {
+export function compareFields(points, cpu, gpu) {
   return FIELD_SPECS.map((spec, fieldIndex) => {
     let maxAbs = 0;
     let maxUlp = 0;
     let maxAbsSample = null;
     let maxUlpSample = null;
+    let nonFiniteCount = 0;
+    let firstNonFiniteSample = null;
     for (let i = 0; i < points.length; i++) {
       const want = cpu[i * 4 + fieldIndex];
       const got = gpu[i * 4 + fieldIndex];
+      if (!Number.isFinite(want) || !Number.isFinite(got)) {
+        nonFiniteCount++;
+        firstNonFiniteSample ??= { ...points[i], cpu: want, gpu: got };
+        continue;
+      }
       const abs = Math.abs(want - got);
       const ulp = ulpDelta32(want, got);
       if (abs > maxAbs) {
@@ -87,9 +94,12 @@ function compareFields(points, cpu, gpu) {
       ...spec,
       maxAbs,
       maxUlp,
-      pass: maxAbs <= spec.budget,
+      finiteSamples: points.length - nonFiniteCount,
+      nonFiniteCount,
+      pass: nonFiniteCount === 0 && maxAbs <= spec.budget,
       maxAbsSample,
       maxUlpSample,
+      firstNonFiniteSample,
     };
   });
 }

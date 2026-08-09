@@ -6,7 +6,7 @@ import { evalWithGradient, dualInputs, dualAdapter, surfaceNormal } from '../src
 import { dunesField, DUNES_PAD } from '../examples/dunes.js';
 import { swellField, buoyancy } from '../examples/swell.js';
 import { windField, applyWind } from '../examples/wind.js';
-import { serpentSpine, spineHitTest } from '../examples/serpent.js';
+import { serpentRadius, serpentSpine, spineHitTest } from '../examples/serpent.js';
 
 test('dunes: the pad is exactly flat inside rIn (authored content parity)', () => {
   const c = dunesField(N, DUNES_PAD.cx, DUNES_PAD.cz);
@@ -65,6 +65,8 @@ test('serpent: coils travel tailward (retarded time) and hit test works', () => 
   assert.ok(Math.abs(hit.u - 0.7) < 0.05, `found u ${hit.u}`);
   const miss = spineHitTest(N, { x: 0, y: 200, z: 0 }, 2);
   assert.equal(miss.hit, false);
+  assert.equal(hit.radius, serpentRadius(N, N.f(hit.u)), 'hit test consumes the adapter-authored radius');
+  assert.ok(serpentRadius(N, N.f(0.5)) > serpentRadius(N, N.f(0)), 'body tapers toward its ends');
 });
 
 test('serpent: dual backend yields analytic tangents matching finite differences', () => {

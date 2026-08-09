@@ -4,7 +4,7 @@
 //
 //   determinism   - re-evaluation is bit-identical (Tier 1 precondition)
 //   f32 drift     - f64 oracle vs f32-emulated backend, in ulps and units
-//                   (a CPU-side bound on the CPU<->GPU divergence to expect)
+//                   (a CPU-side baseline, not a bound on GPU divergence)
 //   dual exactness- dual backend .v is BIT-identical to the number backend
 //                   (proves the gradient rides the exact same field)
 //   gradient truth- dual gradients vs central finite differences
@@ -48,16 +48,31 @@ export function runCpuAssay(field, opts = {}) {
   }
 
   // -- f64 vs f32-emulated drift
-  let drift = { maxUlp: 0, maxAbs: 0, worst: null };
+  let drift = {
+    maxUlp: 0,
+    maxAbs: 0,
+    maxUlpSample: null,
+    maxAbsSample: null,
+    nonFiniteCount: 0,
+    firstNonFinite: null,
+  };
   for (const p of points) {
     const a = sampleF64(p.x, p.z);
     const b = sampleF32(p.x, p.z);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) {
+      drift.nonFiniteCount++;
+      drift.firstNonFinite ??= { ...p, f64: a, f32: b };
+      continue;
+    }
     const ulp = ulpDelta32(a, b);
     const abs = Math.abs(a - b);
     if (ulp > drift.maxUlp) {
-      drift = { maxUlp: ulp, maxAbs: Math.max(drift.maxAbs, abs), worst: { ...p, f64: a, f32: b } };
-    } else if (abs > drift.maxAbs) {
+      drift.maxUlp = ulp;
+      drift.maxUlpSample = { ...p, f64: a, f32: b, ulp, abs };
+    }
+    if (abs > drift.maxAbs) {
       drift.maxAbs = abs;
+      drift.maxAbsSample = { ...p, f64: a, f32: b, ulp, abs };
     }
   }
 
@@ -80,11 +95,18 @@ export function runCpuAssay(field, opts = {}) {
   // straddling finite difference; report the mismatch fraction, not just max.
   let gradChecked = 0;
   let gradMismatch = 0;
+  let gradNonFinite = 0;
+  let gradFirstNonFinite = null;
   let gradWorst = { relErr: 0 };
   for (const p of points) {
     const g = evalWithGradient(field, p.x, p.z);
     const fdx = (sampleF64(p.x + fdEps, p.z) - sampleF64(p.x - fdEps, p.z)) / (2 * fdEps);
     const fdz = (sampleF64(p.x, p.z + fdEps) - sampleF64(p.x, p.z - fdEps)) / (2 * fdEps);
+    if (![g.v, g.dx, g.dz, fdx, fdz].every(Number.isFinite)) {
+      gradNonFinite++;
+      gradFirstNonFinite ??= { ...p, dual: { v: g.v, dx: g.dx, dz: g.dz }, fd: { dx: fdx, dz: fdz } };
+      continue;
+    }
     const scale = Math.max(1, Math.abs(fdx), Math.abs(fdz));
     const relErr = Math.max(Math.abs(g.dx - fdx), Math.abs(g.dz - fdz)) / scale;
     gradChecked++;
@@ -105,13 +127,23 @@ export function runCpuAssay(field, opts = {}) {
     schema: 'matter-field-cpu-assay/v1',
     n: points.length,
     deterministic,
-    f64VsF32: { maxUlp: drift.maxUlp, maxAbs: drift.maxAbs, worst: drift.worst },
+    f64VsF32: {
+      maxUlp: drift.maxUlp,
+      maxAbs: drift.maxAbs,
+      maxUlpSample: drift.maxUlpSample,
+      maxAbsSample: drift.maxAbsSample,
+      worst: drift.maxUlpSample,
+      nonFiniteCount: drift.nonFiniteCount,
+      firstNonFinite: drift.firstNonFinite,
+    },
     dual: { bitExact: dualBitExact, worst: dualWorst },
     gradient: {
       checked: gradChecked,
       mismatchFraction: gradMismatch / Math.max(1, gradChecked),
       worst: gradWorst,
       fdEps,
+      nonFiniteCount: gradNonFinite,
+      firstNonFinite: gradFirstNonFinite,
     },
     usPerSample: ((t1 - t0) * 1000) / benchN,
   };
@@ -123,8 +155,9 @@ export function runCpuAssay(field, opts = {}) {
  * gradient mismatch have field-dependent budgets the caller sets.
  *
  * The float-drift budget is ABSOLUTE, in field units (`maxAbs`), because
- * that is the criterion games actually live by ("does collision disagree
- * with render by more than a millimetre"). Ulp counts are reported but
+ * consumers care whether sampled materialization drift exceeds their physical
+ * tolerance. Geometry approximation is a separate budget. Ulp counts are
+ * reported but
  * unbudgeted by default: near a zero crossing of the field, ulps shrink
  * toward zero, so a physically negligible absolute drift can measure as
  * thousands of ulps - budgeting ulps naively fails healthy fields at their
@@ -134,14 +167,26 @@ export function assayVerdict(report, { maxAbs = 0.01, maxUlp = null, maxGradMism
   const fails = [];
   if (!report.deterministic) fails.push('non-deterministic re-evaluation');
   if (!report.dual.bitExact) fails.push('dual backend diverges from number backend');
-  if (report.f64VsF32.maxAbs > maxAbs) {
+  if ((report.f64VsF32.nonFiniteCount ?? 0) > 0) {
+    fails.push(`field produced ${report.f64VsF32.nonFiniteCount} non-finite sampled materialization(s)`);
+  }
+  if (!Number.isFinite(report.f64VsF32.maxAbs)) {
+    fails.push('f32 drift is non-finite');
+  } else if (report.f64VsF32.maxAbs > maxAbs) {
     fails.push(`f32 drift ${report.f64VsF32.maxAbs.toExponential(2)} units exceeds budget ${maxAbs}`);
   }
-  if (maxUlp !== null && report.f64VsF32.maxUlp > maxUlp) {
+  if (maxUlp !== null && !Number.isFinite(report.f64VsF32.maxUlp)) {
+    fails.push('f32 ULP drift is non-finite');
+  } else if (maxUlp !== null && report.f64VsF32.maxUlp > maxUlp) {
     fails.push(`f32 drift ${report.f64VsF32.maxUlp} ulp exceeds budget ${maxUlp}`);
   }
-  if (report.gradient.mismatchFraction > maxGradMismatch) {
+  if (!Number.isFinite(report.gradient.mismatchFraction)) {
+    fails.push('gradient mismatch fraction is non-finite');
+  } else if (report.gradient.mismatchFraction > maxGradMismatch) {
     fails.push(`gradient mismatch fraction ${report.gradient.mismatchFraction.toFixed(3)} exceeds ${maxGradMismatch}`);
+  }
+  if ((report.gradient.nonFiniteCount ?? 0) > 0) {
+    fails.push(`gradient assay produced ${report.gradient.nonFiniteCount} non-finite sample(s)`);
   }
   return { pass: fails.length === 0, fails };
 }

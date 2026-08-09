@@ -1,12 +1,15 @@
 // Golden vectors + u32 semantics for the bit-exact hash.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { hashU32, hash01, hash01f32, LATTICE_OFFSET, HASH_WGSL, HASH_GLSL } from '../src/hash.js';
+import {
+  hashU32, hash01, hash01f32,
+  LATTICE_OFFSET, LATTICE_FLOOR_MIN, LATTICE_FLOOR_MAX,
+  HASH_WGSL, HASH_GLSL,
+} from '../src/hash.js';
 
 // Frozen golden vectors. Captured 2026-08-09 from the reference JS
-// implementation (identical constants to OBJEKT-62 heightcore, whose JS/TSL
-// pair measured bit-identical on NVIDIA Turing WebGPU). If any of these ever
-// changes, the hash is no longer the hash - that is the point of this test.
+// implementation. Current raw-GPU evidence is scoped to the committed Matter
+// Field receipts; if any vector changes, the hash is no longer the same hash.
 const GOLDEN = [
   [[0, 0, 0, 0], 0],
   [[1, 0, 0, 0], 0.69274670397862792],
@@ -86,7 +89,9 @@ test('shader source constants match the JS implementation', () => {
   }
 });
 
-test('LATTICE_OFFSET keeps sane world coords positive after floor', () => {
-  assert.ok(Math.floor(-100000) + LATTICE_OFFSET > 0);
+test('documented lattice domain stays small, non-negative, and f32-exact', () => {
+  assert.equal(LATTICE_FLOOR_MIN + LATTICE_OFFSET, 0);
+  assert.equal(LATTICE_FLOOR_MAX + LATTICE_OFFSET + 1, 262144);
+  assert.ok(Number.isInteger(Math.fround(LATTICE_FLOOR_MAX + LATTICE_OFFSET + 1)));
   assert.equal(LATTICE_OFFSET, 131072);
 });

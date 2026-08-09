@@ -23,6 +23,7 @@ import * as tsl from 'three/tsl';
 import { makeTslAdapter } from '../../src/backend-tsl.js';
 import { numberAdapter as N } from '../../src/number.js';
 import { DUNES_PAD, dunesField } from '../../examples/dunes.js';
+import { installFieldCamera } from './camera-interaction.js';
 import {
   addButton,
   addDriveControls,
@@ -82,7 +83,7 @@ function sampleRover(state) {
   const probe = (forward, side, mode = state.mode) => {
     const x = state.x + forward * s + side * c;
     const z = state.z + forward * c - side * s;
-    return { x, z, height: contactHeight(mode, x, z), visual: dunesField(N, x, z) };
+    return { x, z, height: contactHeight(mode, x, z), authored: dunesField(N, x, z) };
   };
   const frontLeft = probe(6, -5);
   const frontRight = probe(6, 5);
@@ -90,7 +91,7 @@ function sampleRover(state) {
   const rearRight = probe(-6, 5);
   const contacts = [frontLeft, frontRight, rearLeft, rearRight];
   const contact = contacts.reduce((sum, point) => sum + point.height, 0) / contacts.length;
-  const visual = contacts.reduce((sum, point) => sum + point.visual, 0) / contacts.length;
+  const authored = contacts.reduce((sum, point) => sum + point.authored, 0) / contacts.length;
   const front = (frontLeft.height + frontRight.height) / 2;
   const rear = (rearLeft.height + rearRight.height) / 2;
   const left = (frontLeft.height + rearLeft.height) / 2;
@@ -98,8 +99,8 @@ function sampleRover(state) {
   return {
     contacts,
     contact,
-    visual,
-    gap: contact - visual,
+    authored,
+    proxyDrift: contact - authored,
     pitch: Math.atan2(front - rear, 12),
     roll: Math.atan2(right - left, 10),
   };
@@ -182,8 +183,8 @@ export async function runDunesPlayground({ canvas, controls, readouts }) {
   const input = createInput(canvas);
   const updateReadouts = createReadouts(readouts, [
     ['mode', 'contact mode'],
-    ['backend', 'visual / contacts'],
-    ['gap', 'contact gap'],
+    ['backend', 'renderer / sampler'],
+    ['gap', 'proxy / authored drift'],
     ['speed', 'rover speed'],
     ['goal', 'landing pad'],
     ['readback', 'GPU readback'],
@@ -193,7 +194,7 @@ export async function runDunesPlayground({ canvas, controls, readouts }) {
     state.mode = state.mode === 'unified' ? 'proxy' : 'unified';
     button.textContent = state.mode === 'unified' ? 'Inject stale proxy' : 'Restore unified field';
     button.setAttribute('aria-pressed', String(state.mode !== 'unified'));
-    setStageStatus(state.mode === 'unified' ? 'render and contacts share dunesField' : 'fault injected: CPU contacts sample a stale coarse proxy', state.mode === 'unified' ? 'pass' : 'warn');
+    setStageStatus(state.mode === 'unified' ? 'GPU displacement and CPU contacts both evaluate dunesField' : 'fault injected: CPU contacts sample a stale coarse proxy', state.mode === 'unified' ? 'pass' : 'warn');
   }, { ariaPressed: false });
   modeButton.classList.add('mode-toggle');
   const pauseButton = addButton(controls, 'Pause', (button) => {
@@ -208,7 +209,7 @@ export async function runDunesPlayground({ canvas, controls, readouts }) {
   const mouse = new Vector2();
   const ground = new Plane(new Vector3(0, 1, 0), 0);
   const hit = new Vector3();
-  canvas.addEventListener('pointerdown', (event) => {
+  const setTargetFromPointer = (event) => {
     const rect = canvas.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -220,6 +221,15 @@ export async function runDunesPlayground({ canvas, controls, readouts }) {
       };
       targetMarker.visible = true;
     }
+  };
+  const cameraControls = installFieldCamera({
+    canvas,
+    camera,
+    focus: [45, 4, -350],
+    controls,
+    onPrimaryDown: setTargetFromPointer,
+    minDistance: 120,
+    maxDistance: 620,
   });
 
   function update(dt) {
@@ -278,7 +288,7 @@ export async function runDunesPlayground({ canvas, controls, readouts }) {
     updateReadouts({
       mode: formatMode(state.mode),
       backend: `${backend} / CPU f64`,
-      gap: `${state.contact.gap >= 0 ? '+' : ''}${state.contact.gap.toFixed(3)} m`,
+      gap: `${state.contact.proxyDrift >= 0 ? '+' : ''}${state.contact.proxyDrift.toFixed(3)} m`,
       speed: `${state.speed.toFixed(1)} m/s`,
       goal: state.complete ? 'PAD SECURED' : `${Math.hypot(state.x - DUNES_PAD.cx, state.z - DUNES_PAD.cz).toFixed(0)} m`,
       readback: '0 per frame',
@@ -296,10 +306,11 @@ export async function runDunesPlayground({ canvas, controls, readouts }) {
       paused: state.paused,
       renderer: backend,
       rover: { x: +state.x.toFixed(3), z: +state.z.toFixed(3), heading: +state.heading.toFixed(3), speed: +state.speed.toFixed(3) },
-      contact: { height: +state.contact.contact.toFixed(5), visualHeight: +state.contact.visual.toFixed(5), gap: +state.contact.gap.toFixed(5) },
+      contact: { height: +state.contact.contact.toFixed(5), authoredFieldMean: +state.contact.authored.toFixed(5), proxyDrift: +state.contact.proxyDrift.toFixed(5) },
       target: state.target,
+      camera: cameraControls.getState(),
       landingPad: { x: DUNES_PAD.cx, z: DUNES_PAD.cz, radius: DUNES_PAD.rIn, complete: state.complete },
-      controls: 'WASD/arrows or on-screen arrows; click terrain to autopilot; F fullscreen',
+      controls: 'WASD/arrows drive; left-click/one-finger targets; right-drag/two-finger orbit; wheel/pinch zoom; C camera reset; F fullscreen',
     }),
   });
   setStageStatus(`${backend} terrain displacement · CPU contact probes · click terrain or drive`, 'pass');

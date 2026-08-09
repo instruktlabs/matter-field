@@ -5,6 +5,8 @@ turn an abstract portability claim into a visible, reproducible ledger of what
 was actually observed.
 
 Read [MEASUREMENT.md](./MEASUREMENT.md) first.
+For the planned owned/cloud/mobile coverage and evidence labels, read
+[HARDWARE-LAB.md](./HARDWARE-LAB.md).
 
 ## Needed configurations
 
@@ -35,6 +37,11 @@ important missing cell.
 node scripts/run-gpu-probe.mjs --backend=webgpu --headed
 node scripts/run-gpu-probe.mjs --backend=webgl2 --headed
 ```
+
+On Linux, the runner adds Chrome's documented Vulkan/ANGLE hardware-headless
+flags and records them in the receipt. It still rejects SwiftShader, llvmpipe,
+lavapipe, and other software adapters. In a trusted ephemeral container running
+Chrome as root, add `--no-sandbox`; do not use that option for general browsing.
 
 The runner writes JSON under `artifacts/gpu-reports/` by default. A software
 adapter marks the report failed unless explicitly allowed for harness-only

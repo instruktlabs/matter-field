@@ -33,7 +33,8 @@ import { makeTslAdapter } from '../../src/backend-tsl.js';
 import { numberAdapter as N } from '../../src/number.js';
 import { buoyancy, swellField } from '../../examples/swell.js';
 import { windField } from '../../examples/wind.js';
-import { serpentSpine } from '../../examples/serpent.js';
+import { serpentRadius, serpentSpine } from '../../examples/serpent.js';
+import { installFieldCamera } from './camera-interaction.js';
 import {
   runSerpentPlayground as runSerpentFallback,
   runSwellPlayground as runSwellFallback,
@@ -180,11 +181,20 @@ async function runSwell3D({ canvas, controls, readouts }) {
   ));
   installFullscreen(canvas);
   const raycaster = new Raycaster(), mouse = new Vector2(), plane = new Plane(new Vector3(0, 1, 0), 0), hit = new Vector3();
-  canvas.addEventListener('pointerdown', (event) => {
+  const setCourseFromPointer = (event) => {
     const rect = canvas.getBoundingClientRect();
     mouse.set((event.clientX - rect.left) / rect.width * 2 - 1, -((event.clientY - rect.top) / rect.height * 2 - 1));
     raycaster.setFromCamera(mouse, camera);
     if (raycaster.ray.intersectPlane(plane, hit)) state.target = { x: clamp(hit.x, -112, 112), z: clamp(hit.z, -72, 72) };
+  };
+  const cameraControls = installFieldCamera({
+    canvas,
+    camera,
+    focus: [0, 0, 0],
+    controls,
+    onPrimaryDown: setCourseFromPointer,
+    minDistance: 75,
+    maxDistance: 360,
   });
   function update(dt) {
     state.t = wrap(state.t + dt, 0, 600);
@@ -232,8 +242,9 @@ async function runSwell3D({ canvas, controls, readouts }) {
     demo: 'swell-3d', coordinateSystem: 'world metres; +x right, +y up, +z depth', renderer: backend, mode: state.mode, paused: state.paused, time: +state.t.toFixed(3),
     boat: { x: +state.x.toFixed(3), y: +state.applied.heave.toFixed(3), z: +state.z.toFixed(3), yaw: +state.yaw.toFixed(3), speed: +state.speed.toFixed(3) },
     buoyancy: Object.fromEntries(Object.entries(state.applied).map(([key, value]) => [key, +value.toFixed(5)])), gatesPassed: state.gate, gateCount: gates.length, target: state.target,
+    camera: cameraControls.getState(),
     materialization: 'GPU TSL water displacement; CPU numberAdapter four-point buoyancy; zero per-frame readbacks',
-    controls: 'WASD/arrows or on-screen arrows; click water to set course; F fullscreen',
+    controls: 'WASD/arrows drive; left-click/one-finger sets course; right-drag/two-finger orbit; wheel/pinch zoom; C camera reset; F fullscreen',
   }) });
   setStageStatus(`${backend} TSL water · CPU four-point buoyancy · zero readbacks`, 'pass');
 }
@@ -293,12 +304,21 @@ async function runWind3D({ canvas, controls, readouts }) {
   ));
   installFullscreen(canvas);
   const pointer = new Vector2();
-  canvas.addEventListener('pointerdown', (event) => {
+  const turnFromPointer = (event) => {
     const rect = canvas.getBoundingClientRect();
     pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -((event.clientY - rect.top) / rect.height * 2 - 1));
     const ray = new Raycaster(); ray.setFromCamera(pointer, camera);
     const hit = new Vector3();
     if (ray.ray.intersectPlane(new Plane(new Vector3(0, 1, 0), 0), hit)) state.heading = Math.atan2(hit.z - state.z, hit.x - state.x);
+  };
+  const cameraControls = installFieldCamera({
+    canvas,
+    camera,
+    focus: [0, 5, 0],
+    controls,
+    onPrimaryDown: turnFromPointer,
+    minDistance: 80,
+    maxDistance: 400,
   });
   const actualWind = () => windField(N, state.x, state.z, state.t);
   const appliedWind = () => state.mode === 'unified' ? actualWind() : windField(N, Math.round(state.x / 70) * 70, Math.round(state.z / 70) * 70, Math.floor(state.t / 4) * 4);
@@ -337,8 +357,9 @@ async function runWind3D({ canvas, controls, readouts }) {
       demo: 'wind-3d', coordinateSystem: 'world metres; +x right, +y up, +z depth', renderer: backend, mode: state.mode, paused: state.paused, time: +state.t.toFixed(3),
       glider: { x: +state.x.toFixed(3), y: 7, z: +state.z.toFixed(3), vx: +state.vx.toFixed(3), vz: +state.vz.toFixed(3), heading: +state.heading.toFixed(3) },
       visibleWind: { wx: +visible.wx.toFixed(5), wz: +visible.wz.toFixed(5) }, appliedWind: { wx: +applied.wx.toFixed(5), wz: +applied.wz.toFixed(5) },
+      camera: cameraControls.getState(),
       gatesPassed: state.score, gateCount: rings.length, materialization: 'GPU TSL stream volume; CPU numberAdapter glider force; zero per-frame readbacks',
-      controls: 'A/D or arrows steer; W/S vary airspeed; click ground to turn; F fullscreen',
+      controls: 'A/D or arrows steer; W/S vary airspeed; left-click/one-finger turns; right-drag/two-finger orbit; wheel/pinch zoom; C camera reset; F fullscreen',
     };
   } });
   setStageStatus(`${backend} TSL stream volume · CPU glider forces · zero readbacks`, 'pass');
@@ -349,10 +370,9 @@ function makeSerpentGeometry() {
   const segments = 170, radial = 14;
   for (let i = 0; i <= segments; i++) {
     const u = i / segments;
-    const radius = 1.25 + 3.2 * Math.sin(Math.PI * u);
     for (let j = 0; j < radial; j++) {
       const angle = j / radial * Math.PI * 2;
-      positions.push(u, Math.cos(angle) * radius, Math.sin(angle) * radius);
+      positions.push(u, Math.cos(angle), Math.sin(angle));
     }
   }
   const geometry = new BufferGeometry();
@@ -360,7 +380,7 @@ function makeSerpentGeometry() {
   return geometry;
 }
 
-function raySpineHit(ray, time, radius = 2.5) {
+function raySpineHit(ray, time) {
   let best = { u: 0, dist: Infinity, point: null };
   const probe = (u) => {
     const value = serpentSpine(N, u, time);
@@ -372,7 +392,9 @@ function raySpineHit(ray, time, radius = 2.5) {
   for (let i = 0; i <= steps; i++) probe(i / steps);
   const lo = Math.max(0, best.u - 1 / steps), hi = Math.min(1, best.u + 1 / steps);
   for (let i = 0; i <= 28; i++) probe(lerp(lo, hi, i / 28));
-  return { ...best, hit: best.dist <= radius };
+  const rayPoint = ray.closestPointToPoint(best.point, new Vector3());
+  const radius = serpentRadius(N, best.u);
+  return { ...best, rayPoint, radius, hit: best.dist <= radius };
 }
 
 async function runSerpent3D({ canvas, controls, readouts }) {
@@ -380,31 +402,42 @@ async function runSerpent3D({ canvas, controls, readouts }) {
   const { renderer, scene, camera, backend } = await createThreeStage(canvas, {
     background: 0x100c08, cameraPosition: [45, 30, 78], lookAt: [45, 2.5, 0],
   });
-  const state = { paused: false, mode: 'unified', t: 0, aim: new Vector2(0, 0), result: null, score: 0, shots: 0, flash: 0 };
+  const state = { paused: false, mode: 'unified', t: 0, aim: new Vector2(0, 0), result: null, score: 0, shots: 0, goal: 5 };
   const input = createInput(canvas);
   const timeNode = tsl.uniform(0);
   const A = makeTslAdapter(tsl, { fnName: 'mfSerpentPlaygroundHash' });
   const p = tsl.positionLocal;
   const spine = serpentSpine(A, p.x, timeNode);
+  const radius = serpentRadius(A, p.x);
   const bodyMaterial = new PointsNodeMaterial({ color: 0xd4ff52, size: 12, sizeAttenuation: true });
-  bodyMaterial.positionNode = tsl.vec3(spine.x, spine.y.add(p.y), spine.z.add(p.z));
+  bodyMaterial.positionNode = tsl.vec3(spine.x, spine.y.add(p.y.mul(radius)), spine.z.add(p.z.mul(radius)));
   bodyMaterial.colorNode = tsl.mix(tsl.color(0x718436), tsl.color(0xe8ff7c), p.x);
   scene.add(new Points(makeSerpentGeometry(), bodyMaterial));
   const ground = new Mesh(new PlaneGeometry(120, 70), new MeshBasicMaterial({ color: 0x17130d, side: 2 })); ground.rotation.x = -Math.PI / 2; ground.position.set(45, -0.4, 0); scene.add(ground);
   const ghostGeometry = new BufferGeometry();
   ghostGeometry.setAttribute('position', new Float32BufferAttribute(new Float32Array(81 * 3), 3));
   const ghost = new Line(ghostGeometry, new LineBasicMaterial({ color: 0xff9d73, transparent: true, opacity: 0.86 })); ghost.visible = false; scene.add(ghost);
-  const marker = new Mesh(new SphereGeometry(2.1, 18, 12), new MeshBasicMaterial({ color: 0x7af2ce, wireframe: true })); marker.visible = false; scene.add(marker);
+  const marker = new Mesh(new SphereGeometry(1, 24, 16), new MeshBasicMaterial({ color: 0x7af2ce, wireframe: true, transparent: true, opacity: 0.86 })); marker.visible = false; scene.add(marker);
   const shotGeometry = new BufferGeometry(); shotGeometry.setAttribute('position', new Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3));
   const shotLine = new Line(shotGeometry, new LineBasicMaterial({ color: 0xff746b, transparent: true, opacity: 0.8 })); shotLine.visible = false; scene.add(shotLine);
+  const closestGeometry = new BufferGeometry(); closestGeometry.setAttribute('position', new Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3));
+  const closestLine = new Line(closestGeometry, new LineBasicMaterial({ color: 0xff746b, transparent: true, opacity: 0.95 })); closestLine.visible = false; scene.add(closestLine);
+  const closestPoint = new Mesh(new SphereGeometry(0.6, 14, 10), new MeshBasicMaterial({ color: 0xfffcf3 })); closestPoint.visible = false; scene.add(closestPoint);
   const raycaster = new Raycaster();
   const updateReadouts = createReadouts(readouts, [
     ['mode', 'hit-test mode'], ['backend', 'body / hit test'], ['score', 'hits / shots'],
-    ['result', 'last shot'], ['distance', 'ray distance'], ['arc', 'closest arc u'],
+    ['result', 'last shot'], ['distance', 'closest / radius'], ['arc', 'closest arc u'],
   ]);
-  const reset = () => Object.assign(state, { t: 0, result: null, score: 0, shots: 0, flash: 0 });
+  const reset = () => {
+    Object.assign(state, { t: 0, result: null, score: 0, shots: 0 });
+    marker.visible = false;
+    shotLine.visible = false;
+    closestLine.visible = false;
+    closestPoint.visible = false;
+    setStageStatus('Goal: land 5 CPU world-ray hits inside the adapter-authored body radius', 'pass');
+  };
   addModeControls(controls, state, input, reset, 'Inject 350 ms hitbox lag', () => setStageStatus(
-    state.mode === 'unified' ? 'TSL body and CPU ray test share serpentSpine at one time' : 'fault injected: CPU hit test trails the TSL body by 350 ms',
+    state.mode === 'unified' ? 'TSL body and CPU ray share serpentSpine + serpentRadius at one time' : 'fault injected: CPU hit test trails the TSL body by 350 ms',
     state.mode === 'unified' ? 'pass' : 'warn',
   ), 'Fire');
   installFullscreen(canvas);
@@ -418,20 +451,42 @@ async function runSerpent3D({ canvas, controls, readouts }) {
     state.result = raySpineHit(raycaster.ray, sampleTime);
     state.shots++;
     if (state.result.hit) state.score++;
-    marker.visible = true; marker.position.copy(state.result.point); marker.material.color.set(state.result.hit ? 0x7af2ce : 0xff746b);
+    marker.visible = true; marker.position.copy(state.result.point); marker.scale.setScalar(state.result.radius); marker.material.color.set(state.result.hit ? 0x7af2ce : 0xff746b);
     const shotPositions = shotGeometry.attributes.position;
     shotPositions.setXYZ(0, raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z);
     const end = raycaster.ray.at(150, new Vector3()); shotPositions.setXYZ(1, end.x, end.y, end.z); shotPositions.needsUpdate = true;
-    shotLine.visible = true; shotLine.material.color.set(state.result.hit ? 0x7af2ce : 0xff746b); state.flash = 0.22;
+    shotLine.visible = true; shotLine.material.color.set(state.result.hit ? 0x7af2ce : 0xff746b);
+    const closestPositions = closestGeometry.attributes.position;
+    closestPositions.setXYZ(0, state.result.rayPoint.x, state.result.rayPoint.y, state.result.rayPoint.z);
+    closestPositions.setXYZ(1, state.result.point.x, state.result.point.y, state.result.point.z);
+    closestPositions.needsUpdate = true;
+    closestLine.visible = true; closestLine.material.color.set(state.result.hit ? 0x7af2ce : 0xff746b);
+    closestPoint.visible = true; closestPoint.position.copy(state.result.rayPoint);
+    const complete = state.score >= state.goal;
+    setStageStatus(
+      complete
+        ? `CALIBRATION COMPLETE · ${state.score} shared-field hits`
+        : state.result.hit
+          ? `HIT · ${state.result.dist.toFixed(3)} m from spine · ${state.score}/${state.goal}`
+          : `MISS · closest approach ${state.result.dist.toFixed(3)} m · body radius ${state.result.radius.toFixed(2)} m`,
+      state.result.hit ? 'pass' : 'error',
+    );
   };
-  canvas.addEventListener('pointermove', setAim);
-  canvas.addEventListener('pointerdown', (event) => { setAim(event); fire(); });
+  const cameraControls = installFieldCamera({
+    canvas,
+    camera,
+    focus: [45, 2.5, 0],
+    controls,
+    onPrimaryMove: setAim,
+    onPrimaryDown: (event) => { setAim(event); fire(); },
+    minDistance: 45,
+    maxDistance: 260,
+  });
   function update(dt) {
     state.t = wrap(state.t + dt, 0, 600);
     state.aim.x = clamp(state.aim.x + input.steer * 0.7 * dt, -1, 1);
     state.aim.y = clamp(state.aim.y + input.throttle * 0.7 * dt, -1, 1);
     if (input.consumeAction()) fire();
-    state.flash = Math.max(0, state.flash - dt); if (!state.flash) shotLine.visible = false;
   }
   function updateGhost() {
     if (state.mode === 'unified') { ghost.visible = false; return; }
@@ -447,18 +502,19 @@ async function runSerpent3D({ canvas, controls, readouts }) {
     timeNode.value = state.t; updateGhost(); renderer.render(scene, camera);
     updateReadouts({
       mode: state.mode === 'unified' ? 'UNIFIED FIELD' : 'FAULT: 350 MS LAG', backend: `${backend} TSL / CPU ray`,
-      score: `${state.score} / ${state.shots}`, result: state.result ? (state.result.hit ? 'HIT' : 'MISS') : 'AIM + FIRE',
-      distance: state.result ? `${state.result.dist.toFixed(3)} m` : '—', arc: state.result ? state.result.u.toFixed(3) : '—',
+      score: `${state.score} / ${state.goal} · ${state.shots} shots`, result: state.score >= state.goal ? 'CALIBRATION COMPLETE' : state.result ? (state.result.hit ? 'HIT · INSIDE RADIUS' : 'MISS · OUTSIDE RADIUS') : 'LAND 5 HITS',
+      distance: state.result ? `${state.result.dist.toFixed(3)} / ${state.result.radius.toFixed(3)} m` : '—', arc: state.result ? state.result.u.toFixed(3) : '—',
     });
   }
   createFixedLoop({ state, update, render, text: () => ({
     demo: 'serpent-3d', coordinateSystem: 'world metres; +x headward, +y up, +z lateral; aim is normalized device coordinates', renderer: backend, mode: state.mode, paused: state.paused, time: +state.t.toFixed(3),
-    aim: { x: +state.aim.x.toFixed(3), y: +state.aim.y.toFixed(3) }, score: state.score, shots: state.shots,
-    lastShot: state.result ? { hit: state.result.hit, distance: +state.result.dist.toFixed(5), u: +state.result.u.toFixed(5), point: state.result.point.toArray().map((value) => +value.toFixed(4)) } : null,
-    materialization: 'GPU TSL point body from serpentSpine; CPU world-ray hit test from the same field',
-    controls: 'Mouse/touch aim and fire; arrows/WASD aim; Space or Fire button shoots; F fullscreen',
+    aim: { x: +state.aim.x.toFixed(3), y: +state.aim.y.toFixed(3) }, goal: { hitsRequired: state.goal, hits: state.score, complete: state.score >= state.goal }, shots: state.shots,
+    camera: cameraControls.getState(),
+    lastShot: state.result ? { hit: state.result.hit, distance: +state.result.dist.toFixed(5), hitRadius: state.result.radius, u: +state.result.u.toFixed(5), bodyPoint: state.result.point.toArray().map((value) => +value.toFixed(4)), rayPoint: state.result.rayPoint.toArray().map((value) => +value.toFixed(4)) } : null,
+    materialization: 'GPU TSL point body from serpentSpine + serpentRadius; CPU world-ray hit test from the same fields',
+    controls: 'Left-click/one-finger aims and fires; right-drag/two-finger orbit; wheel/pinch zoom; arrows/WASD aim; Space/Fire shoots; C camera reset; F fullscreen',
   }) });
-  setStageStatus(`${backend} TSL procedural body · CPU world-ray hit test · zero readbacks`, 'pass');
+  setStageStatus(`Goal: land 5 CPU world-ray hits on the ${backend} TSL body · shared variable radius`, 'pass');
 }
 
 export const runSwellPlayground = (args) => withFallback(args, runSwell3D, runSwellFallback, 'swell');

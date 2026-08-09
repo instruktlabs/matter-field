@@ -11,12 +11,18 @@ contributor loop before package distribution or a wider API surface.
   comparison runner.
 - [x] Publish passing Node 18/20/22 and browser/Worker CI evidence after the
   repository's first push.
-- [x] Add targeted numeric samples around lattice boundaries, stamp radii,
+- [ ] Expand targeted numeric samples around float-to-lattice boundaries,
   zero crossings, long-running time inputs, and supported coordinate limits.
+  The current set covers stamp radii and several domain boundaries but fixes
+  swell at `t=2.5` and wind at `t=1`.
 - [ ] Collect real WebGPU receipts for NVIDIA, AMD, Intel, and Apple silicon.
 - [ ] Collect the corresponding WebGL2 fallback receipts where supported.
 - [ ] Review Apple/Metal results before making any portability statement.
 - [ ] Validate receipt JSON against a versioned schema.
+- [ ] Bind probe code, comparison code, budgets, and hash vectors into a
+  separate harness identity in the next receipt schema.
+- [ ] Store enough per-sample output or a reproducible artifact to independently
+  recompute summaries and error distributions.
 - [x] Replace explanatory CPU-only visuals with accessible demonstrations that
   pair real TSL rendering and CPU gameplay queries.
 - [x] Complete desktop, mobile, keyboard, touch, and reduced-motion QA.

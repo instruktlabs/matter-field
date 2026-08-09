@@ -51,16 +51,54 @@ when more than one of those systems needs to evaluate it.
 
 ## TypeGPU, narrowly
 
-TypeGPU is a typed WebGPU toolkit with a substantially broader responsibility:
-shader authoring, data layouts, resources, pipelines, and WebGPU application
-structure. Matter Field should not duplicate those concerns or present itself
-as a competing general framework.
+TypeGPU is the closest direct overlap. Its `use gpu` functions can remain
+CPU-callable, `@typegpu/three` converts functions to Three.js TSL, and the
+ecosystem includes `@typegpu/noise`. It also has a substantially broader
+responsibility: typed shader authoring, data layouts, resources, pipelines,
+and WebGPU application structure. Matter Field should acknowledge that overlap
+and should not present itself as the first shared CPU/GPU source approach.
 
 The current Matter Field backend targets caller-supplied Three.js TSL because
 that is the concrete integration extracted and measured. A future TypeGPU
 backend could translate the same restricted adapter operations while leaving
 pipeline and resource ownership to TypeGPU. That would demonstrate another
 materialization target; it would not change Matter Field's core job.
+
+The honest present distinction is evidence and scope: Matter Field has a
+restricted no-transform adapter, f64/f32-estimate/dual/TSL materializations,
+Three WebGPU and WebGL2 probes, and source-bound public receipts. Whether that
+combination deserves an independent package is a question for real users, not
+a conclusion established by the current benchmarks.
+
+## Application-level precedent
+
+[Eternal Ride](https://discourse.threejs.org/t/eternal-ride-infinite-terrain-in-three-js-with-no-lod-no-seams/91868)
+is close prior art in the Three.js community. It evaluates corresponding
+terrain algorithms for GPU rendering and CPU collision while solving a harder
+large-coordinate presentation problem with f64 host wrapping, small
+GPU-relative coordinates, and a continuous terrain fan. It is a compelling
+application, not an adapter library.
+
+Its published source uses separately maintained JavaScript and GLSL terrain
+implementations. Matter Field's narrower contribution is the shared restricted
+definition plus an explicit measurement ledger. Do not frame that distinction
+as a takedown: Eternal Ride demonstrates the use case better, while Matter
+Field makes a different authoring and evidence trade.
+
+## Evidence categories
+
+Keep four questions separate:
+
+1. **Structural:** did every consumer derive from the same field definition?
+2. **Numeric:** what drift was observed over which inputs and hardware?
+3. **Application:** did sharing the field remove a real gameplay failure or
+   maintenance burden?
+4. **Performance:** what did the approach cost against a named baseline and
+   workload?
+
+The current repository has meaningful evidence for the first two, interactive
+illustrations for the third, and only machine-local total-cost timings for the
+fourth. It does not yet prove adoption, necessity, or superior performance.
 
 ## Contributor appeal
 
@@ -76,4 +114,3 @@ legible:
 The most credible invitation is therefore not “star a finished library.” It is:
 
 > Bring a field, a browser, or a GPU. Help make the evidence better.
-

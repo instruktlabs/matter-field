@@ -17,6 +17,9 @@
     "parity/harness.js",
     "parity/golden.js",
     "examples/",
+    "docs/",
+    "ROADMAP.md",
+    "PROVENANCE.md",
     "README.md",
     "LICENSE"
   ],

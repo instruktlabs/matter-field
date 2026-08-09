@@ -10,8 +10,9 @@
 // expression graph. The float tree is not globally bit-exact or universally
 // bounded by this package: WGSL permits operation-level error, reassociation
 // and FMA, and cancellation can amplify it. Authors set a physical absolute-
-// error budget per field and measure it with the parity probe. The integer
-// hash is bit-exact because u32 operations have no accuracy latitude.
+// error budget per field and measure it with the parity probe. The raw integer
+// hash operation sequence is exact when both sides receive the same lattice
+// integers; float-to-lattice agreement is a separate precondition.
 
 import { LATTICE_OFFSET } from './hash.js';
 

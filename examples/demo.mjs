@@ -16,7 +16,7 @@ const line = (s = '') => console.log(s);
 line('matter-field demo - one contract, four fields, every backend\n');
 
 // ---------------------------------------------------------------- 1. dunes
-line('1. DUNES - terrain: one authored field, measured render/contact drift');
+line('1. DUNES - terrain: one authored field, measured f64/f32 materialization drift');
 for (const p of [
   { label: 'open sand', x: 1500, z: -2200 },
   { label: 'pad centre', x: DUNES_PAD.cx, z: DUNES_PAD.cz },
