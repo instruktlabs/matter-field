@@ -1,0 +1,37 @@
+{
+  "name": "matter-field",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Write field math once; run it as CPU numbers, f32-emulated numbers, dual numbers (analytic gradients), or a shader node graph - with a measurable parity contract instead of hope.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.js",
+    "./adapter": "./src/adapter.js",
+    "./number": "./src/number.js",
+    "./hash": "./src/hash.js",
+    "./dual": "./src/dual.js",
+    "./noise": "./src/noise.js",
+    "./backend-tsl": "./src/backend-tsl.js",
+    "./parity": "./parity/harness.js",
+    "./parity/golden": "./parity/golden.js"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "assay": "node examples/demo.mjs",
+    "bench": "node examples/bench.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "procedural",
+    "terrain",
+    "noise",
+    "deterministic",
+    "cpu-gpu-parity",
+    "tsl",
+    "webgpu",
+    "shader"
+  ]
+}
