@@ -10,6 +10,11 @@ updates:
           - esbuild
           - playwright
           - three
+    ignore:
+      # Playwright 1.60+ requires Node 20; the public contract still includes Node 18.
+      - dependency-name: playwright
+        versions:
+          - ">=1.60.0"
   - package-ecosystem: github-actions
     directory: /
     schedule:
