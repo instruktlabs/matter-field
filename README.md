@@ -21,6 +21,7 @@ and a repeatable assay for measuring the remaining drift on real hardware.
 [Open the live examples](https://instruktlabs.github.io/matter-field/#examples)
 · [Inspect the receipts](https://instruktlabs.github.io/matter-field/#evidence)
 · [Contribute a hardware result](./docs/RECEIPTS.md)
+· [Read the hardware-lab plan](./docs/HARDWARE-LAB.md)
 
 ## The split-world problem
 
@@ -69,10 +70,13 @@ const displacementNode = terrain(
 );
 ```
 
-The CPU height and GPU displacement come from the same parenthesized field
-definition. They can still differ by floating-point rounding, compiler
-contraction, and backend behavior. That is why a field ships with budgets and
-receipts rather than an equality assertion.
+The CPU height and GPU displacement come from the same parenthesized source
+definition. They can still differ through floating-point rounding, compiler
+contraction, reassociation, and backend behavior. A rendered triangle mesh can
+also approximate the field between its vertices even when every sampled vertex
+is correct. Arithmetic drift and mesh-materialization error are separate
+budgets. That is why a field ships with measurements rather than an equality
+assertion.
 
 ## What is actually guaranteed
 
@@ -81,11 +85,12 @@ Matter Field separates structural guarantees from observed evidence.
 | Tier | Contract | Current evidence |
 |---|---|---|
 | CPU materializations | Fields restricted to committed constants and specified ECMAScript arithmetic are intended to be bit-stable across supported JS runtimes. | A committed 300-point golden passes on Node 18, 20, and 22 and in Chromium, Firefox, and WebKit main threads and Workers in [public CI](https://github.com/instruktlabs/matter-field/actions/workflows/ci.yml). |
-| Integer hash | The raw u32 hash uses matching multiply, xor, and shift operations. Floats may enter only through `floor -> latt` within the documented lattice domain. | Eleven committed vectors were observed bit-exact on the current NVIDIA WebGPU and WebGL2 receipts. |
+| Integer hash | The raw u32 hash uses matching multiply, xor, and shift operations. Floats may enter only through `floor -> latt`; the currently supported floored lattice range is `[-131072, 131071]`. Identical lattice integers remain a precondition. | Eleven committed raw-u32 vectors were observed bit-exact on the current NVIDIA WebGPU and WebGL2 receipts. Float-to-lattice boundary vectors are still owed. |
 | Float tree | CPU f64 and GPU f32 are **not** bit-exact. Each field declares an absolute-error budget in field units; ULP counts are diagnostic. | Receipts report the maximum observed drift over a named finite sample set on one hardware/backend combination. A passing receipt is not a universal bound. |
 
 Read [the measurement contract](./docs/MEASUREMENT.md) before interpreting or
-publishing a result.
+publishing a result. The shorter [claims ledger](./docs/CLAIMS.md) separates
+what the current evidence supports from what remains unproven.
 
 ## Current measured receipts
 
@@ -103,9 +108,9 @@ everywhere.
 | Intel | — | — | — | — | — | unmeasured |
 | Apple silicon / Metal | — | — | — | — | — | highest-priority missing cell |
 
-Apple/Metal is especially valuable because compiler fast-math behavior is a
-known portability pressure point. Results from other browsers, operating
-systems, drivers, and GPUs are also welcome.
+Apple/Metal is especially valuable because it adds a different compiler/backend
+family and an important consumer platform. Results from other browsers,
+operating systems, drivers, and GPUs are also welcome.
 
 ## Interactive examples
 
@@ -152,15 +157,35 @@ Matter Field is intentionally narrow:
 It fits closed-form scalar or vector fields that gameplay needs to query and
 Three.js needs to materialize as TSL.
 
+Use it when a procedural field is rendered densely on the GPU but queried
+sparsely and immediately by CPU gameplay, Workers, or a server. Skip it when
+only the shader consumes the field, a CPU-authored mesh or texture is already
+the authority, the result can be baked, or the problem is a stateful
+simulation. It is an inference surface, not a neural-network training system.
+
 ### Relationship to TypeGPU
 
-[TypeGPU](https://docs.swmansion.com/TypeGPU/) is a broader typed WebGPU
-toolkit concerned with shader authoring, resources, pipelines, and WebGPU
-application structure. Matter Field does not replace that surface. Its current
-GPU integration is deliberately smaller and Three.js-specific: adapt one
-restricted field expression to TSL and measure CPU/GPU drift. The two ideas
-could coexist; a TypeGPU adapter would be a future backend, not a reason to
-turn Matter Field into another general WebGPU framework.
+[TypeGPU](https://docs.swmansion.com/TypeGPU/) is the closest general-purpose
+overlap, not merely an adjacent WebGPU tool. Its `use gpu` functions remain
+callable from JavaScript, [`@typegpu/three`](https://docs.swmansion.com/TypeGPU/ecosystem/typegpu-three/)
+converts them to TSL for Three.js, and [`@typegpu/noise`](https://docs.swmansion.com/TypeGPU/ecosystem/typegpu-noise/)
+provides procedural noise. TypeGPU owns a much broader typed WebGPU surface:
+data schemas, resources, pipelines, and application structure.
+
+Matter Field explores a smaller evidence-first contract: no transform step or
+runtime dependency, f64/f32-estimate/dual/TSL materializations, current Three
+WebGPU and WebGL2 probe paths, and public hardware-scoped numeric receipts.
+Those are distinctions, not proof that it is categorically better. A future
+TypeGPU adapter or integration may be more useful than duplicating its general
+framework.
+
+At the application level, [Eternal Ride](https://discourse.threejs.org/t/eternal-ride-infinite-terrain-in-three-js-with-no-lod-no-seams/91868)
+is important Three.js prior art: it demonstrates CPU collision and GPU terrain
+at enormous coordinates using carefully mirrored JavaScript/GLSL functions,
+host-side wrapping, and a continuous terrain fan. It is a stronger large-world
+demo than Matter Field's teaching labs. Matter Field's different trade is to
+derive restricted backends from one definition and publish the observed
+numeric residual instead of treating matching formulas as a proof.
 
 See [Positioning](./docs/POSITIONING.md) for the project boundary.
 

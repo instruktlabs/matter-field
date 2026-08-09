@@ -11,7 +11,9 @@
 // trajectory is one pure function of breach time; a swarm particle at arc
 // position u evaluates it at RETARDED time (t - u * LAG), so travelling
 // coils fall out for free. GPU: every particle. CPU: hit test, head
-// transform, camera framing. Same function, so the hitbox IS the visual.
+// transform, camera framing. The same authored spine and radius remove the
+// hand-maintained trajectory twin; numeric and rasterization differences still
+// need their own measurements.
 //
 // Inputs here are (u, t) - arc position and time - not (x, z). The contract
 // does not know or care what the inputs mean. The dual backend seeded on u
@@ -28,6 +30,16 @@ const HUMP_FREQ = 1.4;  // coils per second
 const SWAY_AMP = 4;     // lateral weave amplitude
 const SWAY_FREQ = 0.55;
 const BASE_Y = 0;       // ground level of the demo world
+const MIN_RADIUS = 1.25;
+const RADIUS_RANGE = 3.2;
+
+/**
+ * Body radius at arc position u. This is adapter-authored so GPU geometry
+ * and CPU hit acceptance consume the same changing silhouette.
+ */
+export function serpentRadius(A, u) {
+  return A.cache(A.add(A.f(MIN_RADIUS), A.mul(pwave(A, u), A.f(RADIUS_RANGE))));
+}
 
 /**
  * Spine position at arc position u in [0, 1] (head = 1), time t (seconds).
@@ -57,11 +69,11 @@ export function serpentSpine(A, u, t) {
 
 /**
  * CPU hit test (consumer code, plain numbers): closest approach of a point
- * to the spine at time t, by coarse scan + refinement over u. The GPU swarm
- * IS this curve, so a hit here is a hit on what the player sees.
+ * to the spine at time t, by coarse scan + refinement over u. This consumer
+ * samples the authored CPU tube; it is not a pixel-perfect GPU hit test.
  * @returns {{ u: number, dist: number, point: {x,y,z} }}
  */
-export function spineHitTest(A, p, t, { radius = 2.5, steps = 48 } = {}) {
+export function spineHitTest(A, p, t, { radius = null, steps = 48 } = {}) {
   let best = { u: 0, d2: Infinity, pt: null };
   const probe = (u) => {
     const s = serpentSpine(A, A.f(u), A.f(t));
@@ -75,5 +87,6 @@ export function spineHitTest(A, p, t, { radius = 2.5, steps = 48 } = {}) {
   const hi = Math.min(1, best.u + 1 / steps);
   for (let i = 0; i <= 16; i++) probe(lo + ((hi - lo) * i) / 16);
   const dist = Math.sqrt(best.d2);
-  return { u: best.u, dist, point: best.pt, hit: dist <= radius };
+  const hitRadius = radius ?? serpentRadius(A, A.f(best.u));
+  return { u: best.u, dist, radius: hitRadius, point: best.pt, hit: dist <= hitRadius };
 }

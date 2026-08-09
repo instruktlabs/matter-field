@@ -17,7 +17,7 @@ test('TSL backend builds graphs for every example field', { skip: !tsl ? 'three/
   const { dunesField } = await import('../examples/dunes.js');
   const { swellField } = await import('../examples/swell.js');
   const { windField } = await import('../examples/wind.js');
-  const { serpentSpine } = await import('../examples/serpent.js');
+  const { serpentRadius, serpentSpine } = await import('../examples/serpent.js');
 
   const A = makeTslAdapter(tsl);
   assert.deepEqual(adapterProblems(A), []);
@@ -35,6 +35,7 @@ test('TSL backend builds graphs for every example field', { skip: !tsl ? 'three/
 
   const g4 = serpentSpine(A, tsl.float(0.5), tsl.float(1));
   assert.ok(isNode(g4.x) && isNode(g4.y) && isNode(g4.z), 'serpent graphs');
+  assert.ok(isNode(serpentRadius(A, tsl.float(0.5))), 'serpent radius graph');
 
   // The hash factory alone also stands up (for raw use in user shaders).
   const hash = makeTslHash(tsl, { fnName: 'testHash' });

@@ -28,17 +28,20 @@
 // Breaking one silently voids the parity guarantee:
 //
 //   1. No data-dependent branching. No `if` on a V, ever. Selection is
-//      mix/smoothstep/min/max/step so the same graph is valid straight-line
-//      shader code and evaluation order is identical on every backend.
+//      mix/smoothstep/min/max so the same source structure can become a
+//      straight-line shader graph. GPU compilers may still reassociate or
+//      fuse eligible float operations within their specifications.
 //   2. No transcendentals inside the tree. sin/cos/pow/exp have no
 //      cross-vendor precision contract on GPUs (and JS Math.sin is not
 //      correctly rounded either). Fold trig of plain constants on the host
 //      before lifting; approximate pow with polynomials/mix if needed.
-//   3. Floats reach the hash ONLY through floor -> latt. floor is exact by
-//      spec everywhere; a hash fed by any other float path is non-portable.
-//   4. Parenthesization is part of the function. Backends must not
-//      reassociate; authors must not "simplify" a+(b+c) into (a+b)+c and
-//      expect parity with recorded goldens. Float mix ORDER is load-bearing.
+//   3. Floats reach the hash ONLY through floor -> latt. The raw u32 hash is
+//      exact only when the backends arrive at the same lattice integers; a
+//      float-tree difference near a cell boundary can still change the cell.
+//   4. Parenthesization is part of the recorded source identity. Authors must
+//      not "simplify" a+(b+c) into (a+b)+c and expect the same goldens. This
+//      preserves source intent, not a promise that GPU compilers never
+//      reassociate eligible operations.
 //   5. Constants are shared f64 literals. Both backends must consume the
 //      same JS number; f32 rounding of the same f64 literal is deterministic.
 //   6. Keep intermediates finite and normal. Specs allow denormal flushing

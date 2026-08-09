@@ -1,9 +1,10 @@
-// matter-field: dual-number backend - analytic gradients for free.
+// matter-field: dual-number backend - analytic gradients in smooth regions.
 //
 // V = { v, dx, dz }: the value and its partial derivatives with respect to
 // the two seed coordinates. Forward-mode automatic differentiation through
-// the SAME expression tree, so the gradient is the exact derivative of the
-// exact field - no finite-difference epsilon, no second implementation.
+// the SAME expression tree, so away from kinks the gradient is the analytic
+// derivative of the CPU field - no finite-difference epsilon and no second
+// field implementation.
 //
 // This backend closes the one hole the pattern otherwise has: CPU consumers
 // wanting surface normals had to finite-difference (3 field evaluations,
@@ -21,8 +22,11 @@
 //   clamp01, smooth         0 outside the active interval, chain rule inside
 //   mix(a,b,t)              da + (db - da) t + (b - a) dt   (product rule)
 //
-// Kinks (abs/min/max/clamp/smoothstep edges) get one-sided derivatives -
-// measure-zero and exactly what a shader's analytic gradient would pick.
+// At kinks and discontinuities these are explicit CPU conventions, not a
+// mathematical derivative and not a claim about implicit GPU derivatives.
+// `floor` and hash return zero; abs/min/max/clamp choose the branches described
+// above; sqrt(0) returns a zero gradient instead of an infinite one. Consumers
+// must decide whether those conventions are meaningful at their boundaries.
 //
 // It is also the contract's best lint: naked `+` on a dual is NaN, so running
 // a field through this backend catches any op that bypassed the adapter.

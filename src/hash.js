@@ -19,6 +19,12 @@
  */
 export const LATTICE_OFFSET = 131072;
 
+// Conservative portable domain for the FLOORED value passed to `latt`.
+// After adding LATTICE_OFFSET (and the vnoise corner offset 0 or 1), these
+// values remain small non-negative integers exactly representable in f32.
+export const LATTICE_FLOOR_MIN = -131072;
+export const LATTICE_FLOOR_MAX = 131071;
+
 /**
  * Raw u32 lattice hash bits. Exposed so the GPU assay can compare the integer
  * pipeline before the intentionally lossy u32 -> f32 conversion.

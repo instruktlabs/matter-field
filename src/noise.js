@@ -97,8 +97,9 @@ export function ridge(A, n, sharp) {
  * triangle, cubic-smoothed. Output [0, 1], period 1, C1-continuous.
  * This is how the contract does oscillation - sin/cos have no cross-vendor
  * precision contract on GPUs (rule 2) and their large-argument behavior is
- * exactly what breaks fract(sin())-style code; floor is exact everywhere,
- * at any phase, forever. Feed it `phase` in periods (already scaled).
+ * exactly what breaks fract(sin())-style code. Floor is exact for the finite
+ * represented input; callers must still wrap large f32 phases before they lose
+ * fractional precision. Feed it `phase` in periods (already scaled).
  * @param {*} t V, in periods
  */
 export function pwave(A, t) {

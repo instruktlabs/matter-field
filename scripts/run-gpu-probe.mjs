@@ -24,6 +24,20 @@ for (const value of process.argv.slice(2)) {
 const backend = args.get('backend') ?? 'webgpu';
 const headed = args.has('headed');
 const channel = args.get('channel') ?? 'chrome';
+const browserArgs = [
+  '--enable-unsafe-webgpu',
+  '--ignore-gpu-blocklist',
+];
+if (platform() === 'linux') {
+  // Chrome's documented hardware-headless path on Linux. The receipt records
+  // these flags and still rejects SwiftShader/llvmpipe/lavapipe below.
+  browserArgs.push(
+    '--use-angle=vulkan',
+    '--enable-features=Vulkan',
+    '--disable-vulkan-surface',
+  );
+}
+if (args.has('no-sandbox')) browserArgs.push('--no-sandbox');
 const output = resolve(args.get('output') ?? join(
   ROOT,
   'artifacts',
@@ -63,10 +77,7 @@ try {
   browser = await chromium.launch({
     channel,
     headless: !headed,
-    args: [
-      '--enable-unsafe-webgpu',
-      '--ignore-gpu-blocklist',
-    ],
+    args: browserArgs,
   });
   const cdp = await browser.newBrowserCDPSession();
   const systemInfo = await cdp.send('SystemInfo.getInfo').catch(() => null);
@@ -103,10 +114,11 @@ try {
       three: threePackage.version,
       commit,
       dirty,
+      browserArgs,
     },
   };
   const deviceText = JSON.stringify(report.chromeGpu.devices).toLowerCase();
-  report.run.softwareAdapter = /swiftshader|llvmpipe|software/.test(deviceText);
+  report.run.softwareAdapter = /swiftshader|llvmpipe|lavapipe|software/.test(deviceText);
   if (report.run.softwareAdapter && !args.has('allow-software')) {
     report.pass = false;
     report.error = 'Software GPU adapter detected; rerun on hardware or pass --allow-software for harness-only evidence.';

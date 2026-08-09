@@ -1,7 +1,7 @@
 import { numberAdapter as N } from '../../src/number.js';
 import { buoyancy, swellField } from '../../examples/swell.js';
 import { windField } from '../../examples/wind.js';
-import { serpentSpine } from '../../examples/serpent.js';
+import { serpentRadius, serpentSpine } from '../../examples/serpent.js';
 import {
   addButton,
   addDriveControls,
@@ -284,7 +284,7 @@ export function runWindPlayground({ canvas, controls, readouts }) {
   setStageStatus('CPU canvas particles · CPU glider forces · steer through the gust gates', 'neutral');
 }
 
-function rayHitTest(t, aim, canvas, radius = 2.5) {
+function rayHitTest(t, aim, canvas) {
   const left = canvas.width * 0.07;
   const bottom = canvas.height * 0.83;
   const scaleX = canvas.width * 0.86 / 90;
@@ -300,7 +300,8 @@ function rayHitTest(t, aim, canvas, radius = 2.5) {
   for (let i = 0; i <= steps; i++) probe(i / steps);
   const lo = Math.max(0, best.u - 1 / steps), hi = Math.min(1, best.u + 1 / steps);
   for (let i = 0; i <= 24; i++) probe(lerp(lo, hi, i / 24));
-  return { ...best, hit: best.dist <= radius, shot };
+  const radius = serpentRadius(N, best.u);
+  return { ...best, radius, hit: best.dist <= radius, shot };
 }
 
 export function runSerpentPlayground({ canvas, controls, readouts }) {
@@ -369,8 +370,8 @@ export function runSerpentPlayground({ canvas, controls, readouts }) {
     demo: 'serpent-gallery', coordinateSystem: 'orthographic aim plane; +x right, +y up; shot ray travels along z',
     mode: state.mode, paused: state.paused, time: +state.t.toFixed(3), aimPixels: { x: +state.aim.x.toFixed(1), y: +state.aim.y.toFixed(1) },
     score: state.score, shots: state.shots,
-    lastShot: state.result ? { hit: state.result.hit, distance: +state.result.dist.toFixed(5), u: +state.result.u.toFixed(5) } : null,
-    rendering: 'CPU canvas spine; CPU world-ray hit test from the same serpentSpine field',
+    lastShot: state.result ? { hit: state.result.hit, distance: +state.result.dist.toFixed(5), radius: +state.result.radius.toFixed(5), u: +state.result.u.toFixed(5) } : null,
+    rendering: 'CPU canvas spine; CPU hit test uses the adapter-authored serpentRadius threshold',
     controls: 'Mouse/touch aim and fire; arrows/WASD aim; Space fires; F fullscreen',
   }) });
   setStageStatus('CPU canvas spine · world-ray CPU hit test · click/tap or Space to fire', 'neutral');
