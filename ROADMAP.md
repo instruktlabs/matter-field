@@ -17,10 +17,15 @@ contributor loop before package distribution or a wider API surface.
   swell at `t=2.5` and wind at `t=1`.
 - [x] Collect real WebGPU and WebGL2 receipts for the owned NVIDIA/Windows and
   NVIDIA-plus-AMD/Linux hardware lanes.
+- [x] Publish one clean exact-artifact TypeGPU WebGPU receipt on the owned
+  NVIDIA RTX 3070 / Windows lane.
 - [ ] Collect real WebGPU receipts for Intel and Apple silicon.
 - [ ] Collect the corresponding Intel and Apple fallback receipts where
   supported.
 - [ ] Review Apple/Metal results before making any portability statement.
+- [ ] If the TypeGPU subpaths ship in `0.1.0`, repeat their separate WebGPU
+  assay on AMD, Intel, and Apple silicon. Native-TSL receipts do not transfer to
+  TypeGPU-generated WGSL.
 - [ ] Validate receipt JSON against a versioned schema.
 - [ ] Bind probe code, comparison code, budgets, and hash vectors into a
   separate harness identity in the next receipt schema.
@@ -28,6 +33,11 @@ contributor loop before package distribution or a wider API surface.
   recompute summaries and error distributions.
 - [x] Replace explanatory CPU-only visuals with accessible demonstrations that
   pair real TSL rendering and CPU gameplay queries.
+- [x] Add one integrated dogfood mission where dunes, swell, wind, and the
+  serpent field affect a single fixed-step CPU-authoritative game.
+- [x] Add a controlled CPU benchmark harness with a matched handwritten
+  baseline, isolated processes, counterbalanced order, raw samples, and a
+  conservative clean-host gate. No publication timing has been accepted yet.
 - [x] Complete desktop, mobile, keyboard, touch, and reduced-motion QA.
 - [x] Publish contribution guidance for accepting and reproducing receipts.
 - [ ] Tag a reviewed `0.1.0` only after the matrix and release checklist pass.
@@ -42,8 +52,10 @@ contributor loop before package distribution or a wider API surface.
   machine-specific build output as the schema evolves.
 - Evaluate a raw WGSL backend to prove the adapter is not inherently tied to
   Three.js.
-- Prototype a TypeGPU adapter only if it stays optional and complements rather
-  than duplicates TypeGPU's broader pipeline/resource responsibilities.
+- Keep the working TypeGPU materialization optional, precompiled, and clearly
+  labeled as a handwritten port while its user value is tested.
+- Prototype generation of TypeGPU functions from a reviewed typed canonical IR;
+  do not depend on TypeGPU's private transform metadata as a public contract.
 - Improve analytic vector-field derivatives and multi-output assay reporting.
 - Prototype a fixed-weight learned navigation field: train a small ReLU MLP
   offline, render its committed inference graph through TSL, steer CPU agents

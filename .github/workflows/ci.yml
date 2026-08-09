@@ -43,7 +43,10 @@ jobs:
       - run: npm run test:typegpu:types
       - run: npm run test:typegpu:consumer
       - run: npm run test:package
+      - run: npm run bench:cpu:self-test
       - run: npm run site:build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run site:smoke
 
   browser-cpu-parity:
     name: Browser and Worker CPU parity

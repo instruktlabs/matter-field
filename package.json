@@ -15,13 +15,16 @@
   "files": [
     "src/",
     "dist-typegpu/",
+    "benchmarks/",
     "parity/harness.js",
     "parity/golden.js",
+    "parity/reports/",
     "examples/",
     "docs/",
     "ROADMAP.md",
     "PROVENANCE.md",
     "README.md",
+    "THIRD_PARTY_NOTICES.md",
     "LICENSE"
   ],
   "sideEffects": false,
@@ -58,12 +61,15 @@
     "prepublishOnly": "node scripts/check-publish-readiness.mjs",
     "assay": "node examples/demo.mjs",
     "bench": "node examples/bench.mjs",
+    "bench:cpu:self-test": "node --test benchmarks/self-test.mjs",
+    "bench:cpu": "node benchmarks/run-cpu.mjs",
     "probe:build": "node scripts/build-gpu-probe.mjs",
     "probe:gpu": "node scripts/run-gpu-probe.mjs --backend=webgpu",
     "probe:webgl2": "node scripts/run-gpu-probe.mjs --backend=webgl2",
     "probe:typegpu": "node scripts/run-gpu-probe.mjs --implementation=typegpu --backend=webgpu",
     "probe:typegpu:build": "node scripts/build-typegpu-probe.mjs",
     "site:build": "node scripts/build-site.mjs",
+    "site:smoke": "node scripts/smoke-site.mjs",
     "site:serve": "node scripts/serve-site.mjs"
   },
   "engines": {

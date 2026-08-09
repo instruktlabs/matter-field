@@ -9,6 +9,10 @@ become a stronger claim than the repository can defend.
 - The package can materialize its restricted example fields as ordinary
   JavaScript numbers, an operation-by-operation f32 estimate, dual numbers,
   and caller-supplied Three.js TSL graphs.
+- The optional TypeGPU preview hand-ports the four shipped field families into
+  precompiled CPU-callable `'use gpu'` functions, typed TypeGPU kernels, and
+  WebGPU-only `@typegpu/three` node helpers. It does not materialize arbitrary
+  adapter-authored fields.
 - The committed CPU golden agrees bit-for-bit in the Node, browser-engine, and
   Worker configurations named in public CI.
 - Across six committed receipts from an RTX 3070 on Windows and a GTX 1660 Ti
@@ -19,6 +23,15 @@ become a stronger claim than the repository can defend.
   queries without a per-frame GPU readback.
 - The dual backend returns a value channel bit-identical to the number backend
   and analytic CPU derivatives away from nonsmooth operations.
+- One clean
+  [TypeGPU receipt](../parity/reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json)
+  at commit `0ffc635c58fdb21b318686cfd715df07071ae0df` records a physical
+  RTX 3070 / Windows / Chrome WebGPU run. Across its named samples, 1,200
+  direct-CPU scalar results matched the adapter f64 oracle bit-for-bit, the four
+  GPU scalar outputs stayed inside their existing absolute budgets, and all 11
+  raw-u32 vectors matched. Its five Three helpers passed a spatially
+  nonconstant render smoke; that last check is integration evidence, not a
+  numeric parity assay.
 
 ## Not established
 
@@ -32,10 +45,19 @@ become a stronger claim than the repository can defend.
 - Equality between an analytic field and the triangles or other primitives
   used to render or collide with it between sampled vertices.
 - Superior speed, lower total engineering cost, or stronger adoption than an
-  existing approach. The current benchmark has no handwritten or competing
-  baseline.
-- That every example is in the GPU receipt. The serpent currently has graph
-  construction tests and an interactive demo, but no numeric GPU matrix row.
+  existing approach. A controlled harness now includes a matched handwritten
+  dunes baseline, but no clean publication timing or competing-library result
+  has been accepted.
+- That the TypeGPU port is generated from the adapter source, removes formula
+  duplication, or preserves the adapter's per-operation f32 diagnostic and
+  generic dual gradients. The current TypeGPU field formulas are handwritten.
+- TypeGPU correctness outside the single recorded NVIDIA/Windows/Chrome
+  configuration, or any transfer of the six native-TSL receipts to
+  TypeGPU-generated WGSL.
+- That every example is in a numeric GPU receipt. The serpent has graph and
+  interactive native-TSL coverage, and the TypeGPU Three helpers have an
+  integration smoke, but neither receipt schema currently assays serpent
+  values numerically.
 - Neural-network training, reverse-mode differentiation, optimizer support, or
   a general tensor runtime.
 
@@ -54,6 +76,9 @@ Use:
 > Structural sharing removes a hand-maintained formula twin; measurement tells
 > us what floating-point and materialization differences remain.
 
+> The optional TypeGPU port is a separately handwritten materialization checked
+> against the adapter authority on named CPU and GPU samples.
+
 Avoid:
 
 - "CPU and GPU are identical."
@@ -64,6 +89,9 @@ Avoid:
 - "Analytic and GPU gradients match" without measuring both.
 - "First" or "only" shared CPU/GPU math package.
 - "Faster" or "necessary" without a scoped comparison or user evidence.
+- "Generated TypeGPU backend" or "one TypeGPU source for every Matter Field
+  backend" while the port remains handwritten.
+- Treating a TypeGPU result as another cell in the native-TSL vendor matrix.
 
 ## What would strengthen the claim
 
@@ -77,7 +105,11 @@ Avoid:
    CPU-authored mesh/texture, GPU readback, TypeGPU integration, and Matter
    Field.
 5. Add source-bound serpent outputs to the numeric GPU probe.
-6. Collect outside attempts, including failed receipts and fields the current
+6. Repeat the TypeGPU assay on AMD, Intel, and Apple silicon, and publish failed
+   receipts as readily as passing ones.
+7. Generate the TypeGPU materialization from a reviewed canonical
+   representation, or continue labeling it an independently synchronized port.
+8. Collect outside attempts, including failed receipts and fields the current
    vocabulary cannot express.
 
 Read [MEASUREMENT.md](./MEASUREMENT.md) for the receipt contract and

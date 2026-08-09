@@ -39,16 +39,16 @@
   <main id="main">
     <section class="hero shell" id="top" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow"><span>01</span> Shared field math for 3D worlds · CPU + Three.js TSL</p>
+        <p class="eyebrow"><span>01</span> Shared field math for 3D worlds · CPU + TSL + optional TypeGPU</p>
         <h1 id="hero-title">The field you draw is the field you can <em>touch.</em></h1>
-        <p class="lede">Let CPU collision, buoyancy, forces, and hit tests evaluate the same procedural 3D field that Three.js TSL renders on the GPU—then measure the remaining float drift.</p>
+        <p class="lede">Let CPU collision, buoyancy, forces, and hit tests query procedural fields that Three.js materializes on the GPU—then measure the remaining float drift instead of asserting equality.</p>
         <div class="actions">
-          <a class="button primary" href="#examples">Open a live field</a>
+          <a class="button primary" href="./fieldwork/">Play the dogfood mission</a>
           <a class="button" href="https://github.com/instruktlabs/matter-field">Read the contract <span aria-hidden="true">↗</span></a>
         </div>
         <ul class="proof-strip" aria-label="Project facts">
           <li>MIT</li>
-          <li>zero runtime dependencies</li>
+          <li>zero-dependency core</li>
           <li>cross-runtime CI</li>
           <li>public preview</li>
         </ul>
@@ -110,19 +110,25 @@
       </div>
       <div class="materializations" aria-label="Field materializations">
         <article><b>01</b><div><span>numberAdapter</span><h3>CPU oracle</h3><p>Collision, AI, Workers, and Node servers evaluate the authoritative ECMAScript f64 tree.</p></div></article>
-        <article><b>02</b><div><span>makeTslAdapter</span><h3>GPU graph</h3><p>Pass the caller’s <code>three/tsl</code> namespace. The package never imports Three.js at runtime.</p></div></article>
+        <article><b>02</b><div><span>makeTslAdapter</span><h3>Native GPU graph</h3><p>The zero-dependency core accepts the caller’s <code>three/tsl</code> namespace and preserves one adapter-authored tree.</p></div></article>
         <article><b>03</b><div><span>dualAdapter</span><h3>Analytic gradients</h3><p>Dual numbers derive normals and tangents from the exact same expression tree.</p></div></article>
+        <article><b>04</b><div><span>matter-field/typegpu</span><h3>TypeGPU materialization</h3><p>An optional, separately authored WebGPU port is precompiled for TypeGPU and <code>@typegpu/three</code>, then checked against the canonical fields.</p></div></article>
       </div>
     </section>
 
     <section class="live ruled-section" id="examples">
       <div class="shell">
         <div class="section-head">
-          <div><p class="eyebrow"><span>04</span> Touch the contract</p><h2>Four 3D fields. Four gameplay consequences.</h2></div>
-          <p>Each 3D lab lets you manipulate a GPU-rendered surface or form and the CPU gameplay query driven by the same field.</p>
+          <div><p class="eyebrow"><span>04</span> Touch the contract</p><h2>One game. Four labs. Consequences you can feel.</h2></div>
+          <p>FIELDWORK combines the package into one mission. The focused labs isolate each field and its CPU gameplay consumer.</p>
         </div>
         <div class="live-grid">
-          <a class="demo-link demo-featured" href="./examples/dunes.html">
+          <a class="demo-link demo-featured demo-game" href="./fieldwork/">
+            <span class="demo-index">FIELDWORK / dogfood mission</span>
+            <div><h3>Run the flooded basin</h3><p>Recover a survey core while dunes, swell, wind, and a moving breach body all affect one amphibious craft.</p></div>
+            <strong>Play Breach Run <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="demo-link" href="./examples/dunes.html">
             <span class="demo-index">01 / 3D terrain</span>
             <div class="demo-contour terrain-contour" aria-hidden="true"></div>
             <div><h3>Drive the 3D dunes</h3><p>Move across GPU-displaced terrain while the CPU collision oracle samples the same function.</p></div>
@@ -140,13 +146,18 @@
           </a>
           <a class="demo-link" href="./examples/serpent.html">
             <span class="demo-index">04 / TSL animation</span>
-            <div><h3>Fire at the GPU spine</h3><p>The vertex-animated 3D creature and CPU hit test evaluate one closed-form trajectory.</p></div>
+            <div><h3>Probe the moving volume</h3><p>Freely orbit the animated 3D body while a CPU world ray queries its authored spine and changing radius.</p></div>
             <strong>Open live field <span aria-hidden="true">→</span></strong>
           </a>
           <a class="demo-link demo-assay" href="./examples/parity.html">
             <span class="demo-index">Lab / your hardware</span>
             <div><h3>Measure the 3D field</h3><p>Run the same TSL graphs used by the 3D demos on WebGPU or WebGL2 and keep the JSON receipt.</p></div>
             <strong>Run parity assay <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="demo-link" href="./reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json">
+            <span class="demo-index">TypeGPU / exact artifact</span>
+            <div><h3>Inspect the port receipt</h3><p>One clean RTX 3070 WebGPU run records adapter-oracle migration, numeric drift, raw u32 hash agreement, and five Three integration smokes.</p></div>
+            <strong>Open raw JSON <span aria-hidden="true">→</span></strong>
           </a>
         </div>
       </div>
@@ -187,7 +198,7 @@
     </section>
   </main>
 
-  <footer class="shell"><span>Matter Field by Instrukt Labs LLC</span><span><a href="https://github.com/instruktlabs/matter-field">Source</a> · <a href="https://github.com/instruktlabs/matter-field/blob/main/LICENSE">MIT License</a></span></footer>
+  <footer class="shell"><span>Matter Field by Instrukt Labs LLC</span><span><a href="https://github.com/instruktlabs/matter-field">Source</a> · <a href="./LICENSE">MIT License</a> · <a href="./THIRD_PARTY_NOTICES.md">Third-party notices</a></span></footer>
   <script type="module" src="./app.js"></script>
 </body>
 </html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07110f">
+  <meta name="description" content="FIELDWORK: Breach Run is a playable Matter Field dogfood mission where assayed GPU materializations are paired with CPU gameplay authority.">
+  <meta property="og:title" content="FIELDWORK: Breach Run — Matter Field">
+  <meta property="og:description" content="Recover the core. Cross a flooded dune basin. Survive the breach. One set of authored fields drives rendering, buoyancy, wind, and collision.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://instruktlabs.github.io/matter-field/fieldwork/">
+  <meta property="og:image" content="https://instruktlabs.github.io/matter-field/fieldwork/assets/ui/fieldwork-sigil.webp">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="1024">
+  <meta property="og:image:alt" content="Fieldwork topographic survey insignia in bone, chartreuse, teal, and coral">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="FIELDWORK: Breach Run — Matter Field">
+  <meta name="twitter:description" content="A playable pressure test for procedural field authority across CPU gameplay and GPU materialization.">
+  <meta name="twitter:image" content="https://instruktlabs.github.io/matter-field/fieldwork/assets/ui/fieldwork-sigil.webp">
+  <meta name="twitter:image:alt" content="Fieldwork topographic survey insignia in bone, chartreuse, teal, and coral">
+  <link rel="canonical" href="https://instruktlabs.github.io/matter-field/fieldwork/">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./fieldwork.css">
+  <title>FIELDWORK: Breach Run — Matter Field</title>
+</head>
+<body>
+  <a class="skip-link" href="#mission">Skip to mission</a>
+  <header class="masthead">
+    <a class="brand" href="../index.html" aria-label="Back to Matter Field">
+      <span class="brand-mark" aria-hidden="true">MF</span>
+      <span>Matter Field</span>
+    </a>
+    <div class="masthead-meta"><span>Dogfood mission 01</span><span>Field authority / live</span></div>
+    <a class="source-link" href="https://github.com/instruktlabs/matter-field/tree/main/site/fieldwork">Source ↗</a>
+  </header>
+
+  <main id="mission">
+    <section class="mission-head" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">FIELDWORK / 01</p>
+        <h1 id="page-title">Breach Run</h1>
+      </div>
+      <p>Recover a stranded survey core and carry it across a flooded dune basin to the authored landing pad. The terrain, swell, wind, and moving breach body are not backdrop: CPU game rules query the canonical fields while the GPU consumes a named, assayed materialization.</p>
+    </section>
+
+    <section class="game-frame" id="stage" aria-label="Breach Run game stage">
+      <div class="stage-rail" aria-hidden="true">
+        <span>MATTER FIELD / FIELDWORK</span>
+        <span id="status-line">Awaiting expedition start</span>
+      </div>
+      <canvas id="game" width="1280" height="720" tabindex="0" role="application" aria-label="3D amphibious survey skiff mission. Drive with WASD or arrow keys, click or tap a waypoint, right-drag or use two fingers to orbit, and wheel or pinch to zoom."></canvas>
+
+      <div class="hud" aria-live="polite">
+        <div class="hud-objective">
+          <span class="hud-label">Current directive</span>
+          <strong id="objective-value">Recover the field core</strong>
+          <span class="route" id="route-value">— m</span>
+        </div>
+        <div class="hud-clock">
+          <span class="hud-label">Window</span>
+          <strong id="timer-value">01:30.0</strong>
+        </div>
+        <div class="hud-integrity">
+          <div><span class="hud-label">Core integrity</span><strong id="integrity-value">100%</strong></div>
+          <div class="meter" role="meter" aria-label="Core integrity" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="integrity-bar"></i></div>
+        </div>
+      </div>
+
+      <div class="field-strip" aria-label="Live field telemetry">
+        <div><span>Renderer</span><strong id="backend-value">initializing</strong></div>
+        <div><span>GPU materializer</span><strong id="materializer-value">initializing</strong></div>
+        <div><span>CPU queries / tick</span><strong id="queries-value">0</strong></div>
+        <div><span>GPU readbacks / frame</span><strong id="readback-value">0</strong></div>
+        <div><span>Proxy drift</span><strong id="drift-value">0.000</strong></div>
+        <div><span>Authority mode</span><strong id="mode-value">unified</strong></div>
+      </div>
+
+      <div class="touch-controls" aria-label="Touch drive controls">
+        <button type="button" data-control="left" aria-label="Steer left">←</button>
+        <button type="button" data-control="forward" aria-label="Drive forward">↑</button>
+        <button type="button" data-control="reverse" aria-label="Reverse">↓</button>
+        <button type="button" data-control="right" aria-label="Steer right">→</button>
+      </div>
+
+      <div class="briefing overlay" id="briefing">
+        <div class="briefing-card">
+          <img src="./assets/ui/fieldwork-sigil.webp" alt="Topographic Fieldwork survey insignia" width="1024" height="1024">
+          <div class="briefing-copy">
+            <p class="eyebrow">Authority trial / flooded basin</p>
+            <h2>One run.<br>Four field consequences.</h2>
+            <p>The core is 30 metres east of your skiff. Recover it, then reach the landing pad before the window closes. Wind pushes the hull. Swell changes buoyancy. Dunes determine contact and slope. The breach body has a real CPU-queryable volume.</p>
+            <ol>
+              <li><b>Drive</b> WASD / arrows, or tap a waypoint.</li>
+              <li><b>Camera</b> right-drag or two-finger orbit; wheel or pinch zoom.</li>
+              <li><b>Survive</b> avoid the moving breach body and deliver the core intact.</li>
+            </ol>
+            <div class="briefing-actions">
+              <button class="primary" id="start-game" type="button">Begin breach run</button>
+              <a href="#architecture">See what the game exercises</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result overlay" id="result" hidden>
+        <div class="result-card">
+          <p class="eyebrow">Field record complete</p>
+          <h2 id="result-title">Core delivered</h2>
+          <p id="result-copy">The mission is complete.</p>
+          <button class="primary" id="retry-game" type="button">Run it again</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="command-deck" aria-label="Mission controls and field recorder">
+      <div class="command-buttons">
+        <button type="button" id="pause-game">Pause</button>
+        <button type="button" id="fault-game" aria-pressed="false">Inject stale proxy</button>
+        <button type="button" id="mute-game" aria-pressed="false">Sound on</button>
+        <button type="button" id="fullscreen-game">Fullscreen</button>
+        <button type="button" id="recorder-toggle" aria-expanded="false" aria-controls="recorder-panel">Open field recorder</button>
+      </div>
+      <p class="control-note">C recenters the chase camera · R retries · P pauses · F fullscreen. Fault injection is a teaching mode, not a competitor benchmark.</p>
+      <div class="recorder" id="recorder-panel" hidden>
+        <div><span>Event record</span><strong id="event-log">No events recorded</strong></div>
+        <p>The recorder distinguishes authored-field arithmetic from mesh interpolation and simulation behavior. “Zero readbacks” means gameplay never waits for a GPU result; it does not claim that rasterized triangles are identical to the continuous CPU field.</p>
+      </div>
+    </section>
+
+    <section class="architecture" id="architecture" aria-labelledby="architecture-title">
+      <header>
+        <p class="eyebrow">Dogfood map</p>
+        <h2 id="architecture-title">The abstraction has to survive contact with a game.</h2>
+        <p>This is not a benchmark dressed as a game. It is a compact application pressure test: sparse authoritative queries on the CPU, dense visual materialization on the GPU, no per-frame readback, and an explicit fallback path.</p>
+      </header>
+      <div class="field-cards">
+        <article><span>01 / scalar + dual</span><h3>Dunes</h3><p>GPU displacement paired with CPU contact height, analytic slope, and skiff attitude.</p></article>
+        <article><span>02 / time field</span><h3>Swell</h3><p>GPU water displacement; CPU four-probe buoyancy at the same game clock.</p></article>
+        <article><span>03 / vector field</span><h3>Wind</h3><p>GPU flow tracers; CPU force continuously changes the route and handling.</p></article>
+        <article><span>04 / parametric volume</span><h3>Breach</h3><p>GPU body animation; CPU proximity and collision against the authored spine and radius.</p></article>
+      </div>
+      <div class="truth-note">
+        <strong>What the renderer path proves</strong>
+        <p>On WebGPU, the game consumes the precompiled <code>matter-field/typegpu/three</code> materialization. That TypeGPU lane is a separately maintained port checked against the canonical adapter fields; it is not generated from their source. On WebGL2, the game uses Matter Field’s native one-definition TSL path. CPU gameplay remains the number/dual authority in both cases. Device receipts measure finite samples and declared absolute budgets; they are evidence, not a universal floating-point proof.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>FIELDWORK is a Matter Field dogfood surface.</span><span><a href="../LICENSE">Code: MIT</a> · asset rights documented in source · <a href="../THIRD_PARTY_NOTICES.md">third-party notices</a></span></footer>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>

@@ -1,13 +1,11 @@
 // matter-field bench: total example-field consumer cost on this machine.
 // Run: npm run bench
 //
-// Context anchor: the pattern's origin codebase measured ~8.7 us/sample for
-// a full production terrain (4-5 fbm layers + ~17 stamps) on a laptop CPU,
-// and budgeted it against gameplay sampling rates (tens to low hundreds of
-// samples per frame). This bench times the complete example field through each
-// backend so you can compare hosts. It does not isolate adapter overhead or
-// compare against a hand-written baseline; treat absolute numbers as
-// machine-local.
+// This is a quick developer smoke, not publishable performance evidence. It
+// does not isolate adapter overhead, compare a matched handwritten baseline,
+// use fresh processes, counterbalance order, or report uncertainty. Treat its
+// absolute numbers as machine-local diagnostics. The controlled harness under
+// benchmarks/ is the path for reviewable comparisons.
 
 import { numberAdapter, makeF32Adapter } from '../src/index.js';
 import { evalWithGradient } from '../src/dual.js';

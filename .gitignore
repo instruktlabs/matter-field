@@ -1,7 +1,6 @@
 node_modules/
 artifacts/
 dist/
-dist-typegpu/
 .playwright-cli/
 output/
 progress.md

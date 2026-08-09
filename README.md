@@ -27,11 +27,12 @@ and a repeatable assay for measuring the remaining drift on real hardware.
 
 ## TypeGPU-first experiment
 
-The `codex/typegpu-first-class-spike` branch includes a precompiled
-`matter-field/typegpu` subpath. It rewrites the shipped fields as ordinary
-CPU-callable `'use gpu'` functions, exposes typed TypeGPU kernels, runs a native
-TypeGPU compute/readback assay, and provides an optional `@typegpu/three`
-bridge:
+The current preview adds precompiled `matter-field/typegpu` and
+`matter-field/typegpu/three` subpaths. It rewrites the shipped fields as
+ordinary CPU-callable `'use gpu'` functions, exposes typed TypeGPU kernels,
+runs a native TypeGPU compute/readback assay, and provides an optional
+`@typegpu/three` bridge. The reviewed implementation is bound to commit
+[`0ffc635`](https://github.com/instruktlabs/matter-field/commit/0ffc635c58fdb21b318686cfd715df07071ae0df):
 
 ```js
 import tgpu from 'typegpu';
@@ -44,14 +45,28 @@ const wgsl = tgpu.resolve({
 });
 ```
 
-Install `typegpu@0.11.9` to use that subpath. Three integration additionally
-requires `@typegpu/three@0.11.0` and `three@0.185.1`. TypeScript consumers of
-the Three bridge also need `@types/three@0.185.4`:
+Matter Field is intentionally not published to npm yet. Current npm releases
+may reject Git dependencies by default and may skip their `prepack` scripts, so
+this preview does not pretend that a `github:` dependency is portable. Clone
+`main`, build the precompiled artifacts from checked-in source with Node 20.19
+or newer, and install that local package into a consumer. TypeScript consumers
+of the Three bridge also need `@types/three@0.185.4`:
 
 ```sh
-npm install typegpu@0.11.9 @typegpu/three@0.11.0 three@0.185.1
+git clone --branch main --single-branch \
+  https://github.com/instruktlabs/matter-field.git
+cd matter-field
+npm ci
+npm run build:typegpu:package
+
+# From your consumer project:
+npm install ../matter-field typegpu@0.11.9 @typegpu/three@0.11.0 three@0.185.1
 npm install --save-dev @types/three@0.185.4
 ```
+
+The first preview tag will provide a tested package tarball so consumers do not
+need the repository's authoring toolchain. The installed core and generated
+precompiled artifacts themselves remain compatible with Node 18 or newer.
 
 ```js
 import { typegpuDunesNode } from 'matter-field/typegpu/three';
@@ -67,6 +82,12 @@ and this spike is a second handwritten implementation. The adapter source
 therefore remains authoritative while the TypeGPU lane is evaluated. Read the
 [full spike report](./docs/TYPEGPU-SPIKE.md) before treating it as a migration
 recommendation.
+
+One clean correctness receipt is committed for the exact precompiled artifact:
+[Windows / RTX 3070 / Chrome / TypeGPU WebGPU](./parity/reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json).
+It records one physical configuration and finite sample set. It is not speed
+evidence, a cross-vendor result, or proof that the handwritten port cannot drift
+at unmeasured inputs.
 
 ## The split-world problem
 
@@ -145,6 +166,11 @@ deterministic LCG points. “Max observed abs” is the largest sampled error
 across the four probed scalar outputs; it is not the worst possible value
 everywhere.
 
+The six-receipt matrix below measures the authoritative adapter through native
+Three.js TSL. The TypeGPU result uses a different implementation and generated
+WGSL, so its separate one-configuration receipt is not an additional cell in
+this matrix.
+
 | Hardware | Backend | Samples | Max observed abs | Max observed ULP | Raw hash vectors | Scope |
 |---|---:|---:|---:|---:|---:|---|
 | NVIDIA GeForce RTX 3070, Windows, Chrome 151 | WebGPU | 300 | `7.482643748e-4` | 623,919 | 11/11 exact | [receipt](./parity/reports/windows-local-webgpu.json) |
@@ -170,13 +196,18 @@ hardware, backends, or package speed.
 The examples are small field laboratories, not benchmark claims against other
 libraries:
 
+- **[FIELDWORK: Breach Run](https://instruktlabs.github.io/matter-field/fieldwork/)** —
+  the integrated 3D dogfood mission combining dunes, swell, wind, and the
+  serpent field in one fixed-step CPU-authoritative game. Read its
+  [architecture and asset record](./docs/FIELDWORK.md).
 - [Dunes + collision](https://instruktlabs.github.io/matter-field/examples/dunes.html)
 - [Swell + buoyancy](https://instruktlabs.github.io/matter-field/examples/swell.html)
 - [Wind + forces](https://instruktlabs.github.io/matter-field/examples/wind.html)
 - [Serpent + hit test](https://instruktlabs.github.io/matter-field/examples/serpent.html)
 - [Live parity assay](https://instruktlabs.github.io/matter-field/examples/parity.html)
 
-Each example pairs consumers that would normally be split across CPU and GPU.
+FIELDWORK is the application pressure test; each focused lab isolates one
+consumer pair that would normally be split across CPU and GPU.
 The live assay is the numeric evidence surface; a visual demonstration alone
 does not establish a parity result.
 
@@ -244,7 +275,9 @@ See [Positioning](./docs/POSITIONING.md) for the project boundary.
 
 ## Local development
 
-Requires Node 18 or newer.
+The core runtime and installed precompiled TypeGPU artifacts support Node 18 or
+newer. Building, packing, type-checking, or probing the TypeGPU source requires
+Node 20.19 or newer because the current `unplugin-typegpu` toolchain does.
 
 ```bash
 npm ci
@@ -252,6 +285,16 @@ npm test
 npm run test:package
 npm run assay
 npm run bench
+```
+
+For the full TypeGPU lane on Node 20.19 or newer:
+
+```bash
+npm run build:typegpu
+npm run test:typegpu:build
+npm run test:typegpu:types
+npm run test:typegpu:consumer
+npm run probe:typegpu
 ```
 
 Run the real browser probes on hardware:
@@ -274,13 +317,19 @@ src/dual.js                    analytic value/gradient backend
 src/noise.js                   portable field building blocks
 src/hash.js                    raw u32 hash and shader references
 src/backend-tsl.js             caller-supplied Three.js TSL backend
+src/typegpu/                   handwritten optional TypeGPU materialization
+dist-typegpu/                  generated precompiled publish artifacts
 parity/harness.js              CPU assay and field-unit verdicts
 parity/golden.js               deterministic points and f32 diagnostics
 parity/gpu-probe-template.js   implemented WebGPU/WebGL2 assay
+parity/typegpu-gpu-probe.js     TypeGPU compute and Three integration assay
 parity/reports/                committed measured receipts
+benchmarks/                    controlled CPU comparison and clean-host gate
 examples/                      teaching fields and consumers
-site/                          GitHub Pages source
+site/fieldwork/                integrated 3D dogfood mission
+site/                          GitHub Pages source and focused labs
 test/                          contract, examples, hash, and assay tests
+tooling-tests/                 precompiled TypeGPU artifact checks
 ```
 
 ## Contributing
@@ -288,6 +337,7 @@ test/                          contract, examples, hash, and assay tests
 The most useful contributions right now are:
 
 - real Intel and Apple silicon receipts, plus broader AMD and NVIDIA coverage;
+- clean TypeGPU WebGPU receipts beyond the current single NVIDIA/Windows run;
 - adversarial samples around lattice, stamp, zero-crossing, and time limits;
 - browser/Worker bit-stability evidence;
 - accessible interactive examples that pair real GPU rendering with CPU
@@ -296,7 +346,8 @@ The most useful contributions right now are:
 - careful backend experiments that preserve the small core.
 
 Start with [CONTRIBUTING.md](./CONTRIBUTING.md), the
-[roadmap](./ROADMAP.md), and the [receipt guide](./docs/RECEIPTS.md).
+[roadmap](./ROADMAP.md), the [receipt guide](./docs/RECEIPTS.md), and the
+[community share draft](./docs/COMMUNITY-POST.md).
 
 Do not publish this package to npm yet. The project will hold the first npm
 release until the initial vendor matrix contains real NVIDIA, AMD, Intel, and
@@ -305,7 +356,11 @@ expected CPU values, field sources, package version, and Three.js version.
 
 ## License and provenance
 
-Matter Field is available under the [MIT License](./LICENSE). It was
-generalized from a math-adapter pattern used in the proprietary OBJEKT-62 game;
+Matter Field's code and package documentation are available under the
+[MIT License](./LICENSE). Fieldwork asset provenance and any provider-specific
+release conditions are recorded separately in [docs/FIELDWORK.md](./docs/FIELDWORK.md).
+Bundled dependency licenses and attributions are retained in
+[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
+The adapter pattern was generalized from a pattern used in the proprietary OBJEKT-62 game;
 the standalone examples contain no OBJEKT-62 game content. See
 [PROVENANCE.md](./PROVENANCE.md) for the extraction record.

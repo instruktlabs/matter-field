@@ -1,8 +1,12 @@
 # TypeGPU-first architecture spike
 
-Status: working experiment, not a recommendation to replace the adapter core.
+Status: working optional integration, not a recommendation to replace the
+adapter core.
 
-Branch: `codex/typegpu-first-class-spike`
+Reviewed implementation commit:
+[`0ffc635`](https://github.com/instruktlabs/matter-field/commit/0ffc635c58fdb21b318686cfd715df07071ae0df).
+Committed raw receipt:
+[`windows-rtx3070-chrome-webgpu-2026-08-09.json`](../parity/reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json).
 
 Pinned test set:
 
@@ -42,11 +46,15 @@ u32 product above JavaScript's exact-integer range.
 
 ## Observed result
 
-A local NVIDIA Ampere / Chrome WebGPU correctness run on August 9, 2026 used
-the same 300 f32 points and absolute field-unit budgets as the existing assay.
-The working tree was dirty because this was a development run, so it is not a
-release receipt. Timing from this machine is intentionally ignored because the
-host was in active use.
+A clean NVIDIA GeForce RTX 3070 / Windows / Chrome 151 WebGPU correctness run
+on August 9, 2026 used the same 300 f32 points and absolute field-unit budgets
+as the existing assay. The report binds the exact precompiled publish artifact,
+final browser bundle, dependency versions, clean worktree, and commit
+`0ffc635c58fdb21b318686cfd715df07071ae0df`. Its raw file SHA-256 is
+`85a664d7db123813f995be6a7444889763c6f1b8b7ce5fe28152ab85090034f2`.
+Timing from this machine is intentionally ignored because the host was in
+active use; the recorded dispatch-and-readback duration is not benchmark
+evidence.
 
 | Field | Max observed absolute drift | Budget | Result |
 |---|---:|---:|---|
@@ -65,11 +73,18 @@ Additional checks in that run:
 - the Three r185 bridge compiled and rendered dunes, swell, wind, serpent
   spine, and serpent radius independently, and every integration readback was
   spatially nonconstant after excluding WebGPU row padding;
-- Chromium, Firefox, and WebKit main-thread and Worker CPU tests all matched
-  the existing committed f64 golden for both implementations.
+- in the separate browser CPU suite, Chromium, Firefox, and WebKit main-thread
+  and Worker results matched the existing committed f64 golden for both
+  implementations.
 
 These are correctness and integration observations, not speed evidence or a
 universal numeric bound.
+
+The receipt supports only the named source state, precompiled artifact, finite
+sample set, and physical configuration. It does not extend the six native-TSL
+receipts to TypeGPU-generated WGSL, fill an AMD/Intel/Apple TypeGPU matrix cell,
+or establish numeric serpent parity. The serpent Three helpers are render
+integration checks only.
 
 ## Where TypeGPU is better
 

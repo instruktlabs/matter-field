@@ -190,6 +190,14 @@ pre code { padding: 0; color: inherit; background: transparent; }
 .demo-link:focus-visible { outline-offset: 3px; }
 .demo-featured { grid-column: span 8; position: relative; overflow: hidden; color: var(--instrument-ink); background: var(--field); }
 .demo-featured:hover { color: var(--instrument-ink); background: #113f43; }
+.demo-game {
+  background-color: #0d302d;
+  background-image: linear-gradient(90deg, rgba(13, 48, 45, .98) 0 50%, rgba(13, 48, 45, .42) 78%, rgba(13, 48, 45, .12)), url("./fieldwork/assets/ui/fieldwork-sigil.webp");
+  background-repeat: no-repeat;
+  background-position: center, 104% center;
+  background-size: cover, min(54%, 430px);
+}
+.demo-game:hover { background-color: #0a2826; }
 .demo-assay { grid-column: span 8; color: var(--instrument-ink); background: var(--ink-950); }
 .demo-assay:hover { background: var(--field); }
 .demo-index { position: relative; z-index: 1; color: var(--signal); font-size: 10px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 700; letter-spacing: .08em; text-transform: uppercase; }
