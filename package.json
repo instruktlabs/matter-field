@@ -1,7 +1,7 @@
 {
   "name": "matter-field",
   "version": "0.0.1",
-  "description": "Write field math once; run it as CPU numbers, f32-emulated numbers, dual numbers (analytic gradients), or a shader node graph - with a measurable parity contract instead of hope.",
+  "description": "Authoritative procedural fields with measured CPU/GPU parity, analytic gradients, native TSL, and a first-class TypeGPU/WebGPU materialization.",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -14,18 +14,31 @@
   "homepage": "https://instruktlabs.github.io/matter-field/",
   "files": [
     "src/",
+    "dist-typegpu/",
+    "benchmarks/",
     "parity/harness.js",
     "parity/golden.js",
+    "parity/reports/",
     "examples/",
     "docs/",
     "ROADMAP.md",
     "PROVENANCE.md",
     "README.md",
+    "THIRD_PARTY_NOTICES.md",
     "LICENSE"
   ],
   "sideEffects": false,
   "exports": {
     ".": "./src/index.js",
+    "./typegpu": {
+      "types": "./dist-typegpu/index.d.ts",
+      "default": "./dist-typegpu/index.js"
+    },
+    "./typegpu/three": {
+      "types": "./dist-typegpu/three.d.ts",
+      "default": "./dist-typegpu/three.js"
+    },
+    "./adapter-core": "./src/index.js",
     "./adapter": "./src/adapter.js",
     "./number": "./src/number.js",
     "./hash": "./src/hash.js",
@@ -39,17 +52,48 @@
     "test": "node --test",
     "test:browsers": "node scripts/run-cpu-browser-parity.mjs",
     "test:package": "npm pack --dry-run",
+    "build:typegpu": "node scripts/build-typegpu.mjs",
+    "build:typegpu:package": "node scripts/build-typegpu-package.mjs",
+    "test:typegpu:build": "node --test tooling-tests/typegpu-build-check.mjs",
+    "test:typegpu:types": "npm run build:typegpu:package && tsc -p tsconfig.typegpu.json",
+    "test:typegpu:consumer": "node scripts/verify-typegpu-package.mjs",
+    "prepack": "npm run build:typegpu:package",
     "prepublishOnly": "node scripts/check-publish-readiness.mjs",
     "assay": "node examples/demo.mjs",
     "bench": "node examples/bench.mjs",
+    "bench:cpu:self-test": "node --test benchmarks/self-test.mjs",
+    "bench:cpu": "node benchmarks/run-cpu.mjs",
     "probe:build": "node scripts/build-gpu-probe.mjs",
     "probe:gpu": "node scripts/run-gpu-probe.mjs --backend=webgpu",
     "probe:webgl2": "node scripts/run-gpu-probe.mjs --backend=webgl2",
+    "probe:typegpu": "node scripts/run-gpu-probe.mjs --implementation=typegpu --backend=webgpu",
+    "probe:typegpu:build": "node scripts/build-typegpu-probe.mjs",
     "site:build": "node scripts/build-site.mjs",
+    "site:smoke": "node scripts/smoke-site.mjs",
     "site:serve": "node scripts/serve-site.mjs"
   },
   "engines": {
     "node": ">=18"
+  },
+  "peerDependencies": {
+    "@typegpu/three": "0.11.0",
+    "@types/three": "0.185.4",
+    "three": "0.185.1",
+    "typegpu": "0.11.9"
+  },
+  "peerDependenciesMeta": {
+    "@typegpu/three": {
+      "optional": true
+    },
+    "@types/three": {
+      "optional": true
+    },
+    "three": {
+      "optional": true
+    },
+    "typegpu": {
+      "optional": true
+    }
   },
   "keywords": [
     "procedural",
@@ -57,6 +101,7 @@
     "noise",
     "deterministic",
     "cpu-gpu-parity",
+    "typegpu",
     "tsl",
     "webgpu",
     "shader"
@@ -64,9 +109,15 @@
   "devDependencies": {
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource-variable/recursive": "^5.3.0",
+    "@typegpu/three": "0.11.0",
+    "@types/three": "0.185.4",
+    "@webgpu/types": "0.1.71",
     "esbuild": "^0.28.2",
     "playwright": "^1.59.1",
-    "three": "^0.185.1"
+    "three": "0.185.1",
+    "typegpu": "0.11.9",
+    "typescript": "npm:tsover@6.0.2",
+    "unplugin-typegpu": "0.11.6"
   },
   "allowScripts": {
     "esbuild@0.28.2": true

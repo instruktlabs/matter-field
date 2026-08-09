@@ -1,0 +1,452 @@
+{
+  "schema": "matter-field-typegpu-parity/v1",
+  "implementation": "typegpu-first-class-spike",
+  "backend": "webgpu",
+  "adapter": {
+    "api": "WebGPU",
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "unknown",
+    "description": "unknown"
+  },
+  "goldenSet": {
+    "schema": "matter-field-typegpu-assay-set/v1",
+    "generator": "matter-field-assay-points/v2",
+    "seed": "0x9e3779b9",
+    "extent": 20000,
+    "coordinateType": "f32",
+    "composition": "24 adversarial + 276 deterministic LCG",
+    "pointCount": 300,
+    "fields": [
+      "typegpuDunes(x,z)",
+      "typegpuSwell(x,z,2.5)",
+      "typegpuWindX(x,z,1)",
+      "typegpuWindZ(x,z,1)"
+    ],
+    "coordinatesSha256": "dfb4b791dedaa0132d7faf4524e072b538c5cfd792a5567b2471c75150bf723d",
+    "valuesSha256": "22d6cb9b7bd9c930f9e0cabe17305cec85ddc0e10474038623da3dc0685b54d7",
+    "typegpuCpuValuesSha256": "22d6cb9b7bd9c930f9e0cabe17305cec85ddc0e10474038623da3dc0685b54d7",
+    "sourceSha256": "9dcbf9f34306b1f84ebb171fe9e9e932398177a5e0bff39efcb6deabec819639",
+    "publishArtifactsSha256": "f8ac8722dd8d51811a326995c5393e4a2aa76655f617f825eb66b6251ad53b34",
+    "packageVersion": "0.0.1",
+    "typegpuVersion": "0.11.9",
+    "typegpuThreeVersion": "0.11.0",
+    "unpluginTypegpuVersion": "0.11.6",
+    "esbuildVersion": "0.28.2",
+    "threeVersion": "0.185.1",
+    "sha256": "0268989fa61df06b27de7987c0948b5bc455cc4477057ebf3ad70c0849f93c3c"
+  },
+  "pointCount": 300,
+  "sampleSemantics": "maximum observed over 300 committed points; not a universal numeric bound",
+  "dispatchAndReadbackMs": 226.90000000596046,
+  "pass": true,
+  "passCriterion": "absolute drift in field units; ULP is diagnostic only; Three smoke is integration-only",
+  "fields": [
+    {
+      "name": "dunes",
+      "budget": 0.004,
+      "maxAbs": 0.0007492180491617262,
+      "maxUlp": 4324,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0209",
+        "x": 1190.2540283203125,
+        "z": 16980.544921875,
+        "cpu": 5.995518791260832,
+        "gpu": 5.99476957321167,
+        "abs": 0.0007492180491617262,
+        "ulp": 1571
+      },
+      "maxUlpSample": {
+        "id": "r0137",
+        "x": -12727.5263671875,
+        "z": 3114.90185546875,
+        "cpu": -0.23287349570552873,
+        "gpu": -0.23280906677246094,
+        "abs": 0.00006442893306779496,
+        "ulp": 4324
+      },
+      "firstNonFiniteSample": null
+    },
+    {
+      "name": "swell-t2.5",
+      "budget": 0.001,
+      "maxAbs": 0.0002236813009637295,
+      "maxUlp": 623919,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0008",
+        "x": 18586.76171875,
+        "z": 19689.9921875,
+        "cpu": -1.0586130172311408,
+        "gpu": -1.0588366985321045,
+        "abs": 0.0002236813009637295,
+        "ulp": 1876
+      },
+      "maxUlpSample": {
+        "id": "r0190",
+        "x": 5639.90380859375,
+        "z": 10139.6259765625,
+        "cpu": 0.0004940805380714841,
+        "gpu": 0.0004730224609375,
+        "abs": 0.00002105807713398411,
+        "ulp": 623919
+      },
+      "firstNonFiniteSample": null
+    },
+    {
+      "name": "wind.wx-t1",
+      "budget": 0.0001,
+      "maxAbs": 0.000020787901877872272,
+      "maxUlp": 174,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0113",
+        "x": -11265.71875,
+        "z": 18474.220703125,
+        "cpu": 1.2748041607809062,
+        "gpu": 1.2747833728790283,
+        "abs": 0.000020787901877872272,
+        "ulp": 174
+      },
+      "maxUlpSample": {
+        "id": "r0113",
+        "x": -11265.71875,
+        "z": 18474.220703125,
+        "cpu": 1.2748041607809062,
+        "gpu": 1.2747833728790283,
+        "abs": 0.000020787901877872272,
+        "ulp": 174
+      },
+      "firstNonFiniteSample": null
+    },
+    {
+      "name": "wind.wz-t1",
+      "budget": 0.0001,
+      "maxAbs": 0.00002657150133833497,
+      "maxUlp": 161,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0057",
+        "x": 15369.8212890625,
+        "z": -18846.595703125,
+        "cpu": 2.129774701844609,
+        "gpu": 2.1298012733459473,
+        "abs": 0.00002657150133833497,
+        "ulp": 111
+      },
+      "maxUlpSample": {
+        "id": "r0197",
+        "x": 19654.40625,
+        "z": -19926.583984375,
+        "cpu": 1.5042862727896764,
+        "gpu": 1.5042670965194702,
+        "abs": 0.000019176270206200385,
+        "ulp": 161
+      },
+      "firstNonFiniteSample": null
+    }
+  ],
+  "hash": {
+    "bitExact": true,
+    "count": 11,
+    "samples": [
+      {
+        "input": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "cpu": 0,
+        "gpu": 0,
+        "exact": true
+      },
+      {
+        "input": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "cpu": 2975324438,
+        "gpu": 2975324438,
+        "exact": true
+      },
+      {
+        "input": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "cpu": 2794514171,
+        "gpu": 2794514171,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          0,
+          0
+        ],
+        "cpu": 946973763,
+        "gpu": 946973763,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          1,
+          0
+        ],
+        "cpu": 247792817,
+        "gpu": 247792817,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          0,
+          1
+        ],
+        "cpu": 1744744036,
+        "gpu": 1744744036,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          1,
+          1
+        ],
+        "cpu": 2217002872,
+        "gpu": 2217002872,
+        "exact": true
+      },
+      {
+        "input": [
+          262143,
+          1,
+          0,
+          0
+        ],
+        "cpu": 3102867173,
+        "gpu": 3102867173,
+        "exact": true
+      },
+      {
+        "input": [
+          123456,
+          654321,
+          3,
+          22
+        ],
+        "cpu": 2172253840,
+        "gpu": 2172253840,
+        "exact": true
+      },
+      {
+        "input": [
+          2147483647,
+          2147483647,
+          1,
+          1
+        ],
+        "cpu": 0,
+        "gpu": 0,
+        "exact": true
+      },
+      {
+        "input": [
+          4294967291,
+          4294967289,
+          0,
+          0
+        ],
+        "cpu": 1793727526,
+        "gpu": 1793727526,
+        "exact": true
+      }
+    ]
+  },
+  "migration": {
+    "bitExactAtSampledPoints": true,
+    "scalarCount": 1200,
+    "mismatchCount": 0,
+    "nonFiniteCount": 0,
+    "maxAbs": 0,
+    "firstMismatch": null,
+    "reference": "existing adapter f64 oracle"
+  },
+  "three": {
+    "pass": true,
+    "backend": "webgpu",
+    "adapterRelationship": "separate Three renderer device; top-level adapter identity describes native TypeGPU compute only",
+    "criterion": "each helper compiled and rendered spatially nonconstant valid pixels after excluding row padding; integration-only, not a numeric or finite-output assay",
+    "fields": [
+      {
+        "name": "dunes",
+        "pass": true,
+        "pixelArrayType": "Uint8Array",
+        "readbackElements": 8064,
+        "sampledPixels": 1024,
+        "rowStrideElements": 256,
+        "spatiallyNonconstant": true,
+        "minChannel": 51,
+        "maxChannel": 217
+      },
+      {
+        "name": "swell",
+        "pass": true,
+        "pixelArrayType": "Uint8Array",
+        "readbackElements": 8064,
+        "sampledPixels": 1024,
+        "rowStrideElements": 256,
+        "spatiallyNonconstant": true,
+        "minChannel": 51,
+        "maxChannel": 197
+      },
+      {
+        "name": "wind",
+        "pass": true,
+        "pixelArrayType": "Uint8Array",
+        "readbackElements": 8064,
+        "sampledPixels": 1024,
+        "rowStrideElements": 256,
+        "spatiallyNonconstant": true,
+        "minChannel": 64,
+        "maxChannel": 102
+      },
+      {
+        "name": "serpentSpine",
+        "pass": true,
+        "pixelArrayType": "Uint8Array",
+        "readbackElements": 8064,
+        "sampledPixels": 1024,
+        "rowStrideElements": 256,
+        "spatiallyNonconstant": true,
+        "minChannel": 4,
+        "maxChannel": 226
+      },
+      {
+        "name": "serpentRadius",
+        "pass": true,
+        "pixelArrayType": "Uint8Array",
+        "readbackElements": 8064,
+        "sampledPixels": 1024,
+        "rowStrideElements": 256,
+        "spatiallyNonconstant": true,
+        "minChannel": 48,
+        "maxChannel": 170
+      }
+    ],
+    "compiledFields": [
+      "dunes",
+      "swell",
+      "wind",
+      "serpentSpine",
+      "serpentRadius"
+    ]
+  },
+  "build": {
+    "probeBundleSha256": "1ed82e4ff055a377c86de1460d99a74aa1e683fda140abcf38f3299ae3148d7d"
+  },
+  "browser": {
+    "name": "chrome",
+    "version": "151.0.7922.76",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36"
+  },
+  "os": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64"
+  },
+  "chromeGpu": {
+    "devices": [
+      {
+        "vendorId": 4318,
+        "deviceId": 9348,
+        "subSysId": 2277249091,
+        "revision": 161,
+        "vendorString": "",
+        "deviceString": "NVIDIA GeForce RTX 3070",
+        "driverVendor": "NVIDIA",
+        "driverVersion": "32.0.16.1074"
+      },
+      {
+        "vendorId": 4318,
+        "deviceId": 9348,
+        "subSysId": 2277249091,
+        "revision": 161,
+        "vendorString": "",
+        "deviceString": "NVIDIA GeForce RTX 3070",
+        "driverVendor": "",
+        "driverVersion": "32.0.16.1074"
+      },
+      {
+        "vendorId": 5140,
+        "deviceId": 140,
+        "subSysId": 0,
+        "revision": 0,
+        "vendorString": "",
+        "deviceString": "Microsoft Basic Render Driver",
+        "driverVendor": "",
+        "driverVersion": "10.0.26100.8875"
+      }
+    ],
+    "driverBugWorkarounds": [
+      "disable_d3d11_vp9_ksvc_decoding",
+      "enable_webgl_timer_query_extensions",
+      "exit_on_context_lost",
+      "unpack_overlapping_rows_separately_unpack_buffer",
+      "disabled_extension_GL_KHR_blend_equation_advanced",
+      "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+    ],
+    "featureStatus": {
+      "2d_canvas": "enabled",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "enabled",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "enabled_on",
+      "rasterization": "enabled",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "trees_in_viz": "disabled_off",
+      "video_decode": "enabled",
+      "video_encode": "enabled",
+      "webgl": "enabled",
+      "webgpu": "enabled",
+      "webnn": "disabled_off"
+    }
+  },
+  "run": {
+    "headed": false,
+    "generatedAt": "2026-08-09T20:12:24.253Z",
+    "node": "v22.23.1",
+    "package": "matter-field@0.0.1",
+    "three": "0.185.1",
+    "implementation": "typegpu",
+    "typegpu": "0.11.9",
+    "typegpuThree": "0.11.0",
+    "commit": "0ffc635c58fdb21b318686cfd715df07071ae0df",
+    "dirty": false,
+    "browserArgs": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist"
+    ],
+    "softwareAdapter": false
+  }
+}

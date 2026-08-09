@@ -73,9 +73,22 @@ try {
       const actual = await page.waitForFunction(() => globalThis.__MATTER_FIELD_CPU_PARITY__ ?? null, undefined, { timeout: 30_000 }).then((handle) => handle.jsonValue());
       const mainBitExact = JSON.stringify(actual.main) === JSON.stringify(expected);
       const workerBitExact = JSON.stringify(actual.worker) === JSON.stringify(expected);
-      const report = { browser: name, version: browser.version(), userAgent: actual.userAgent, mainBitExact, workerBitExact, pointCount: points.length, goldenSha256: GOLDEN_SHA256, pass: mainBitExact && workerBitExact };
+      const typegpuMainBitExact = JSON.stringify(actual.typegpuMain) === JSON.stringify(expected);
+      const typegpuWorkerBitExact = JSON.stringify(actual.typegpuWorker) === JSON.stringify(expected);
+      const report = {
+        browser: name,
+        version: browser.version(),
+        userAgent: actual.userAgent,
+        mainBitExact,
+        workerBitExact,
+        typegpuMainBitExact,
+        typegpuWorkerBitExact,
+        pointCount: points.length,
+        goldenSha256: GOLDEN_SHA256,
+        pass: mainBitExact && workerBitExact && typegpuMainBitExact && typegpuWorkerBitExact,
+      };
       reports.push(report);
-      console.log(`[matter-field] ${name} main=${mainBitExact ? 'exact' : 'DIFF'} worker=${workerBitExact ? 'exact' : 'DIFF'}`);
+      console.log(`[matter-field] ${name} adapter-main=${mainBitExact ? 'exact' : 'DIFF'} adapter-worker=${workerBitExact ? 'exact' : 'DIFF'} typegpu-main=${typegpuMainBitExact ? 'exact' : 'DIFF'} typegpu-worker=${typegpuWorkerBitExact ? 'exact' : 'DIFF'}`);
     } finally {
       await browser.close();
     }

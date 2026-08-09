@@ -2,6 +2,12 @@ import { numberAdapter } from '../src/number.js';
 import { dunesField } from '../examples/dunes.js';
 import { swellField } from '../examples/swell.js';
 import { windField } from '../examples/wind.js';
+import {
+  typegpuDunes,
+  typegpuSwell,
+  typegpuWindX,
+  typegpuWindZ,
+} from '../src/typegpu/index.js';
 
 function f64Hex(value) {
   const buffer = new ArrayBuffer(8);
@@ -20,4 +26,13 @@ export function cpuFieldBits(points) {
       f64Hex(wind.wz),
     ];
   });
+}
+
+export function typegpuCpuFieldBits(points) {
+  return points.map(({ x, z }) => [
+    f64Hex(typegpuDunes(x, z)),
+    f64Hex(typegpuSwell(x, z, 2.5)),
+    f64Hex(typegpuWindX(x, z, 1)),
+    f64Hex(typegpuWindZ(x, z, 1)),
+  ]);
 }

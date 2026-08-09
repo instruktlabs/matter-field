@@ -10,11 +10,20 @@ const types = new Map([
   ['.css', 'text/css; charset=utf-8'],
   ['.js', 'text/javascript; charset=utf-8'],
   ['.json', 'application/json; charset=utf-8'],
+  ['.md', 'text/markdown; charset=utf-8'],
+  ['.jpg', 'image/jpeg'],
+  ['.png', 'image/png'],
+  ['.svg', 'image/svg+xml'],
+  ['.webp', 'image/webp'],
+  ['.woff2', 'font/woff2'],
 ]);
 
 const server = createServer(async (request, response) => {
   const url = new URL(request.url ?? '/', 'http://127.0.0.1');
-  const relative = url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\/+/, '');
+  const pathname = decodeURIComponent(url.pathname);
+  const relative = pathname.endsWith('/')
+    ? `${pathname.replace(/^\/+|\/+$/g, '')}${pathname === '/' ? '' : '/'}index.html`
+    : pathname.replace(/^\/+/, '');
   const file = resolve(ROOT, relative);
   if (file !== ROOT && !file.startsWith(`${ROOT}${sep}`)) {
     response.writeHead(403).end('forbidden');

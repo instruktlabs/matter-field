@@ -20,6 +20,10 @@ can be aligned before implementation.
 
 ## Set up
 
+The installed core and precompiled runtime support Node 18 or newer. Use Node
+20.19 or newer for a full source checkout: packing invokes the TypeGPU build,
+and the current `unplugin-typegpu` toolchain requires that newer runtime.
+
 ```bash
 npm ci
 npm test
@@ -31,8 +35,14 @@ Useful local commands:
 ```bash
 npm run assay
 npm run bench
+npm run bench:cpu:self-test
 npm run site:build
+npm run site:smoke
 npm run test:browsers
+npm run build:typegpu
+npm run test:typegpu:build
+npm run test:typegpu:types
+npm run test:typegpu:consumer
 ```
 
 The browser suite requires Playwright browsers. Install them with:
@@ -64,12 +74,38 @@ npm run probe:webgl2
 Attach new receipts when the field identity or GPU output changes. Do not
 silently keep an old receipt next to changed field code.
 
+If a change touches `src/typegpu/`, its declarations, build scripts, pinned
+peers, or any adapter-authored field mirrored by the current handwritten port,
+also run:
+
+```bash
+npm run build:typegpu
+npm run test:typegpu:build
+npm run test:typegpu:types
+npm run test:typegpu:consumer
+npm run probe:typegpu
+```
+
+The TypeGPU comparison tests synchronize two implementations; they do not turn
+the TypeGPU field formulas into generated adapter output. Submit a fresh clean
+TypeGPU receipt when its source, emitted artifact, dependencies, assay, or GPU
+result changes.
+
 ### Site and interactive examples
 
 Test the production build at desktop and mobile widths. Exercise keyboard,
 pointer, and touch paths. Capture console errors. Interactive examples should
 state which work is CPU, which is GPU, and which values are measured rather
-than visually inferred.
+than visually inferred. Run `npm run site:build && npm run site:smoke` before
+submitting a site change.
+
+### Benchmarks
+
+Use [`benchmarks/README.md`](./benchmarks/README.md), preserve the raw JSON, and
+never promote a result that the harness classifies as `exploratory-only`. A
+dirty checkout, active session, short smoke settings, unstable process
+medians, or failed Linux preflight is diagnostic data—not publication
+evidence.
 
 ### New backend proposals
 
@@ -81,9 +117,12 @@ A backend proposal should explain:
 - how it will emit a comparable receipt;
 - whether it adds runtime or peer dependencies.
 
-Matter Field currently prioritizes JavaScript and caller-supplied Three.js
-TSL. A raw WGSL, TypeGPU, or other backend should remain optional and should
-not broaden the core contract without evidence.
+Matter Field currently prioritizes JavaScript and caller-supplied Three.js TSL,
+with a precompiled optional TypeGPU integration. A raw WGSL or other backend
+should remain optional and should not broaden the core contract without
+evidence. Proposals to expand TypeGPU should state whether they preserve the
+current handwritten-port boundary or replace it with reviewed generation from
+a canonical representation.
 
 ## Hardware receipts
 
@@ -93,7 +132,13 @@ version is:
 ```bash
 node scripts/run-gpu-probe.mjs --backend=webgpu --headed
 node scripts/run-gpu-probe.mjs --backend=webgl2 --headed
+node scripts/run-gpu-probe.mjs --implementation=typegpu --backend=webgpu --headed
 ```
+
+The TypeGPU command is WebGPU-only and emits a separate receipt schema. Do not
+count it as another cell in the native-TSL matrix. The current reviewed example
+is
+[`parity/reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json`](./parity/reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json).
 
 A useful receipt includes:
 
@@ -101,6 +146,7 @@ A useful receipt includes:
 - backend, browser, and operating system;
 - package version and source commit when available;
 - point count and golden-set identity;
+- implementation identity and emitted-artifact hashes when applicable;
 - per-field maximum observed absolute drift and budgets;
 - ULP values clearly labeled diagnostic;
 - raw hash comparison;

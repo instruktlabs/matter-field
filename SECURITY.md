@@ -40,8 +40,10 @@ Use the public bug form unless the behavior creates a concrete security impact.
 
 ## Secrets and reports
 
-The package has zero runtime dependencies and should require no credentials.
-Do not add API keys, tokens, browser profiles, or private machine data to a
-receipt. Review generated JSON before submitting it; GPU, driver, browser, and
-operating-system details are expected to become public.
-
+The adapter core has zero required runtime dependencies and should require no
+credentials. The optional TypeGPU subpaths use pinned `typegpu`,
+`@typegpu/three`, `three`, and `@types/three` peers; treat updates to that build
+and runtime chain as supply-chain-sensitive changes. Do not add API keys,
+tokens, browser profiles, or private machine data to a receipt. Review generated
+JSON before submitting it; GPU, driver, browser, and operating-system details
+are expected to become public.

@@ -7,11 +7,14 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { promisify } from 'node:util';
 import { buildGpuProbe } from './build-gpu-probe.mjs';
+import { buildTypegpuProbe } from './build-typegpu-probe.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const execFileAsync = promisify(execFile);
 const packageJson = JSON.parse(await readFile(join(ROOT, 'package.json'), 'utf8'));
 const threePackage = JSON.parse(await readFile(join(ROOT, 'node_modules', 'three', 'package.json'), 'utf8'));
+const typegpuPackage = JSON.parse(await readFile(join(ROOT, 'node_modules', 'typegpu', 'package.json'), 'utf8'));
+const typegpuThreePackage = JSON.parse(await readFile(join(ROOT, 'node_modules', '@typegpu', 'three', 'package.json'), 'utf8'));
 const commit = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).then(({ stdout }) => stdout.trim()).catch(() => 'unknown');
 const dirty = await execFileAsync('git', ['status', '--porcelain'], { cwd: ROOT }).then(({ stdout }) => stdout.trim().length > 0).catch(() => null);
 const args = new Map();
@@ -22,6 +25,7 @@ for (const value of process.argv.slice(2)) {
 }
 
 const backend = args.get('backend') ?? 'webgpu';
+const implementation = args.get('implementation') ?? 'adapter';
 const headed = args.has('headed');
 const channel = args.get('channel') ?? 'chrome';
 const browserArgs = [
@@ -42,11 +46,17 @@ const output = resolve(args.get('output') ?? join(
   ROOT,
   'artifacts',
   'gpu-reports',
-  `matter-field-${backend}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
+  `matter-field-${implementation}-${backend}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
 ));
 if (!['webgpu', 'webgl2'].includes(backend)) throw new Error(`Unsupported backend: ${backend}`);
+if (!['adapter', 'typegpu'].includes(implementation)) throw new Error(`Unsupported implementation: ${implementation}`);
+if (implementation === 'typegpu' && backend !== 'webgpu') {
+  throw new Error('@typegpu/three and native TypeGPU execution are WebGPU-only; use the adapter implementation for WebGL2');
+}
 
-const built = await buildGpuProbe({ backend });
+const built = implementation === 'typegpu'
+  ? await buildTypegpuProbe()
+  : await buildGpuProbe({ backend });
 const contentTypes = new Map([
   ['.html', 'text/html; charset=utf-8'],
   ['.js', 'text/javascript; charset=utf-8'],
@@ -95,6 +105,9 @@ try {
 
   const report = {
     ...result,
+    build: {
+      probeBundleSha256: built.bundleSha256 ?? null,
+    },
     browser: {
       name: channel,
       version: browser.version(),
@@ -112,6 +125,11 @@ try {
       node: process.version,
       package: `${packageJson.name}@${packageJson.version}`,
       three: threePackage.version,
+      implementation,
+      ...(implementation === 'typegpu' ? {
+        typegpu: typegpuPackage.version,
+        typegpuThree: typegpuThreePackage.version,
+      } : {}),
       commit,
       dirty,
       browserArgs,
