@@ -1,0 +1,344 @@
+{
+  "schema": "matter-field-gpu-parity/v2",
+  "backend": "webgpu",
+  "adapter": {
+    "api": "WebGPU",
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "unknown",
+    "description": "unknown"
+  },
+  "goldenSet": {
+    "schema": "matter-field-assay-set/v2",
+    "generator": "matter-field-assay-points/v2",
+    "seed": "0x9e3779b9",
+    "extent": 20000,
+    "coordinateType": "f32",
+    "composition": "24 adversarial + 276 deterministic LCG",
+    "pointCount": 300,
+    "fields": [
+      "dunes",
+      "swell(A,x,z,A.f(2.5))",
+      "wind(A,x,z,A.f(1)).wx",
+      "wind(A,x,z,A.f(1)).wz"
+    ],
+    "coordinatesSha256": "b6784c110eeb64979a4af9b35c457615a1ffcac0303a8e9423032b2efca0ddd0",
+    "valuesSha256": "22d6cb9b7bd9c930f9e0cabe17305cec85ddc0e10474038623da3dc0685b54d7",
+    "sourceSha256": "c9d6c31fbc24dd8571b6048dbfd9c362829e31dda5a98108a6e7ed7144cb90ed",
+    "packageVersion": "0.0.1",
+    "threeVersion": "0.185.1",
+    "sha256": "c25ddd93ace00c64287677393c02d372150073e63abe372fe8f671ffe46978c7"
+  },
+  "pointCount": 300,
+  "sampleSemantics": "maximum observed over 300 committed points; not a universal numeric bound",
+  "dispatchAndReadbackMs": 144.90000000596046,
+  "pass": true,
+  "passCriterion": "absolute drift in field units; ULP is diagnostic only",
+  "fields": [
+    {
+      "name": "dunes",
+      "budget": 0.004,
+      "maxAbs": 0.0007482643748453199,
+      "maxUlp": 4340,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0209",
+        "x": 1190.2540283203125,
+        "z": 16980.544921875,
+        "cpu": 5.995518791260832,
+        "gpu": 5.994770526885986,
+        "abs": 0.0007482643748453199,
+        "ulp": 1569
+      },
+      "maxUlpSample": {
+        "id": "r0137",
+        "x": -12727.5263671875,
+        "z": 3114.90185546875,
+        "cpu": -0.23287349570552873,
+        "gpu": -0.23280882835388184,
+        "abs": 0.00006466735164689652,
+        "ulp": 4340
+      }
+    },
+    {
+      "name": "swell-t2.5",
+      "budget": 0.001,
+      "maxAbs": 0.0002236813009637295,
+      "maxUlp": 623919,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0008",
+        "x": 18586.76171875,
+        "z": 19689.9921875,
+        "cpu": -1.0586130172311408,
+        "gpu": -1.0588366985321045,
+        "abs": 0.0002236813009637295,
+        "ulp": 1876
+      },
+      "maxUlpSample": {
+        "id": "r0190",
+        "x": 5639.90380859375,
+        "z": 10139.6259765625,
+        "cpu": 0.0004940805380714841,
+        "gpu": 0.0004730224609375,
+        "abs": 0.00002105807713398411,
+        "ulp": 623919
+      }
+    },
+    {
+      "name": "wind.wx-t1",
+      "budget": 0.0001,
+      "maxAbs": 0.000020787901877872272,
+      "maxUlp": 174,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0113",
+        "x": -11265.71875,
+        "z": 18474.220703125,
+        "cpu": 1.2748041607809062,
+        "gpu": 1.2747833728790283,
+        "abs": 0.000020787901877872272,
+        "ulp": 174
+      },
+      "maxUlpSample": {
+        "id": "r0113",
+        "x": -11265.71875,
+        "z": 18474.220703125,
+        "cpu": 1.2748041607809062,
+        "gpu": 1.2747833728790283,
+        "abs": 0.000020787901877872272,
+        "ulp": 174
+      }
+    },
+    {
+      "name": "wind.wz-t1",
+      "budget": 0.0001,
+      "maxAbs": 0.00002657150133833497,
+      "maxUlp": 161,
+      "pass": true,
+      "maxAbsSample": {
+        "id": "r0057",
+        "x": 15369.8212890625,
+        "z": -18846.595703125,
+        "cpu": 2.129774701844609,
+        "gpu": 2.1298012733459473,
+        "abs": 0.00002657150133833497,
+        "ulp": 111
+      },
+      "maxUlpSample": {
+        "id": "r0197",
+        "x": 19654.40625,
+        "z": -19926.583984375,
+        "cpu": 1.5042862727896764,
+        "gpu": 1.5042670965194702,
+        "abs": 0.000019176270206200385,
+        "ulp": 161
+      }
+    }
+  ],
+  "hash": {
+    "bitExact": true,
+    "count": 11,
+    "samples": [
+      {
+        "input": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "cpu": 0,
+        "gpu": 0,
+        "exact": true
+      },
+      {
+        "input": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "cpu": 2975324438,
+        "gpu": 2975324438,
+        "exact": true
+      },
+      {
+        "input": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "cpu": 2794514171,
+        "gpu": 2794514171,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          0,
+          0
+        ],
+        "cpu": 946973763,
+        "gpu": 946973763,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          1,
+          0
+        ],
+        "cpu": 247792817,
+        "gpu": 247792817,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          0,
+          1
+        ],
+        "cpu": 1744744036,
+        "gpu": 1744744036,
+        "exact": true
+      },
+      {
+        "input": [
+          131072,
+          131072,
+          1,
+          1
+        ],
+        "cpu": 2217002872,
+        "gpu": 2217002872,
+        "exact": true
+      },
+      {
+        "input": [
+          262143,
+          1,
+          0,
+          0
+        ],
+        "cpu": 3102867173,
+        "gpu": 3102867173,
+        "exact": true
+      },
+      {
+        "input": [
+          123456,
+          654321,
+          3,
+          22
+        ],
+        "cpu": 2172253840,
+        "gpu": 2172253840,
+        "exact": true
+      },
+      {
+        "input": [
+          2147483647,
+          2147483647,
+          1,
+          1
+        ],
+        "cpu": 0,
+        "gpu": 0,
+        "exact": true
+      },
+      {
+        "input": [
+          4294967291,
+          4294967289,
+          0,
+          0
+        ],
+        "cpu": 1793727526,
+        "gpu": 1793727526,
+        "exact": true
+      }
+    ]
+  },
+  "browser": {
+    "name": "chrome",
+    "version": "151.0.7922.76",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36"
+  },
+  "os": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "arch": "x64"
+  },
+  "chromeGpu": {
+    "devices": [
+      {
+        "vendorId": 4318,
+        "deviceId": 9348,
+        "subSysId": 2277249091,
+        "revision": 161,
+        "vendorString": "",
+        "deviceString": "NVIDIA GeForce RTX 3070",
+        "driverVendor": "NVIDIA",
+        "driverVersion": "32.0.16.1074"
+      },
+      {
+        "vendorId": 4318,
+        "deviceId": 9348,
+        "subSysId": 2277249091,
+        "revision": 161,
+        "vendorString": "",
+        "deviceString": "NVIDIA GeForce RTX 3070",
+        "driverVendor": "",
+        "driverVersion": "32.0.16.1074"
+      },
+      {
+        "vendorId": 5140,
+        "deviceId": 140,
+        "subSysId": 0,
+        "revision": 0,
+        "vendorString": "",
+        "deviceString": "Microsoft Basic Render Driver",
+        "driverVendor": "",
+        "driverVersion": "10.0.26100.8875"
+      }
+    ],
+    "driverBugWorkarounds": [
+      "disable_d3d11_vp9_ksvc_decoding",
+      "enable_webgl_timer_query_extensions",
+      "exit_on_context_lost",
+      "unpack_overlapping_rows_separately_unpack_buffer",
+      "disabled_extension_GL_KHR_blend_equation_advanced",
+      "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+    ],
+    "featureStatus": {
+      "2d_canvas": "enabled",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "enabled",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "enabled_on",
+      "rasterization": "enabled",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "trees_in_viz": "disabled_off",
+      "video_decode": "enabled",
+      "video_encode": "enabled",
+      "webgl": "enabled",
+      "webgpu": "enabled",
+      "webnn": "disabled_off"
+    }
+  },
+  "run": {
+    "headed": false,
+    "generatedAt": "2026-08-09T17:16:55.179Z",
+    "node": "v22.23.1",
+    "package": "matter-field@0.0.1",
+    "three": "0.185.1",
+    "commit": "3a902dfd0ca4edb7c5eced78ca4c32129ede983b",
+    "dirty": false,
+    "softwareAdapter": false
+  }
+}
