@@ -38,11 +38,11 @@ export function vnoise(A, x, z, ox = 0, oz = 0) {
   return A.cache(A.mix(a, b, uz));
 }
 
-// Per-octave rotation + offset constants. Shared f64 literals: exact parity
-// needs both backends to fold the SAME numbers (adapter.js rule 5). The trig
-// happens here on the host, never inside the tree (rule 2).
-const RC = Math.cos(0.71);
-const RS = Math.sin(0.71);
+// Per-octave rotation + offset constants. These are committed f64 literals,
+// not runtime Math.cos/Math.sin calls: ECMAScript transcendental results are
+// implementation-approximated and would weaken Tier 1 across JS engines.
+const RC = 0.75836187599050819;
+const RS = 0.65183377102153661;
 const OSX = 37.71;
 const OSZ = 17.34;
 

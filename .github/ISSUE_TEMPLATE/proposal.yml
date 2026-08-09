@@ -1,0 +1,49 @@
+name: Scoped proposal
+description: Propose a field, backend, assay, example, or contributor-experience improvement.
+title: "[Proposal]: "
+labels:
+  - proposal
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What concrete developer problem or evidence gap should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Proposed scope
+      description: Describe the smallest useful change and the surfaces it would affect.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and validation
+      description: How will we know it works? Include tests, receipts, interactions, or comparison criteria.
+    validations:
+      required: true
+  - type: textarea
+    id: limits
+    attributes:
+      label: Limits and non-goals
+      description: What will this proposal deliberately not solve?
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and compatibility
+      description: Note runtime/peer dependencies, Three.js implications, browser support, and API compatibility.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I read the roadmap and searched existing proposals.
+          required: true
+        - label: This proposal preserves Matter Field's narrow project boundary or explains why it should change.
+          required: true
+

@@ -16,7 +16,7 @@ const line = (s = '') => console.log(s);
 line('matter-field demo - one contract, four fields, every backend\n');
 
 // ---------------------------------------------------------------- 1. dunes
-line('1. DUNES - terrain: collision == render (the origin pattern)');
+line('1. DUNES - terrain: one authored field, measured render/contact drift');
 for (const p of [
   { label: 'open sand', x: 1500, z: -2200 },
   { label: 'pad centre', x: DUNES_PAD.cx, z: DUNES_PAD.cz },
@@ -33,18 +33,18 @@ for (const t of [0, 1.25, 2.5]) {
   const b = buoyancy(N, boat, t);
   line(`   t=${t.toFixed(2).padStart(5)}s  heave=${b.heave.toFixed(3).padStart(7)}  pitch=${(b.pitch * 57.2958).toFixed(2).padStart(6)} deg  roll=${(b.roll * 57.2958).toFixed(2).padStart(6)} deg`);
 }
-line('   (same field, same frame, no readback - a server evaluates the identical sea)');
+line('   (same authored field and clock, no per-frame readback; GPU drift is measured separately)');
 
 // ----------------------------------------------------------------- 3. wind
-line('\n3. WIND - vector field: gameplay forces == GPU particle advection');
+line('\n3. WIND - vector field: one tree for gameplay forces and GPU particle advection');
 const glider = { x: 0, z: 0, vx: 0, vz: 0 };
 for (let t = 0; t < 6; t += 0.5) applyWind(N, glider, t, 0.5);
 line(`   glider after 6 s of the field: pos=(${glider.x.toFixed(1)}, ${glider.z.toFixed(1)}) vel=(${glider.vx.toFixed(2)}, ${glider.vz.toFixed(2)})`);
 const w = windField(N, N.f(glider.x), N.f(glider.z), N.f(6));
-line(`   wind where it ended up: (${w.wx.toFixed(2)}, ${w.wz.toFixed(2)}) units/s - the particles there drift at exactly this`);
+line(`   wind where it ended up: (${w.wx.toFixed(2)}, ${w.wz.toFixed(2)}) units/s - CPU gameplay samples this authored field while the GPU materializes the same tree`);
 
 // -------------------------------------------------------------- 4. serpent
-line('\n4. SERPENT - closed-form creature: the hitbox IS the visual');
+line('\n4. SERPENT - closed-form creature: one trajectory for the body and hit test');
 const onSpine = serpentSpine(N, N.f(0.7), N.f(2.0));
 for (const shot of [
   { x: onSpine.x + 0.8, y: onSpine.y + 1.1, z: onSpine.z - 0.5 }, // grazes the body

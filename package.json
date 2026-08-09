@@ -1,10 +1,26 @@
 {
   "name": "matter-field",
   "version": "0.0.1",
-  "private": true,
   "description": "Write field math once; run it as CPU numbers, f32-emulated numbers, dual numbers (analytic gradients), or a shader node graph - with a measurable parity contract instead of hope.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/instruktlabs/matter-field.git"
+  },
+  "bugs": {
+    "url": "https://github.com/instruktlabs/matter-field/issues"
+  },
+  "homepage": "https://instruktlabs.github.io/matter-field/",
+  "files": [
+    "src/",
+    "parity/harness.js",
+    "parity/golden.js",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
   "exports": {
     ".": "./src/index.js",
     "./adapter": "./src/adapter.js",
@@ -17,9 +33,17 @@
     "./parity/golden": "./parity/golden.js"
   },
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test",
+    "test:browsers": "node scripts/run-cpu-browser-parity.mjs",
+    "test:package": "npm pack --dry-run",
+    "prepublishOnly": "node scripts/check-publish-readiness.mjs",
     "assay": "node examples/demo.mjs",
-    "bench": "node examples/bench.mjs"
+    "bench": "node examples/bench.mjs",
+    "probe:build": "node scripts/build-gpu-probe.mjs",
+    "probe:gpu": "node scripts/run-gpu-probe.mjs --backend=webgpu",
+    "probe:webgl2": "node scripts/run-gpu-probe.mjs --backend=webgl2",
+    "site:build": "node scripts/build-site.mjs",
+    "site:serve": "node scripts/serve-site.mjs"
   },
   "engines": {
     "node": ">=18"
@@ -33,5 +57,15 @@
     "tsl",
     "webgpu",
     "shader"
-  ]
+  ],
+  "devDependencies": {
+    "@fontsource-variable/newsreader": "^5.3.0",
+    "@fontsource-variable/recursive": "^5.3.0",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.59.1",
+    "three": "^0.185.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
 }

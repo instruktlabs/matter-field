@@ -20,6 +20,18 @@
 export const LATTICE_OFFSET = 131072;
 
 /**
+ * Raw u32 lattice hash bits. Exposed so the GPU assay can compare the integer
+ * pipeline before the intentionally lossy u32 -> f32 conversion.
+ */
+export function hashU32(ix, iz, ox, oz) {
+  const a = (ix + ox) | 0;
+  const b = (iz + oz) | 0;
+  let h = (Math.imul(a, 0x85ebca6b) ^ Math.imul(b, 0xc2b2ae3d)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 0x27d4eb2f) | 0;
+  return (h ^ (h >>> 15)) >>> 0;
+}
+
+/**
  * u32 lattice hash -> [0, 1).
  * @param {number} ix  lattice int (already floored + offset, see latt)
  * @param {number} iz  lattice int
@@ -28,12 +40,7 @@ export const LATTICE_OFFSET = 131072;
  * @returns {number} in [0, 1), exactly h * 2^-32 for the u32 h
  */
 export function hash01(ix, iz, ox, oz) {
-  let a = (ix + ox) | 0;
-  let b = (iz + oz) | 0;
-  let h = (Math.imul(a, 0x85ebca6b) ^ Math.imul(b, 0xc2b2ae3d)) | 0;
-  h = Math.imul(h ^ (h >>> 13), 0x27d4eb2f) | 0;
-  h = (h ^ (h >>> 15)) >>> 0;
-  return h * (1 / 4294967296);
+  return hashU32(ix, iz, ox, oz) * (1 / 4294967296);
 }
 
 /**
@@ -43,11 +50,7 @@ export function hash01(ix, iz, ox, oz) {
  * emulating GPU arithmetic on the CPU.
  */
 export function hash01f32(ix, iz, ox, oz) {
-  let a = (ix + ox) | 0;
-  let b = (iz + oz) | 0;
-  let h = (Math.imul(a, 0x85ebca6b) ^ Math.imul(b, 0xc2b2ae3d)) | 0;
-  h = Math.imul(h ^ (h >>> 13), 0x27d4eb2f) | 0;
-  h = (h ^ (h >>> 15)) >>> 0;
+  const h = hashU32(ix, iz, ox, oz);
   // 1/4294967296 is 2^-32, exactly representable in f32, so the only rounding
   // is float(h) (u32 -> f32, loses bits above 2^24) and the f32 multiply.
   return Math.fround(Math.fround(h) * 4294967296 ** -1);

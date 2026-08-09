@@ -1,4 +1,8 @@
 node_modules/
 artifacts/
+dist/
+.playwright-cli/
+output/
+progress.md
 *.log
 .DS_Store

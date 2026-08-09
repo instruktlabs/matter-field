@@ -1,6 +1,6 @@
 // Optional TSL smoke test: builds the shader graphs when three/tsl resolves.
 // This proves the SAME field functions construct valid node graphs; actual
-// GPU numeric parity needs the browser probe (parity/gpu-probe-template.js).
+// GPU numeric parity needs the real-browser probe in parity/gpu-probe-template.js.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -12,7 +12,7 @@ try {
 }
 
 test('TSL backend builds graphs for every example field', { skip: !tsl ? 'three/tsl not installed' : false }, async () => {
-  const { makeTslAdapter, makeTslHash } = await import('../src/backend-tsl.js');
+  const { makeTslAdapter, makeTslHash, makeTslHashU32 } = await import('../src/backend-tsl.js');
   const { adapterProblems } = await import('../src/adapter.js');
   const { dunesField } = await import('../examples/dunes.js');
   const { swellField } = await import('../examples/swell.js');
@@ -40,4 +40,7 @@ test('TSL backend builds graphs for every example field', { skip: !tsl ? 'three/
   const hash = makeTslHash(tsl, { fnName: 'testHash' });
   const h = hash(tsl.uint(5), tsl.uint(9), 1, 0);
   assert.ok(isNode(h), 'hash graph');
+
+  const hashBits = makeTslHashU32(tsl, { fnName: 'testHashBits' });
+  assert.ok(isNode(hashBits(tsl.uint(5), tsl.uint(9), 1, 0)), 'raw hash bits graph');
 });

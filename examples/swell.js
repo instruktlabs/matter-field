@@ -28,8 +28,8 @@
 import { fbm, pwave } from '../src/noise.js';
 
 // Host-folded wave-train directions (f64 literals, rule 5).
-const T1 = { ca: Math.cos(0.5), sa: Math.sin(0.5), wl: 60, amp: 0.9, spd: 8 };
-const T2 = { ca: Math.cos(2.2), sa: Math.sin(2.2), wl: 23, amp: 0.35, spd: 5 };
+const T1 = { ca: 0.87758256189037276, sa: 0.47942553860420301, wl: 60, amp: 0.9, spd: 8 };
+const T2 = { ca: -0.58850111725534582, sa: 0.80849640381959009, wl: 23, amp: 0.35, spd: 5 };
 
 /**
  * Sea-surface height (world units) at (x, z) and time t (seconds).

@@ -11,7 +11,8 @@
 //   cost          - microseconds per sample through the adapter
 //
 // The GPU half of the assay (real WGSL/GLSL through a compute pass) needs a
-// browser/GPU and lives in gpu-probe-template.js.
+// browser/GPU and lives in gpu-probe-template.js (the incubator filename is
+// retained so its replacement is an obvious reviewable diff).
 
 import { numberAdapter, makeF32Adapter } from '../src/number.js';
 import { evalWithGradient } from '../src/dual.js';

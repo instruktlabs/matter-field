@@ -1,7 +1,7 @@
 // Golden vectors + u32 semantics for the bit-exact hash.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { hash01, hash01f32, LATTICE_OFFSET, HASH_WGSL, HASH_GLSL } from '../src/hash.js';
+import { hashU32, hash01, hash01f32, LATTICE_OFFSET, HASH_WGSL, HASH_GLSL } from '../src/hash.js';
 
 // Frozen golden vectors. Captured 2026-08-09 from the reference JS
 // implementation (identical constants to OBJEKT-62 heightcore, whose JS/TSL
@@ -24,6 +24,12 @@ const GOLDEN = [
 test('hash01 matches frozen golden vectors bit-for-bit', () => {
   for (const [args, want] of GOLDEN) {
     assert.ok(Object.is(hash01(...args), want), `hash01(${args}) = ${hash01(...args)}, want ${want}`);
+  }
+});
+
+test('hashU32 exposes the exact pre-float bits used by hash01', () => {
+  for (const [args] of GOLDEN) {
+    assert.equal(hash01(...args), hashU32(...args) * 2 ** -32);
   }
 });
 

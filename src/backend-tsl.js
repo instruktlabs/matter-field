@@ -7,14 +7,40 @@
 // not porting code).
 //
 // The same field function that ran as numbers now builds a WGSL/GLSL
-// expression graph. Guarantee tier for the float tree is "bounded by f32
-// rounding" (WGSL 15.7: +,-,* correctly rounded but no mandated rounding
-// direction; / at 2.5 ulp; smoothstep inherits /; sqrt via inverseSqrt at
-// ~2 ulp; reassociation and FMA contraction permitted). The hash is bit-exact
-// (u32 ops have no accuracy latitude). Measure your field with the parity
-// probe; do not assume.
+// expression graph. The float tree is not globally bit-exact or universally
+// bounded by this package: WGSL permits operation-level error, reassociation
+// and FMA, and cancellation can amplify it. Authors set a physical absolute-
+// error budget per field and measure it with the parity probe. The integer
+// hash is bit-exact because u32 operations have no accuracy latitude.
 
 import { LATTICE_OFFSET } from './hash.js';
+
+/**
+ * Build the raw u32 hash as a named TSL function. This is the Tier 2 probe
+ * surface: read these bits back before the u32 -> f32 conversion and compare
+ * them directly with `hashU32`.
+ */
+export function makeTslHashU32(tsl, { fnName = 'mfHashU32' } = {}) {
+  const { Fn, uint } = tsl;
+  const hashCore = Fn(([a, b]) => {
+    const h = a.mul(uint(0x85ebca6b)).bitXor(b.mul(uint(0xc2b2ae3d))).toVar();
+    h.assign(h.bitXor(h.shiftRight(uint(13))).mul(uint(0x27d4eb2f)));
+    h.assign(h.bitXor(h.shiftRight(uint(15))));
+    return h;
+  }).setLayout({
+    name: fnName,
+    type: 'uint',
+    inputs: [
+      { name: 'a', type: 'uint' },
+      { name: 'b', type: 'uint' },
+    ],
+  });
+  return function hashU32(ix, iz, ox, oz) {
+    const a = ox === 0 ? ix : ix.add(uint(ox));
+    const b = oz === 0 ? iz : iz.add(uint(oz));
+    return hashCore(a, b);
+  };
+}
 
 /**
  * Build the u32 hash as a named TSL function (emitted once in the shader).
@@ -22,24 +48,10 @@ import { LATTICE_OFFSET } from './hash.js';
  * @returns {(ix, iz, ox: number, oz: number) => Node} hash01 for the adapter
  */
 export function makeTslHash(tsl, { fnName = 'mfHash01' } = {}) {
-  const { Fn, float, uint } = tsl;
-  const hashCore = Fn(([a, b]) => {
-    const h = a.mul(uint(0x85ebca6b)).bitXor(b.mul(uint(0xc2b2ae3d))).toVar();
-    h.assign(h.bitXor(h.shiftRight(uint(13))).mul(uint(0x27d4eb2f)));
-    h.assign(h.bitXor(h.shiftRight(uint(15))));
-    return float(h).mul(1 / 4294967296);
-  }).setLayout({
-    name: fnName,
-    type: 'float',
-    inputs: [
-      { name: 'a', type: 'uint' },
-      { name: 'b', type: 'uint' },
-    ],
-  });
+  const { float } = tsl;
+  const hashBits = makeTslHashU32(tsl, { fnName: `${fnName}Bits` });
   return function hash01(ix, iz, ox, oz) {
-    const a = ox === 0 ? ix : ix.add(uint(ox));
-    const b = oz === 0 ? iz : iz.add(uint(oz));
-    return hashCore(a, b);
+    return float(hashBits(ix, iz, ox, oz)).mul(1 / 4294967296);
   };
 }
 

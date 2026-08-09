@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a reproducible correctness, runtime, documentation, or site problem.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Matter Field. For security issues, use private vulnerability reporting instead of this form.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and why is it a problem?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Provide the smallest sequence, code sample, or URL that reproduces the issue.
+      placeholder: |
+        1. Check out commit ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include source commit, Node/browser, OS, GPU/backend when relevant, and Three.js version.
+      placeholder: |
+        commit:
+        Node or browser:
+        OS:
+        GPU + driver:
+        backend:
+        Three.js:
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Paste errors or link screenshots, traces, receipts, or a minimal repository. Remove secrets and private machine data.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues for this problem.
+          required: true
+        - label: This is not a private security report.
+          required: true
+

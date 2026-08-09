@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      browser-toolchain:
+        patterns:
+          - esbuild
+          - playwright
+          - three
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

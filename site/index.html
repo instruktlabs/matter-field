@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matter Field — one field for 3D rendering and CPU gameplay</title>
+  <meta name="description" content="Define a procedural 3D world once. Run it for CPU gameplay, Three.js TSL rendering, and analytic gradients under a measured parity contract.">
+  <meta name="theme-color" content="#f4f0e6">
+  <meta name="color-scheme" content="light">
+  <link rel="canonical" href="https://instruktlabs.github.io/matter-field/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23f4f0e6'/%3E%3Cpath d='M8 38c9-17 16-21 25-9s14 10 23-5M8 46c10-16 17-18 25-7s14 8 23-3' fill='none' stroke='%23174e52' stroke-width='4'/%3E%3Cpath d='M32 13v12M26 19h12' stroke='%23b7442e' stroke-width='3'/%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Matter Field — the 3D world you draw is the world gameplay can touch">
+  <meta property="og:description" content="One procedural 3D field for GPU rendering, CPU gameplay queries, and measured CPU↔GPU parity.">
+  <meta property="og:url" content="https://instruktlabs.github.io/matter-field/">
+  <meta property="og:image" content="https://instruktlabs.github.io/matter-field/og-preview.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Matter Field — define the world once, materialize it everywhere">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://instruktlabs.github.io/matter-field/og-preview.jpg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav shell">
+    <a class="mark" href="#top" aria-label="Matter Field home">
+      <svg aria-hidden="true" viewBox="0 0 44 36"><path d="M2 22C9 7 17 7 23 18s11 10 19-4"/><path d="M2 30c8-14 16-13 22-3s11 7 18-1"/><path class="registration" d="M22 2v10M17 7h10"/></svg>
+      <span>matter-field</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#contract">Contract</a>
+      <a href="#examples">Live fields</a>
+      <a href="#evidence">Receipts</a>
+      <a class="nav-github" href="https://github.com/instruktlabs/matter-field">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero shell" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span>01</span> Shared field math for 3D worlds · CPU + Three.js TSL</p>
+        <h1 id="hero-title">The world you draw is the world you can <em>touch.</em></h1>
+        <p class="lede">Let CPU collision, buoyancy, forces, and hit tests evaluate the same procedural 3D field that Three.js TSL renders on the GPU—then measure the remaining float drift.</p>
+        <div class="actions">
+          <a class="button primary" href="#examples">Open a live field</a>
+          <a class="button" href="https://github.com/instruktlabs/matter-field">Read the contract <span aria-hidden="true">↗</span></a>
+        </div>
+        <ul class="proof-strip" aria-label="Project facts">
+          <li>MIT</li>
+          <li>zero runtime dependencies</li>
+          <li>43 tests</li>
+          <li>public preview</li>
+        </ul>
+      </div>
+
+      <figure class="field-instrument" aria-labelledby="instrument-title" aria-describedby="instrument-help">
+        <figcaption class="instrument-head">
+          <span><b id="instrument-title">Live 3D terrain instrument</b> / dunesField</span>
+          <span id="sample-count">sampling…</span>
+        </figcaption>
+        <div class="instrument-toolbar" aria-label="Field view">
+          <div class="mode-switch" role="group" aria-label="Visualization mode">
+            <button type="button" class="mode-button is-active" data-field-mode="surface" aria-pressed="true">Surface</button>
+            <button type="button" class="mode-button" data-field-mode="residual" aria-pressed="false">Residual ×10k</button>
+          </div>
+          <p id="instrument-help">Drag or use arrow keys to move the probe.</p>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="field" width="480" height="320" tabindex="0" aria-label="Interactive procedural dune field. Move the probe to compare CPU f64 and f32-emulated samples."></canvas>
+          <span class="axis axis-x" aria-hidden="true">+x</span>
+          <span class="axis axis-z" aria-hidden="true">+z</span>
+        </div>
+        <dl class="instrument-readouts">
+          <div><dt>CPU / f64</dt><dd id="sample-f64">—</dd></div>
+          <div><dt>Assay / f32</dt><dd id="sample-f32">—</dd></div>
+          <div class="delta"><dt>Absolute drift</dt><dd id="sample-delta">—</dd></div>
+        </dl>
+        <p class="sr-only" id="probe-status" aria-live="polite"></p>
+      </figure>
+    </section>
+
+    <section class="problem ruled-section" id="contract">
+      <div class="shell problem-grid">
+        <div>
+          <p class="eyebrow"><span>02</span> The split-world problem</p>
+          <h2>GPU 3D displacement is invisible to CPU gameplay.</h2>
+        </div>
+        <div class="problem-copy">
+          <p>CPU physics, AI, servers, and hit tests cannot sample the vertex shader shaping a 3D world. Copying procedural math into JavaScript and shader code creates two worlds that eventually drift.</p>
+          <p>Matter Field makes the pure function authoritative and treats each backend as a materialization of it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="code-section shell" aria-labelledby="one-field-title">
+      <div class="code-intro">
+        <p class="eyebrow"><span>03</span> One expression tree</p>
+        <h2 id="one-field-title">Write the field, not its copies.</h2>
+        <div class="code-card">
+          <div class="code-label"><span>terrain.js</span><span>one field</span></div>
+<pre><code>export function terrain(A, x, z) {
+  const n = fbm(A, x, z, 0.0016, 2);
+  return A.mul(
+    A.sub(n, A.f(0.5)),
+    A.f(24)
+  );
+}</code></pre>
+        </div>
+      </div>
+      <div class="materializations" aria-label="Field materializations">
+        <article><b>01</b><div><span>numberAdapter</span><h3>CPU oracle</h3><p>Collision, AI, Workers, and Node servers evaluate the authoritative ECMAScript f64 tree.</p></div></article>
+        <article><b>02</b><div><span>makeTslAdapter</span><h3>GPU graph</h3><p>Pass the caller’s <code>three/tsl</code> namespace. The package never imports Three.js at runtime.</p></div></article>
+        <article><b>03</b><div><span>dualAdapter</span><h3>Analytic gradients</h3><p>Dual numbers derive normals and tangents from the exact same expression tree.</p></div></article>
+      </div>
+    </section>
+
+    <section class="live ruled-section" id="examples">
+      <div class="shell">
+        <div class="section-head">
+          <div><p class="eyebrow"><span>04</span> Touch the contract</p><h2>Four 3D fields. Four gameplay consequences.</h2></div>
+          <p>Each 3D lab lets you manipulate a GPU-rendered surface or form and the CPU gameplay query driven by the same field.</p>
+        </div>
+        <div class="live-grid">
+          <a class="demo-link demo-featured" href="./examples/dunes.html">
+            <span class="demo-index">01 / 3D terrain</span>
+            <div class="demo-contour terrain-contour" aria-hidden="true"></div>
+            <div><h3>Drive the 3D dunes</h3><p>Move across GPU-displaced terrain while the CPU collision oracle samples the same function.</p></div>
+            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="demo-link" href="./examples/swell.html">
+            <span class="demo-index">02 / 3D water</span>
+            <div><h3>Steer the hull</h3><p>One field drives the GPU-rendered swell and its CPU four-point buoyancy response.</p></div>
+            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="demo-link" href="./examples/wind.html">
+            <span class="demo-index">03 / 3D flow</span>
+            <div><h3>Push with wind</h3><p>GPU particles reveal the same vector field applying force to a CPU gameplay body.</p></div>
+            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="demo-link" href="./examples/serpent.html">
+            <span class="demo-index">04 / TSL animation</span>
+            <div><h3>Fire at the GPU spine</h3><p>The vertex-animated 3D creature and CPU hit test evaluate one closed-form trajectory.</p></div>
+            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="demo-link demo-assay" href="./examples/parity.html">
+            <span class="demo-index">Lab / your hardware</span>
+            <div><h3>Measure the 3D field</h3><p>Run the same TSL graphs used by the 3D demos on WebGPU or WebGL2 and keep the JSON receipt.</p></div>
+            <strong>Run parity assay <span aria-hidden="true">→</span></strong>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="evidence shell" id="evidence" aria-labelledby="receipts-title">
+      <div class="section-head">
+        <div><p class="eyebrow"><span>05</span> Measured, not asserted</p><h2 id="receipts-title">Current hardware receipts</h2></div>
+        <p>Absolute error in field units decides pass/fail. ULP counts remain diagnostic because they explode near zero crossings.</p>
+      </div>
+      <div class="matrix-wrap">
+        <table>
+          <caption>Recorded parity results by graphics hardware and browser backend</caption>
+          <thead><tr><th scope="col">Hardware</th><th scope="col">Backend</th><th scope="col">Max observed abs</th><th scope="col">Max ULP</th><th scope="col">u32 hash</th><th scope="col">Status</th></tr></thead>
+          <tbody id="matrix"></tbody>
+        </table>
+      </div>
+      <div class="matrix-footer">
+        <p>AMD, Intel, and Apple silicon remain unmeasured. Apple / Metal is the highest-value missing result because Metal fast-math is the documented edge case.</p>
+        <a class="text-link" href="./examples/parity.html">Contribute this hardware <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <section class="tiers shell" aria-labelledby="tiers-title">
+      <header><p class="eyebrow"><span>06</span> The honest contract</p><h2 id="tiers-title">Three contract levels, no stronger.</h2></header>
+      <ol>
+        <li><span>Tier 1</span><div><h3>CPU ↔ CPU</h3><strong>bit-exact</strong><p>The same ECMAScript f64 tree in browser, Worker, and Node.</p></div></li>
+        <li><span>Tier 2</span><div><h3>Integer hash</h3><strong>bit-exact</strong><p>u32 multiply, xor, and shift; floats enter only through <code>floor → latt</code>.</p></div></li>
+        <li class="bounded"><span>Tier 3</span><div><h3>Float tree</h3><strong>measured per field</strong><p>Restricted f32 operations tested against a declared absolute field-unit budget on each receipt.</p></div></li>
+      </ol>
+    </section>
+
+    <section class="contribute ruled-section">
+      <div class="shell contribute-grid">
+        <div><p class="eyebrow"><span>07</span> Open fieldwork</p><h2>Bring a GPU.<br>Add a receipt.</h2></div>
+        <div><p>The parity claim gets stronger through public measurement, not louder marketing. Run the assay, inspect the JSON, and contribute a missing vendor cell.</p><a class="button primary" href="./examples/parity.html">Run on this hardware</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell"><span>Matter Field by Instrukt Labs LLC</span><span><a href="https://github.com/instruktlabs/matter-field">Source</a> · <a href="https://github.com/instruktlabs/matter-field/blob/main/LICENSE">MIT License</a></span></footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

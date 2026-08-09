@@ -1,0 +1,77 @@
+name: Hardware receipt
+description: Contribute a WebGPU or WebGL2 parity result from real hardware.
+title: "[Receipt]: "
+labels:
+  - hardware-receipt
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read `docs/RECEIPTS.md` first. Passing and failing results are both useful. A result applies only to the recorded machine/backend/sample set.
+  - type: input
+    id: commit
+    attributes:
+      label: Source commit
+      placeholder: 40-character Git commit
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU and driver
+      placeholder: Apple M3 Pro / macOS driver, or NVIDIA RTX 3070 / 32.0.16.1074
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend
+      options:
+        - WebGPU
+        - WebGL2
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Browser and operating system
+      placeholder: |
+        browser + version:
+        OS + version:
+        Node version used by runner:
+        Three.js version:
+    validations:
+      required: true
+  - type: input
+    id: identity
+    attributes:
+      label: Golden-set identity and point count
+      placeholder: sha256 / 300 points
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Result summary
+      description: Include each field's maximum observed absolute drift and budget, raw hash result, and whether the overall receipt passed.
+    validations:
+      required: true
+  - type: textarea
+    id: json
+    attributes:
+      label: Raw JSON receipt
+      description: Attach the file or provide a durable link. Review it for private data first.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Receipt checks
+      options:
+        - label: I ran this on the named hardware, not a software adapter.
+          required: true
+        - label: I used a clean checkout or disclosed local changes above.
+          required: true
+        - label: I understand this finite result is not a universal bound.
+          required: true
+

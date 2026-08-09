@@ -1,163 +1,229 @@
-# matter-field
+# Matter Field
 
-Write world math once. Run it as CPU numbers, GPU shader graphs, and analytic
-gradients - with a measurable parity contract instead of hope.
+Authoritative procedural fields for JavaScript gameplay and Three.js TSL
+rendering.
 
-**Status: incubated package.** Extracted 2026-08-09 from OBJEKT-62 (where the
-pattern shipped as the terrain core and the sandworm trajectory of a live
-WebGPU open-world game) for promotion into its own repository. Zero runtime
-dependencies. Everything CPU-side is tested here (`npm test`, 41 tests); the
-GPU numeric probe requires a browser and is included as a documented template.
+Matter Field lets collision, buoyancy, forces, hit tests, and shader graphs
+materialize one pure expression tree through different math adapters. It does
+not promise that CPU and GPU floating-point results are identical. It gives
+you a restricted field vocabulary, CPU and TSL backends, analytic gradients,
+and a repeatable assay for measuring the remaining drift on real hardware.
 
-## The problem
+> **Public preview:** MIT licensed, zero runtime dependencies, and not yet
+> published to npm. The first hardware receipts cover one NVIDIA RTX 3070 on
+> Windows through WebGPU and WebGL2. AMD, Intel, and Apple silicon remain open
+> cells, so no cross-vendor portability claim is being made yet.
 
-GPU vertex displacement is invisible to CPU physics - engine-documented in
-Unreal (World Position Offset "does not change collision"), Unity, and
-three.js alike. The standard outs all hurt: duplicate the math in two
-languages and drift; bake heightmaps and lose proceduralism; read the GPU back
-and eat frames of latency; or generate everything on CPU and forfeit GPU
-displacement. Multiplayer makes it worse: a server that cannot afford a GPU
-still has to agree with every client about the ground.
+[Open the live examples](https://instruktlabs.github.io/matter-field/#examples)
+· [Inspect the receipts](https://instruktlabs.github.io/matter-field/#evidence)
+· [Contribute a hardware result](./docs/RECEIPTS.md)
 
-## The pattern
+## The split-world problem
 
-A field is a pure, branchless expression tree written once against a ~15-op
-abstract math adapter `A`:
+A vertex shader can displace terrain, water, particles, or a creature without
+giving CPU gameplay code a way to query the result. Common workarounds create
+two authorities: copy the formula into JavaScript, sample a proxy, bake a map,
+or read the GPU back. Those approaches can drift, lose procedural detail, or
+add latency.
+
+Matter Field makes the field definition authoritative. A backend decides what
+each operation means:
+
+- `numberAdapter` evaluates f64 JavaScript numbers for gameplay and servers.
+- `makeF32Adapter()` estimates f32 quantization on the CPU for assays.
+- the dual backend evaluates values plus analytic derivatives.
+- `makeTslAdapter(tsl)` builds a Three.js TSL graph supplied by the caller.
+
+The expression is shared; the numeric materializations are measured.
+
+## One field, several consumers
 
 ```js
-import { fbm, ridge, stamp } from 'matter-field/noise';
-
-export function myTerrain(A, x, z) {
-  const base = fbm(A, x, z, 0.0016, 2);
-  const h = A.mul(A.sub(base, A.f(0.5)), A.f(24));
-  return stamp(A, h, x, z, { cx: 120, cz: -340, rIn: 40, rOut: 90, level: 14 });
-}
-```
-
-Then every backend runs the SAME function:
-
-```js
-import { numberAdapter, makeF32Adapter, surfaceNormal } from 'matter-field';
+import { numberAdapter, surfaceNormal } from 'matter-field';
+import { fbm, stamp } from 'matter-field/noise';
 import { makeTslAdapter } from 'matter-field/backend-tsl';
 import * as tsl from 'three/tsl';
 
-myTerrain(numberAdapter, x, z);        // f64 CPU oracle: collision, AI, server sim
-myTerrain(makeF32Adapter(), x, z);     // GPU-drift emulation for the assay
-surfaceNormal(myTerrain, x, z);        // analytic gradient via dual numbers
-myTerrain(makeTslAdapter(tsl), px, pz) // WGSL/GLSL vertex displacement graph
+export function terrain(A, x, z) {
+  const base = fbm(A, x, z, 0.0016, 2);
+  const height = A.mul(A.sub(base, A.f(0.5)), A.f(24));
+  return stamp(A, height, x, z, {
+    cx: 120,
+    cz: -340,
+    rIn: 40,
+    rOut: 90,
+    level: 14,
+  });
+}
+
+const collisionHeight = terrain(numberAdapter, playerX, playerZ);
+const normal = surfaceNormal(terrain, playerX, playerZ);
+const displacementNode = terrain(
+  makeTslAdapter(tsl),
+  tsl.positionLocal.x,
+  tsl.positionLocal.z,
+);
 ```
 
-Collision equals render because there is nothing to diverge: gameplay samples
-the limit function the mesh is an approximation of. The server needs no
-assets, no GPU, no readback - it imports the module.
+The CPU height and GPU displacement come from the same parenthesized field
+definition. They can still differ by floating-point rounding, compiler
+contraction, and backend behavior. That is why a field ships with budgets and
+receipts rather than an equality assertion.
 
-## The guarantee tiers (state these honestly or not at all)
+## What is actually guaranteed
 
-| Tier | Claim | Basis |
+Matter Field separates structural guarantees from observed evidence.
+
+| Tier | Contract | Current evidence |
 |---|---|---|
-| 1 | CPU <-> CPU (browser, Worker, Node): **bit-exact** | ECMAScript fully specifies f64 arithmetic (roundTiesToEven) |
-| 2 | Integer lattice hash CPU <-> GPU: **bit-exact** | u32 mul/xor/shift are exact mod 2^32 in JS (`Math.imul`, `>>>`), WGSL, and GLSL - no accuracy-table latitude |
-| 3 | Float tree CPU <-> GPU: **bounded by f32 rounding** | WGSL 15.7: `+ - *` correctly rounded (no mandated direction), `/` 2.5 ulp, smoothstep inherits `/`, reassociation/FMA permitted. Origin measurement: max 0.43 mm / 28 ulp over a full production terrain (NVIDIA Turing, WebGPU) |
+| CPU materializations | Fields restricted to committed constants and specified ECMAScript arithmetic are intended to be bit-stable across supported JS runtimes. | A committed 300-point golden passed locally on Node 22 and in Chromium, Firefox, and WebKit main threads and Workers. CI is configured for Node 18, 20, and 22; public CI evidence is pending the first push. |
+| Integer hash | The raw u32 hash uses matching multiply, xor, and shift operations. Floats may enter only through `floor -> latt` within the documented lattice domain. | Eleven committed vectors were observed bit-exact on the current NVIDIA WebGPU and WebGL2 receipts. |
+| Float tree | CPU f64 and GPU f32 are **not** bit-exact. Each field declares an absolute-error budget in field units; ULP counts are diagnostic. | Receipts report the maximum observed drift over a named finite sample set on one hardware/backend combination. A passing receipt is not a universal bound. |
 
-Tier 3 is why the design rules below exist: the restricted op set is exactly
-the subset where the specs bound divergence. `sin`-based hashes and
-cancellation-dependent math are the documented casualty classes (Metal
-compiles shaders fast-math by default; WebGPU has no off switch).
+Read [the measurement contract](./docs/MEASUREMENT.md) before interpreting or
+publishing a result.
 
-## The design rules (the contract beyond the signatures)
+## Current measured receipts
 
-1. **No data-dependent branching.** Selection is mix/smoothstep/min/max, so
-   the graph is straight-line shader code with identical evaluation order.
-2. **No transcendentals in the tree.** No cross-vendor precision contract on
-   GPUs; JS `Math.sin` is not correctly rounded either. Fold trig of
-   constants on the host; oscillate with `pwave` (floor-based, exact).
-3. **Floats reach the hash only through `floor -> latt`.** `floor` is exact
-   by spec; any other float-to-int path voids Tier 2.
-4. **Parenthesization and stamp order are part of the field.** Reassociating
-   "equivalent" float expressions changes the world.
-5. **Constants are shared f64 literals** consumed by every backend.
-6. **Keep intermediates finite and normal** (specs permit denormal flushing
-   and assume no inf/NaN).
-7. **Every op goes through the adapter.** The dual backend doubles as the
-   lint: naked `+` on a dual is NaN, and the assay fails loudly.
+Both current receipts used 300 committed f32 coordinate pairs over a
+±20,000-unit extent: 24 targeted boundary/stamp/domain cases plus 276
+deterministic LCG points. “Max observed abs” is the largest sampled error
+across the four probed scalar outputs; it is not the worst possible value
+everywhere.
 
-## Layout
+| Hardware | Backend | Samples | Max observed abs | Max observed ULP | Raw hash vectors | Scope |
+|---|---:|---:|---:|---:|---:|---|
+| NVIDIA GeForce RTX 3070, Windows, Chrome 151 | WebGPU | 300 | `7.482643748e-4` | 623,919 | 11/11 exact | [receipt](./parity/reports/windows-local-webgpu.json) |
+| NVIDIA GeForce RTX 3070, Windows, Chrome 151 | WebGL2 via ANGLE/D3D11 | 300 | `7.488812152e-4` | 385,346 | 11/11 exact | [receipt](./parity/reports/windows-local-webgl2.json) |
+| AMD | — | — | — | — | — | unmeasured |
+| Intel | — | — | — | — | — | unmeasured |
+| Apple silicon / Metal | — | — | — | — | — | highest-priority missing cell |
 
+Apple/Metal is especially valuable because compiler fast-math behavior is a
+known portability pressure point. Results from other browsers, operating
+systems, drivers, and GPUs are also welcome.
+
+## Interactive examples
+
+The examples are small field laboratories, not benchmark claims against other
+libraries:
+
+- [Dunes + collision](https://instruktlabs.github.io/matter-field/examples/dunes.html)
+- [Swell + buoyancy](https://instruktlabs.github.io/matter-field/examples/swell.html)
+- [Wind + forces](https://instruktlabs.github.io/matter-field/examples/wind.html)
+- [Serpent + hit test](https://instruktlabs.github.io/matter-field/examples/serpent.html)
+- [Live parity assay](https://instruktlabs.github.io/matter-field/examples/parity.html)
+
+Each example pairs consumers that would normally be split across CPU and GPU.
+The live assay is the numeric evidence surface; a visual demonstration alone
+does not establish a parity result.
+
+## Design discipline
+
+Fields that want portable evidence follow these rules:
+
+1. Route every value-producing operation through the adapter.
+2. Keep data-dependent branching outside the shared field tree.
+3. Do not use `sin`, `cos`, `pow`, `exp`, or other transcendentals in the tree.
+4. Precompute and commit transcendental constants as numeric literals.
+5. Send floats to the integer hash only through `floor -> latt`.
+6. Treat parenthesization, cache points, and stamp order as field identity.
+7. Keep intermediates finite and normal over the supported input domain.
+8. Set absolute-error budgets in application field units; never use ULP alone
+   as a pass/fail threshold near zero crossings.
+
+The adapter is a discipline, not a compiler that can prove arbitrary
+JavaScript portable. Tests and receipts remain required.
+
+## Scope
+
+Matter Field is intentionally narrow:
+
+- It is not a physics engine.
+- It is not a stateful fluid, erosion, or cellular simulation framework.
+- It is not primarily a noise collection.
+- It is not a universal shader language or WebGPU resource layer.
+- It does not make unmeasured hardware portable by assertion.
+
+It fits closed-form scalar or vector fields that gameplay needs to query and
+Three.js needs to materialize as TSL.
+
+### Relationship to TypeGPU
+
+[TypeGPU](https://docs.swmansion.com/TypeGPU/) is a broader typed WebGPU
+toolkit concerned with shader authoring, resources, pipelines, and WebGPU
+application structure. Matter Field does not replace that surface. Its current
+GPU integration is deliberately smaller and Three.js-specific: adapt one
+restricted field expression to TSL and measure CPU/GPU drift. The two ideas
+could coexist; a TypeGPU adapter would be a future backend, not a reason to
+turn Matter Field into another general WebGPU framework.
+
+See [Positioning](./docs/POSITIONING.md) for the project boundary.
+
+## Local development
+
+Requires Node 18 or newer.
+
+```bash
+npm ci
+npm test
+npm run test:package
+npm run assay
+npm run bench
 ```
-src/adapter.js     the 15-op contract + structural/numeric conformance checks
-src/hash.js        the bit-exact u32 hash: JS + WGSL + GLSL, golden-vector locked
-src/number.js      numberAdapter (f64 oracle) + makeF32Adapter (drift emulation)
-src/dual.js        dual-number backend: analytic gradients/normals/tangents
-src/noise.js       vnoise, fbm, ridge, pwave, stamp - written once against A
-src/backend-tsl.js Three.js TSL backend (dependency-inverted: pass your three/tsl)
-parity/golden.js   golden points, f32 ulp arithmetic, capture/compare
-parity/harness.js  runCpuAssay + assayVerdict - the CPU half of the proof
-parity/gpu-probe-template.js  the browser/WebGPU half (documented method)
-examples/          four fields, four walls (below)
-test/              41 tests, node --test, zero deps
+
+Run the real browser probes on hardware:
+
+```bash
+npm run probe:gpu
+npm run probe:webgl2
 ```
 
-## The examples (each breaks a documented wall)
+Use `--headed` with `scripts/run-gpu-probe.mjs` when collecting a receipt for
+contribution. Software adapters do not count as hardware evidence unless the
+report is explicitly marked harness-only.
 
-| Example | The wall it breaks |
-|---|---|
-| `dunes.js` | Terrain collision vs GPU-displaced render - the origin pattern, with authored-pad stamps that stay exactly flat on both sides |
-| `swell.js` | Boat physics on GPU-displaced water: buoyancy samples the same animated sea the vertex shader displaces - no readback, no proxy plane; a server evaluates the identical sea state from the shared clock |
-| `wind.js` | Visual-only GPU particles: one vector field both advects a million motes (TSL) and applies forces to gameplay bodies (CPU) - the glider drifts with the particles it flies among |
-| `serpent.js` | Vertex-animated creatures with no hitbox: a closed-form spine with retarded-time coils; the GPU swarm and the CPU hit test evaluate the same curve, so the hitbox IS the visual. Dual backend gives analytic tangent frames |
+## Repository map
 
+```text
+src/adapter.js                 15-operation field contract
+src/number.js                  f64 oracle and f32-emulation adapters
+src/dual.js                    analytic value/gradient backend
+src/noise.js                   portable field building blocks
+src/hash.js                    raw u32 hash and shader references
+src/backend-tsl.js             caller-supplied Three.js TSL backend
+parity/harness.js              CPU assay and field-unit verdicts
+parity/golden.js               deterministic points and f32 diagnostics
+parity/gpu-probe-template.js   implemented WebGPU/WebGL2 assay
+parity/reports/                committed measured receipts
+examples/                      teaching fields and consumers
+site/                          GitHub Pages source
+test/                          contract, examples, hash, and assay tests
 ```
-npm test        # 41 tests (contract, hash goldens, noise, assays, examples, TSL smoke)
-npm run assay   # demo: all four fields through every backend + CPU assay table
-npm run bench   # adapter cost on this machine
-```
 
-Sandbox results (Node 22, x64 container, 2026-08-09): all tests green; f32
-absolute drift over a +-20 km golden extent: dunes 9.5e-4, swell 2.6e-4, wind
-2.6e-5 field units; dual backend bit-exact against the number backend on all
-fields; example-field cost 0.8 us/sample (f64), 5.0 us/sample with full
-gradients (the origin's full production terrain measured 8.7 us/sample).
+## Contributing
 
-Note the assay budgets ABSOLUTE drift, not ulps: near a field's zero
-crossings, physically negligible drift measures as thousands of ulps because
-ulps shrink toward zero. Both numbers are reported; only the absolute one is
-budgeted by default.
+The most useful contributions right now are:
 
-## What this is not
+- real AMD, Intel, and Apple silicon receipts;
+- adversarial samples around lattice, stamp, zero-crossing, and time limits;
+- browser/Worker bit-stability evidence;
+- accessible interactive examples that pair real GPU rendering with CPU
+  gameplay queries;
+- field-identity and receipt-schema improvements;
+- careful backend experiments that preserve the small core.
 
-- Not a physics engine, and not for stateful simulation (erosion, fluids) -
-  fields must be closed-form pure functions.
-- Not bit-exact floats across CPU/GPU - nothing is; see Tier 3.
-- Not a noise library first. FastNoiseLite et al. have more noise. What they
-  do not have is any cross-backend agreement contract - that is the product.
-- CPU throughput is adapter-shaped (~1-9 us/sample): fine for gameplay
-  queries (tens to hundreds per frame), wrong for CPU meshing over dense
-  grids.
+Start with [CONTRIBUTING.md](./CONTRIBUTING.md), the
+[roadmap](./ROADMAP.md), and the [receipt guide](./docs/RECEIPTS.md).
 
-## Promotion checklist (turning this into its own repo)
+Do not publish this package to npm yet. The project will hold the first npm
+release until the initial vendor matrix contains real NVIDIA, AMD, Intel, and
+Apple silicon evidence. The v2 assay identity is already bound to coordinates,
+expected CPU values, field sources, package version, and Three.js version.
 
-1. Copy `incubator/matter-field/` out; `npm install` needs nothing (dev-only:
-   `npm i -D three` to enable the TSL smoke test).
-2. Wire the GPU probe: bundle `parity/gpu-probe-template.js`'s sketch with
-   your bundler + Playwright against a real `three/webgpu` build.
-3. Fill the vendor matrix before ANY public parity claim: NVIDIA, AMD, Intel,
-   Apple silicon (Metal fast-math is the highest-value cell), plus WebGL2
-   fallback. Publish measured numbers; let them make the claim.
-4. Decide licence + name (currently UNLICENSED, working title matter-field;
-   owner decision - the pattern originates in proprietary OBJEKT-62 code,
-   generalized here without game content).
-5. CI: `node --test` on Node 18/20/22 (Tier 1 is a cross-runtime claim -
-   test it as one).
-6. Consider `backend-wgsl` (raw string codegen, Three-independent) as the
-   second GPU backend to prove genericity.
+## License and provenance
 
-## Provenance
-
-Generalized from OBJEKT-62's `src/heightcore.js` (terrain, shipped),
-`src/loop/keeperSwarm.js` (trajectory swarm, shipped), and
-`dev/rd/terrain-parity/` (the Fence A parity lane that measured the origin
-claims). Analysis behind the extraction:
-`brainstorm/research/MATH-ADAPTER-MATTER-FIELD-ANALYSIS.md` in the same
-repository. No game content (dune constants, site stamps, creature
-trajectories) was copied - the examples here are new, smaller, and exist to
-teach the discipline.
+Matter Field is available under the [MIT License](./LICENSE). It was
+generalized from a math-adapter pattern used in the proprietary OBJEKT-62 game;
+the standalone examples contain no OBJEKT-62 game content. See
+[PROVENANCE.md](./PROVENANCE.md) for the extraction record.

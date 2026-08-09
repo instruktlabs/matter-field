@@ -10,9 +10,8 @@
 import { fbm, ridge, stamp } from '../src/noise.js';
 
 // Host-folded wind rotation (f64 literals shared by every backend).
-const WIND_ANGLE = 0.62;
-const CA = Math.cos(WIND_ANGLE);
-const SA = Math.sin(WIND_ANGLE);
+const CA = 0.81387845666253389; // cos(0.62), folded and committed
+const SA = 0.58103516053730508; // sin(0.62), folded and committed
 
 export const DUNES_PAD = Object.freeze({
   cx: 120, cz: -340, rIn: 40, rOut: 90, level: 14,

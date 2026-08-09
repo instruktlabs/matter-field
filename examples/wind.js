@@ -18,7 +18,7 @@
 import { fbm, pwave } from '../src/noise.js';
 
 // Prevailing direction + gustiness (host-folded, rule 5).
-const PREVAIL = { ca: Math.cos(0.9), sa: Math.sin(0.9), speed: 6 };
+const PREVAIL = { ca: 0.62160996827066439, sa: 0.78332690962748341, speed: 6 };
 
 /**
  * Wind velocity (units/s) at (x, z), time t (seconds).
