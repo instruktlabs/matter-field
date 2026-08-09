@@ -24,14 +24,14 @@
     ],
     "coordinatesSha256": "b6784c110eeb64979a4af9b35c457615a1ffcac0303a8e9423032b2efca0ddd0",
     "valuesSha256": "22d6cb9b7bd9c930f9e0cabe17305cec85ddc0e10474038623da3dc0685b54d7",
-    "sourceSha256": "38b9ea4e59d776fa6f1ef0f2405ec49cf374b9813c2957b7be99a87e60192afb",
+    "sourceSha256": "38874b81e47bee18c32c29db010648113598a6bcb61005b208b46d6166a08479",
     "packageVersion": "0.0.1",
     "threeVersion": "0.185.1",
-    "sha256": "89ef10aaaf971a9804e57e65c34abb623bae40ae27b82311a738a968863c2449"
+    "sha256": "98804351c08e9ea7c6fa9f5f007d3dddd9556259954db202decb9a9538cbe361"
   },
   "pointCount": 300,
   "sampleSemantics": "maximum observed over 300 committed points; not a universal numeric bound",
-  "dispatchAndReadbackMs": 256.2000000178814,
+  "dispatchAndReadbackMs": 226.80000001192093,
   "pass": true,
   "passCriterion": "absolute drift in field units; ULP is diagnostic only",
   "fields": [
@@ -345,11 +345,11 @@
   },
   "run": {
     "headed": false,
-    "generatedAt": "2026-08-09T18:14:06.769Z",
+    "generatedAt": "2026-08-09T18:47:21.246Z",
     "node": "v22.23.1",
     "package": "matter-field@0.0.1",
     "three": "0.185.1",
-    "commit": "11a7c4ad80326e5387886bedc7313c9ebb43b130",
+    "commit": "1a7ecc7de7ac7c5d7be40234ff927aa1c9186ee8",
     "dirty": false,
     "browserArgs": [
       "--enable-unsafe-webgpu",
