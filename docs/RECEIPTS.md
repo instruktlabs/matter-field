@@ -17,9 +17,10 @@ The first matrix targets:
 - Intel WebGPU and WebGL2;
 - Apple silicon WebGPU/Metal and the available fallback path.
 
-The existing NVIDIA RTX 3070 result is useful but should be reproduced on
-other drivers, browsers, and operating systems. Apple/Metal is the most
-important missing cell.
+The current examples cover an NVIDIA RTX 3070 on Windows plus an NVIDIA GTX
+1660 Ti Max-Q and AMD Radeon Vega 10 on Linux. They should still be reproduced
+on other drivers, browsers, and operating systems. Intel and Apple/Metal are
+the most important missing cells.
 
 ## Before running
 

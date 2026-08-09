@@ -36,6 +36,11 @@ const ADVERSARIAL_COORDINATES = Object.freeze([
   [19999.999, 19999.999], [-19999.999, -19999.999], [20000, -20000], [-20000, 20000],
 ]);
 
+export function sourceContentSha256(source) {
+  const canonical = String(source).replace(/\r\n?/g, '\n');
+  return createHash('sha256').update(canonical, 'utf8').digest('hex');
+}
+
 function makeAssayPoints(count) {
   const fixed = ADVERSARIAL_COORDINATES.slice(0, count).map(([x, z], index) => ({
     id: `a${String(index).padStart(4, '0')}`,
@@ -57,7 +62,7 @@ export async function makeProbeGoldenSet(count = 300) {
   const threePackage = JSON.parse(await readFile(join(ROOT, 'node_modules', 'three', 'package.json'), 'utf8'));
   const sourceManifest = await Promise.all(ASSAY_SOURCES.map(async (path) => ({
     path,
-    sha256: createHash('sha256').update(await readFile(join(ROOT, path))).digest('hex'),
+    sha256: sourceContentSha256(await readFile(join(ROOT, path), 'utf8')),
   })));
   const coordinatePayload = {
     generator: 'matter-field-assay-points/v2',

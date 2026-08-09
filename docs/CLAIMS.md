@@ -11,9 +11,10 @@ become a stronger claim than the repository can defend.
   and caller-supplied Three.js TSL graphs.
 - The committed CPU golden agrees bit-for-bit in the Node, browser-engine, and
   Worker configurations named in public CI.
-- On the two committed RTX 3070 receipts, every sampled float output stayed
-  within its declared regression budget and all eleven sampled raw u32 hash
-  vectors agreed.
+- Across six committed receipts from an RTX 3070 on Windows and a GTX 1660 Ti
+  Max-Q plus Radeon Vega 10 on Linux, every sampled float output stayed within
+  its declared regression budget and all eleven sampled raw u32 hash vectors
+  agreed. Each receipt covers one named browser/backend/device configuration.
 - The same source field can serve dense GPU rendering and sparse immediate CPU
   queries without a per-frame GPU readback.
 - The dual backend returns a value channel bit-identical to the number backend
@@ -22,8 +23,8 @@ become a stronger claim than the repository can defend.
 ## Not established
 
 - A universal CPU/GPU numeric bound, or correctness at unsampled coordinates.
-- Results on AMD, Intel, Apple silicon, other NVIDIA devices, or unrecorded
-  browser/driver combinations.
+- Results on Intel, Apple silicon, other AMD or NVIDIA devices, or unrecorded
+  browser/driver combinations. One device never establishes a vendor family.
 - That 300 points are statistically representative. They are a deterministic
   regression set with targeted cases.
 - That the current budgets are application-valid tolerances. They were chosen
@@ -66,8 +67,8 @@ Avoid:
 
 ## What would strengthen the claim
 
-1. Fill the AMD, Intel, and Apple/Metal WebGPU and fallback cells with raw
-   receipts from clean source states.
+1. Fill the Intel and Apple/Metal WebGPU and fallback cells, and broaden the
+   current NVIDIA/AMD coverage with raw receipts from clean source states.
 2. Derive each field budget from a named consumer tolerance, then add targeted
    samples around that consumer's failure boundaries.
 3. Add a separate geometry/materialization assay for tessellation, LOD,

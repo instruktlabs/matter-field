@@ -9,14 +9,27 @@ const DIST = join(ROOT, 'dist');
 const FONT_SOURCE = join(ROOT, 'node_modules', '@fontsource-variable');
 const FONT_DIST = join(DIST, 'assets', 'fonts');
 const REPORTS = [
-  ['webgpu', join(ROOT, 'parity', 'reports', 'windows-local-webgpu.json')],
-  ['webgl2', join(ROOT, 'parity', 'reports', 'windows-local-webgl2.json')],
-];
+  ['windowsRtx3070Webgpu', 'NVIDIA RTX 3070 · Windows', 'WebGPU', 'windows-local-webgpu.json'],
+  ['windowsRtx3070Webgl2', 'NVIDIA RTX 3070 · Windows', 'WebGL2 / D3D11', 'windows-local-webgl2.json'],
+  ['linuxVega10Webgpu', 'AMD Radeon Vega 10 · Linux', 'WebGPU / Vulkan', 'linux-vega10-chrome-webgpu-2026-08-09.json'],
+  ['linuxVega10Webgl2', 'AMD Radeon Vega 10 · Linux', 'WebGL2 / Vulkan', 'linux-vega10-chrome-webgl2-2026-08-09.json'],
+  ['linuxGtx1660TiWebgpu', 'NVIDIA GTX 1660 Ti Max-Q · Linux', 'WebGPU / Vulkan', 'linux-gtx1660ti-chrome-webgpu-2026-08-09.json'],
+  ['linuxGtx1660TiWebgl2', 'NVIDIA GTX 1660 Ti Max-Q · Linux', 'WebGL2 / Vulkan', 'linux-gtx1660ti-chrome-webgl2-2026-08-09.json'],
+].map(([key, label, backendLabel, file]) => ({
+  key,
+  label,
+  backendLabel,
+  file,
+  path: join(ROOT, 'parity', 'reports', file),
+}));
 
 const reports = {};
-for (const [key, path] of REPORTS) {
+for (const { key, label, backendLabel, file, path } of REPORTS) {
   try {
-    reports[key] = JSON.parse(await readFile(path, 'utf8'));
+    reports[key] = {
+      ...JSON.parse(await readFile(path, 'utf8')),
+      site: { label, backendLabel, receipt: `./reports/${file}` },
+    };
   } catch {
     reports[key] = null;
   }
@@ -39,7 +52,7 @@ await Promise.all([
   copyFile(join(FONT_SOURCE, 'recursive', 'LICENSE'), join(FONT_DIST, 'recursive-OFL.txt')),
   copyFile(join(ROOT, 'site', 'examples', 'demo.css'), join(DIST, 'examples', 'demo.css')),
   ...examplePages.map((name) => copyFile(join(ROOT, 'site', 'examples', name), join(DIST, 'examples', name))),
-  ...REPORTS.map(async ([, path]) => {
+  ...REPORTS.map(async ({ path }) => {
     try {
       await copyFile(path, join(DIST, 'reports', path.split(/[\\/]/).at(-1)));
     } catch {

@@ -30,7 +30,8 @@ approximation need separate application-level assays and budgets.
 
 The current `matter-field-gpu-parity/v2` reports contain:
 
-- requested and actual backend;
+- the actual backend (the runner rejects a requested/actual mismatch before
+  accepting a receipt);
 - available adapter/GPU information;
 - deterministic sample-set metadata;
 - point count;
@@ -47,6 +48,10 @@ version. The runner also records the Git commit and whether the worktree was
 dirty. A clean receipt must be regenerated after any identity-changing source
 edit; the source hashes are the numeric identity while the commit makes the
 repository state reviewable.
+
+Source files are decoded as UTF-8 and line endings are canonicalized to LF
+before hashing. An otherwise identical Windows or Linux checkout therefore
+keeps one source identity.
 
 ## How to read a pass
 

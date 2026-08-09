@@ -214,21 +214,26 @@ function appendRow(values, className = '') {
   matrix.append(tr);
 }
 
-const rows = [reports.webgpu, reports.webgl2].filter(Boolean);
+const rows = Object.values(reports).filter(Boolean);
 for (const report of rows) {
-  const gpu = report.chromeGpu?.devices?.find((device) => /nvidia|amd|intel|apple/i.test(device.deviceString))?.deviceString
+  const gpu = report.site?.label
+    ?? report.chromeGpu?.devices?.find((device) => /nvidia|amd|intel|apple/i.test(device.deviceString))?.deviceString
     ?? report.adapter?.renderer
     ?? report.adapter?.description
     ?? report.adapter?.vendor
     ?? 'Unknown GPU';
   const worstAbs = Math.max(...report.fields.map((field) => field.maxAbs));
   const worstUlp = Math.max(...report.fields.map((field) => field.maxUlp));
-  const status = document.createElement('span');
+  const status = document.createElement(report.site?.receipt ? 'a' : 'span');
   status.className = report.pass ? 'pass' : 'fail';
-  status.textContent = report.pass ? 'PASS' : 'FAIL';
-  appendRow([gpu, report.backend.toUpperCase(), worstAbs.toExponential(3), worstUlp.toLocaleString(), report.hash.bitExact ? 'exact' : 'failed', status]);
+  status.textContent = report.pass ? 'PASS ↗' : 'FAIL ↗';
+  if (report.site?.receipt) {
+    status.href = report.site.receipt;
+    status.setAttribute('aria-label', `${report.pass ? 'Passing' : 'Failing'} raw receipt for ${gpu}`);
+  }
+  appendRow([gpu, report.site?.backendLabel ?? report.backend.toUpperCase(), worstAbs.toExponential(3), worstUlp.toLocaleString(), report.hash.bitExact ? 'exact' : 'failed', status]);
 }
 
-for (const vendor of ['AMD', 'Intel', 'Apple silicon / Metal']) {
+for (const vendor of ['Intel', 'Apple silicon / Metal']) {
   appendRow([vendor, '—', '—', '—', '—', 'UNMEASURED'], 'unmeasured');
 }

@@ -14,9 +14,10 @@ you a restricted field vocabulary, CPU and TSL backends, analytic gradients,
 and a repeatable assay for measuring the remaining drift on real hardware.
 
 > **Public preview:** MIT licensed, zero runtime dependencies, and not yet
-> published to npm. The first hardware receipts cover one NVIDIA RTX 3070 on
-> Windows through WebGPU and WebGL2. AMD, Intel, and Apple silicon remain open
-> cells, so no cross-vendor portability claim is being made yet.
+> published to npm. Six receipts now cover three physical GPU adapters across
+> NVIDIA and AMD on Windows and Linux, through WebGPU and WebGL2. Intel and
+> Apple silicon remain open cells; this is multi-device evidence, not a
+> vendor-wide portability claim.
 
 [Open the live examples](https://instruktlabs.github.io/matter-field/#examples)
 · [Inspect the receipts](https://instruktlabs.github.io/matter-field/#evidence)
@@ -85,7 +86,7 @@ Matter Field separates structural guarantees from observed evidence.
 | Tier | Contract | Current evidence |
 |---|---|---|
 | CPU materializations | Fields restricted to committed constants and specified ECMAScript arithmetic are intended to be bit-stable across supported JS runtimes. | A committed 300-point golden passes on Node 18, 20, and 22 and in Chromium, Firefox, and WebKit main threads and Workers in [public CI](https://github.com/instruktlabs/matter-field/actions/workflows/ci.yml). |
-| Integer hash | The raw u32 hash uses matching multiply, xor, and shift operations. Floats may enter only through `floor -> latt`; the currently supported floored lattice range is `[-131072, 131071]`. Identical lattice integers remain a precondition. | Eleven committed raw-u32 vectors were observed bit-exact on the current NVIDIA WebGPU and WebGL2 receipts. Float-to-lattice boundary vectors are still owed. |
+| Integer hash | The raw u32 hash uses matching multiply, xor, and shift operations. Floats may enter only through `floor -> latt`; the currently supported floored lattice range is `[-131072, 131071]`. Identical lattice integers remain a precondition. | Eleven committed raw-u32 vectors were observed bit-exact on the current NVIDIA and AMD WebGPU and WebGL2 receipts. Float-to-lattice boundary vectors are still owed. |
 | Float tree | CPU f64 and GPU f32 are **not** bit-exact. Each field declares an absolute-error budget in field units; ULP counts are diagnostic. | Receipts report the maximum observed drift over a named finite sample set on one hardware/backend combination. A passing receipt is not a universal bound. |
 
 Read [the measurement contract](./docs/MEASUREMENT.md) before interpreting or
@@ -94,7 +95,7 @@ what the current evidence supports from what remains unproven.
 
 ## Current measured receipts
 
-Both current receipts used 300 committed f32 coordinate pairs over a
+All six current receipts used the same 300 committed f32 coordinate pairs over a
 ±20,000-unit extent: 24 targeted boundary/stamp/domain cases plus 276
 deterministic LCG points. “Max observed abs” is the largest sampled error
 across the four probed scalar outputs; it is not the worst possible value
@@ -104,13 +105,21 @@ everywhere.
 |---|---:|---:|---:|---:|---:|---|
 | NVIDIA GeForce RTX 3070, Windows, Chrome 151 | WebGPU | 300 | `7.482643748e-4` | 623,919 | 11/11 exact | [receipt](./parity/reports/windows-local-webgpu.json) |
 | NVIDIA GeForce RTX 3070, Windows, Chrome 151 | WebGL2 via ANGLE/D3D11 | 300 | `7.488812152e-4` | 385,346 | 11/11 exact | [receipt](./parity/reports/windows-local-webgl2.json) |
-| AMD | — | — | — | — | — | unmeasured |
+| AMD Radeon Vega 10, Linux, Chrome 150 | WebGPU via Vulkan | 300 | `7.822737963e-4` | 577,730 | 11/11 exact | [receipt](./parity/reports/linux-vega10-chrome-webgpu-2026-08-09.json) |
+| AMD Radeon Vega 10, Linux, Chrome 150 | WebGL2 via ANGLE/Vulkan | 300 | `7.822737963e-4` | 577,730 | 11/11 exact | [receipt](./parity/reports/linux-vega10-chrome-webgl2-2026-08-09.json) |
+| NVIDIA GeForce GTX 1660 Ti Max-Q, Linux, Chrome 150 | WebGPU via Vulkan | 300 | `7.689083759e-4` | 1,619,247 | 11/11 exact | [receipt](./parity/reports/linux-gtx1660ti-chrome-webgpu-2026-08-09.json) |
+| NVIDIA GeForce GTX 1660 Ti Max-Q, Linux, Chrome 150 | WebGL2 via ANGLE/Vulkan | 300 | `7.689083759e-4` | 1,619,247 | 11/11 exact | [receipt](./parity/reports/linux-gtx1660ti-chrome-webgl2-2026-08-09.json) |
 | Intel | — | — | — | — | — | unmeasured |
 | Apple silicon / Metal | — | — | — | — | — | highest-priority missing cell |
 
 Apple/Metal is especially valuable because it adds a different compiler/backend
-family and an important consumer platform. Results from other browsers,
-operating systems, drivers, and GPUs are also welcome.
+family and an important consumer platform. Intel, other browsers, operating
+systems, drivers, and GPU generations remain welcome evidence.
+
+The receipt timing fields are diagnostic metadata, not performance results.
+These captures were not run on controlled quiet hosts—the Windows machine in
+particular had concurrent interactive and agent workloads—so they cannot rank
+hardware, backends, or package speed.
 
 ## Interactive examples
 
@@ -234,7 +243,7 @@ test/                          contract, examples, hash, and assay tests
 
 The most useful contributions right now are:
 
-- real AMD, Intel, and Apple silicon receipts;
+- real Intel and Apple silicon receipts, plus broader AMD and NVIDIA coverage;
 - adversarial samples around lattice, stamp, zero-crossing, and time limits;
 - browser/Worker bit-stability evidence;
 - accessible interactive examples that pair real GPU rendering with CPU

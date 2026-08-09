@@ -73,6 +73,24 @@ attached to the public repository. [GitHub warns](https://docs.github.com/en/act
 that forks of a public repository can potentially execute dangerous workflow
 code on a self-hosted machine.
 
+### Completed owned-laptop evidence
+
+On 2026-08-09, a clean checkout of `a2af9932` produced three fresh-browser
+repetitions for every adapter/backend pair. Within each pair, numeric summaries
+were identical across repetitions; all runs passed, reported zero non-finite
+samples, rejected software adapters, and matched all 11 raw-u32 vectors.
+
+| Adapter | Backend | Published receipt |
+|---|---|---|
+| Radeon Vega 10 / RADV | WebGPU / Vulkan | [JSON](../parity/reports/linux-vega10-chrome-webgpu-2026-08-09.json) |
+| Radeon Vega 10 / RADV | WebGL2 / ANGLE / Vulkan | [JSON](../parity/reports/linux-vega10-chrome-webgl2-2026-08-09.json) |
+| GTX 1660 Ti Max-Q / NVIDIA | WebGPU / Vulkan | [JSON](../parity/reports/linux-gtx1660ti-chrome-webgpu-2026-08-09.json) |
+| GTX 1660 Ti Max-Q / NVIDIA | WebGL2 / ANGLE / Vulkan | [JSON](../parity/reports/linux-gtx1660ti-chrome-webgl2-2026-08-09.json) |
+
+These are correctness receipts, not performance benchmarks. Dispatch/readback
+timings in the JSON include uncontrolled machine and browser conditions and
+must not be used to rank hardware or implementations.
+
 ## Complementary services
 
 - [**AWS G4ad**](https://aws.amazon.com/ec2/instance-types/g4/) is the most
