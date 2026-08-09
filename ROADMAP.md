@@ -15,8 +15,11 @@ contributor loop before package distribution or a wider API surface.
   zero crossings, long-running time inputs, and supported coordinate limits.
   The current set covers stamp radii and several domain boundaries but fixes
   swell at `t=2.5` and wind at `t=1`.
-- [ ] Collect real WebGPU receipts for NVIDIA, AMD, Intel, and Apple silicon.
-- [ ] Collect the corresponding WebGL2 fallback receipts where supported.
+- [x] Collect real WebGPU and WebGL2 receipts for the owned NVIDIA/Windows and
+  NVIDIA-plus-AMD/Linux hardware lanes.
+- [ ] Collect real WebGPU receipts for Intel and Apple silicon.
+- [ ] Collect the corresponding Intel and Apple fallback receipts where
+  supported.
 - [ ] Review Apple/Metal results before making any portability statement.
 - [ ] Validate receipt JSON against a versioned schema.
 - [ ] Bind probe code, comparison code, budgets, and hash vectors into a

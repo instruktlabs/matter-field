@@ -212,6 +212,7 @@ tbody tr:last-child td { border-bottom: 0; }
 tbody tr:not(.unmeasured):hover { background: rgba(49, 95, 140, .055); }
 .pass { color: var(--pass); font-weight: 750; }
 .fail { color: var(--fail); font-weight: 750; }
+.matrix-wrap a.pass, .matrix-wrap a.fail { text-underline-offset: 3px; }
 .unmeasured { color: #69726d; }
 .matrix-footer { display: flex; justify-content: space-between; gap: 40px; align-items: flex-start; margin-top: 24px; }
 .matrix-footer p { max-width: 800px; margin: 0; color: var(--ink-700); font-size: 13px; }
