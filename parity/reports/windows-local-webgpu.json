@@ -24,14 +24,14 @@
     ],
     "coordinatesSha256": "b6784c110eeb64979a4af9b35c457615a1ffcac0303a8e9423032b2efca0ddd0",
     "valuesSha256": "22d6cb9b7bd9c930f9e0cabe17305cec85ddc0e10474038623da3dc0685b54d7",
-    "sourceSha256": "c9d6c31fbc24dd8571b6048dbfd9c362829e31dda5a98108a6e7ed7144cb90ed",
+    "sourceSha256": "38b9ea4e59d776fa6f1ef0f2405ec49cf374b9813c2957b7be99a87e60192afb",
     "packageVersion": "0.0.1",
     "threeVersion": "0.185.1",
-    "sha256": "c25ddd93ace00c64287677393c02d372150073e63abe372fe8f671ffe46978c7"
+    "sha256": "89ef10aaaf971a9804e57e65c34abb623bae40ae27b82311a738a968863c2449"
   },
   "pointCount": 300,
   "sampleSemantics": "maximum observed over 300 committed points; not a universal numeric bound",
-  "dispatchAndReadbackMs": 144.90000000596046,
+  "dispatchAndReadbackMs": 228.40000000596046,
   "pass": true,
   "passCriterion": "absolute drift in field units; ULP is diagnostic only",
   "fields": [
@@ -40,6 +40,8 @@
       "budget": 0.004,
       "maxAbs": 0.0007482643748453199,
       "maxUlp": 4340,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
       "pass": true,
       "maxAbsSample": {
         "id": "r0209",
@@ -58,13 +60,16 @@
         "gpu": -0.23280882835388184,
         "abs": 0.00006466735164689652,
         "ulp": 4340
-      }
+      },
+      "firstNonFiniteSample": null
     },
     {
       "name": "swell-t2.5",
       "budget": 0.001,
       "maxAbs": 0.0002236813009637295,
       "maxUlp": 623919,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
       "pass": true,
       "maxAbsSample": {
         "id": "r0008",
@@ -83,13 +88,16 @@
         "gpu": 0.0004730224609375,
         "abs": 0.00002105807713398411,
         "ulp": 623919
-      }
+      },
+      "firstNonFiniteSample": null
     },
     {
       "name": "wind.wx-t1",
       "budget": 0.0001,
       "maxAbs": 0.000020787901877872272,
       "maxUlp": 174,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
       "pass": true,
       "maxAbsSample": {
         "id": "r0113",
@@ -108,13 +116,16 @@
         "gpu": 1.2747833728790283,
         "abs": 0.000020787901877872272,
         "ulp": 174
-      }
+      },
+      "firstNonFiniteSample": null
     },
     {
       "name": "wind.wz-t1",
       "budget": 0.0001,
       "maxAbs": 0.00002657150133833497,
       "maxUlp": 161,
+      "finiteSamples": 300,
+      "nonFiniteCount": 0,
       "pass": true,
       "maxAbsSample": {
         "id": "r0057",
@@ -133,7 +144,8 @@
         "gpu": 1.5042670965194702,
         "abs": 0.000019176270206200385,
         "ulp": 161
-      }
+      },
+      "firstNonFiniteSample": null
     }
   ],
   "hash": {
@@ -333,12 +345,16 @@
   },
   "run": {
     "headed": false,
-    "generatedAt": "2026-08-09T17:16:55.179Z",
+    "generatedAt": "2026-08-09T18:14:06.923Z",
     "node": "v22.23.1",
     "package": "matter-field@0.0.1",
     "three": "0.185.1",
-    "commit": "3a902dfd0ca4edb7c5eced78ca4c32129ede983b",
+    "commit": "11a7c4ad80326e5387886bedc7313c9ebb43b130",
     "dirty": false,
+    "browserArgs": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist"
+    ],
     "softwareAdapter": false
   }
 }
