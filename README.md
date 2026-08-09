@@ -1,5 +1,9 @@
 # Matter Field
 
+[![CI](https://github.com/instruktlabs/matter-field/actions/workflows/ci.yml/badge.svg)](https://github.com/instruktlabs/matter-field/actions/workflows/ci.yml)
+[![Pages](https://github.com/instruktlabs/matter-field/actions/workflows/pages.yml/badge.svg)](https://instruktlabs.github.io/matter-field/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-174e52.svg)](./LICENSE)
+
 Authoritative procedural fields for JavaScript gameplay and Three.js TSL
 rendering.
 
@@ -76,7 +80,7 @@ Matter Field separates structural guarantees from observed evidence.
 
 | Tier | Contract | Current evidence |
 |---|---|---|
-| CPU materializations | Fields restricted to committed constants and specified ECMAScript arithmetic are intended to be bit-stable across supported JS runtimes. | A committed 300-point golden passed locally on Node 22 and in Chromium, Firefox, and WebKit main threads and Workers. CI is configured for Node 18, 20, and 22; public CI evidence is pending the first push. |
+| CPU materializations | Fields restricted to committed constants and specified ECMAScript arithmetic are intended to be bit-stable across supported JS runtimes. | A committed 300-point golden passes on Node 18, 20, and 22 and in Chromium, Firefox, and WebKit main threads and Workers in [public CI](https://github.com/instruktlabs/matter-field/actions/workflows/ci.yml). |
 | Integer hash | The raw u32 hash uses matching multiply, xor, and shift operations. Floats may enter only through `floor -> latt` within the documented lattice domain. | Eleven committed vectors were observed bit-exact on the current NVIDIA WebGPU and WebGL2 receipts. |
 | Float tree | CPU f64 and GPU f32 are **not** bit-exact. Each field declares an absolute-error budget in field units; ULP counts are diagnostic. | Receipts report the maximum observed drift over a named finite sample set on one hardware/backend combination. A passing receipt is not a universal bound. |
 

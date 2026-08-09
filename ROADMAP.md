@@ -9,7 +9,7 @@ contributor loop before package distribution or a wider API surface.
   and source commit—not only sampled coordinates and field labels.
 - [x] Add a committed 300-point CPU golden and a local browser/Worker
   comparison runner.
-- [ ] Publish passing Node 18/20/22 and browser/Worker CI evidence after the
+- [x] Publish passing Node 18/20/22 and browser/Worker CI evidence after the
   repository's first push.
 - [x] Add targeted numeric samples around lattice boundaries, stamp radii,
   zero crossings, long-running time inputs, and supported coordinate limits.
@@ -19,8 +19,8 @@ contributor loop before package distribution or a wider API surface.
 - [ ] Validate receipt JSON against a versioned schema.
 - [x] Replace explanatory CPU-only visuals with accessible demonstrations that
   pair real TSL rendering and CPU gameplay queries.
-- [ ] Complete desktop, mobile, keyboard, touch, and reduced-motion QA.
-- [ ] Publish contribution guidance for accepting and reproducing receipts.
+- [x] Complete desktop, mobile, keyboard, touch, and reduced-motion QA.
+- [x] Publish contribution guidance for accepting and reproducing receipts.
 - [ ] Tag a reviewed `0.1.0` only after the matrix and release checklist pass.
 
 ## Near-term research
