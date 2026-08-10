@@ -15,7 +15,7 @@ be presented as shipped architecture until the prior exit criteria are met.
 
 - [x] Publish the standalone repository without OBJEKT-62 history or game
   content.
-- [x] Publish Pages, focused examples, and the integrated FIELDWORK dogfood
+- [x] Publish Pages, focused examples, and the live parity assay
   mission.
 - [x] Tag
   [`v0.0.1-preview.1`](https://github.com/instruktlabs/matter-field/releases/tag/v0.0.1-preview.1)
@@ -30,8 +30,9 @@ be presented as shipped architecture until the prior exit criteria are met.
 - [x] Add a controlled CPU benchmark harness with a clean-host rejection gate.
   No publication timing has been accepted.
 
-**Exit gate: met.** A public source state, prerelease artifact, live dogfood
-application, CI baseline, and clearly scoped receipt set are reviewable.
+**Exit gate: met.** A public source state, prerelease artifact, focused
+interactive examples, CI baseline, and clearly scoped receipt set are
+reviewable.
 
 ## Phase 1 — Complete the public developer contract
 

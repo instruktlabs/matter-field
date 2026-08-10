@@ -4,7 +4,6 @@ const fields = [
   ['swell', './swell.html', 'Swell'],
   ['wind', './wind.html', 'Wind'],
   ['serpent', './serpent.html', 'Serpent'],
-  ['fieldwork', '../fieldwork/', 'Flooded Basin'],
   ['parity', './parity.html', 'Assay'],
 ];
 

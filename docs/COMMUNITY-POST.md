@@ -32,12 +32,11 @@ WebGPU, game-development, procedural-generation, or ML community.
 > 3070 WebGPU receipt. These are finite regression observations, not universal
 > bounds or speed results.
 >
-> I exercised the package in **FIELDWORK: Breach Run**: one 3D mission where CPU
-> dunes drive contact and slope, swell drives four-point buoyancy, wind pushes
-> the skiff, and a GPU-animated serpent has a CPU-queryable collision volume.
-> Gameplay performs zero per-frame GPU readbacks. The default WebGPU and
-> WebGL2 lanes use the native one-definition TSL path; an explicit optional
-> WebGPU lane uses the precompiled TypeGPU/Three bridge.
+> I exercised the package through four focused 3D labs: CPU dunes drive contact
+> and slope, swell drives four-point buoyancy, wind drives a visible force
+> field, and a GPU-animated serpent has a CPU-queryable volume. The default
+> WebGPU and WebGL2 lanes use the native one-definition TSL path; an explicit
+> optional WebGPU lane uses the precompiled TypeGPU/Three bridge.
 >
 > Live game and assays: https://instruktlabs.github.io/matter-field/
 > Source and receipts: https://github.com/instruktlabs/matter-field
@@ -107,12 +106,10 @@ against the adapter-authored authority; it does not eliminate source
 duplication yet. A research-only dunes canonical-IR recorder/source emitter now
 exists, but it is not a packaged backend or generated-GPU receipt.
 
-To see whether the architecture survives contact with an application, I built
-**FIELDWORK: Breach Run**. It combines four fields in one short 3D courier run:
-terrain controls skiff contact and slope, swell controls buoyancy, wind changes
-handling, and a moving serpent body has an independently queryable CPU volume.
-The GPU renders the dense surfaces; a fixed 60 Hz CPU loop owns the mission,
-damage, and objective. There are zero per-frame GPU readbacks.
+The live examples cover four separate 3D field consequences: terrain contact,
+buoyancy, wind force, and moving-volume hit tests. The GPU renders the dense
+surfaces while CPU code queries the corresponding fields synchronously, with
+zero per-frame GPU readbacks in the examples.
 
 What the repository currently supports:
 

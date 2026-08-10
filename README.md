@@ -241,20 +241,15 @@ hardware, backends, or package speed.
 The examples are small field laboratories, not benchmark claims against other
 libraries:
 
-- **[FIELDWORK: Breach Run](https://instruktlabs.github.io/matter-field/fieldwork/)** —
-  the integrated 3D application combining dunes, swell, wind, and the
-  serpent field in one fixed-step CPU-authoritative game. Read its
-  [architecture and asset record](./docs/FIELDWORK.md).
 - [Dunes + collision](https://instruktlabs.github.io/matter-field/examples/dunes.html)
 - [Swell + buoyancy](https://instruktlabs.github.io/matter-field/examples/swell.html)
 - [Wind + forces](https://instruktlabs.github.io/matter-field/examples/wind.html)
 - [Serpent + hit test](https://instruktlabs.github.io/matter-field/examples/serpent.html)
 - [Live parity assay](https://instruktlabs.github.io/matter-field/examples/parity.html)
 
-FIELDWORK is the application pressure test; each focused lab isolates one
-consumer pair that would normally be split across CPU and GPU.
-The live assay is the numeric evidence surface; a visual demonstration alone
-does not establish a parity result.
+Each focused lab isolates one consumer pair that would normally be split across
+CPU and GPU. The live assay is the numeric evidence surface; a visual
+demonstration alone does not establish a parity result.
 
 ## Design discipline
 
@@ -375,7 +370,6 @@ parity/typegpu-gpu-probe.js     TypeGPU compute and Three integration assay
 parity/reports/                committed measured receipts
 benchmarks/                    controlled CPU comparison and clean-host gate
 examples/                      teaching fields and consumers
-site/fieldwork/                integrated 3D application
 site/                          GitHub Pages source and focused labs
 test/                          contract, examples, hash, and assay tests
 tooling-tests/                 precompiled TypeGPU artifact checks
@@ -407,8 +401,8 @@ expected CPU values, field sources, package version, and Three.js version.
 ## License and provenance
 
 Matter Field's code and package documentation are available under the
-[MIT License](./LICENSE). Fieldwork asset provenance and any provider-specific
-release conditions are recorded separately in [docs/FIELDWORK.md](./docs/FIELDWORK.md).
+[MIT License](./LICENSE). Runtime assets and provider-specific release
+conditions are recorded in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 Bundled dependency licenses and attributions are retained in
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 The adapter pattern was generalized from a pattern used in the proprietary

@@ -41,9 +41,8 @@ for (const { key, label, backendLabel, file, path } of REPORTS) {
 
 const liveProbe = await makeProbeGoldenSet(300);
 
-// FIELDWORK imports the publishable precompiled TypeGPU bridge. Build that
-// exact artifact before the site bundle so a clean checkout never relies on a
-// stale generated artifact.
+// Build the publishable precompiled TypeGPU bridge before the site bundle so a
+// clean checkout never relies on a stale generated artifact.
 await buildTypegpu({ outDir: TYPEGPU_DIST, logLevel: 'silent' });
 
 // A production build is a complete snapshot. Remove only the repository's
@@ -53,7 +52,6 @@ await mkdir(DIST, { recursive: true });
 await mkdir(join(DIST, 'reports'), { recursive: true });
 await mkdir(join(DIST, 'reports', 'typegpu'), { recursive: true });
 await mkdir(join(DIST, 'examples'), { recursive: true });
-await mkdir(join(DIST, 'fieldwork', 'assets', 'ui'), { recursive: true });
 await mkdir(FONT_DIST, { recursive: true });
 await mkdir(BRAND_DIST, { recursive: true });
 const examplePages = ['dunes.html', 'swell.html', 'wind.html', 'serpent.html', 'parity.html'];
@@ -70,10 +68,6 @@ await Promise.all([
   copyFile(join(FONT_SOURCE, 'newsreader', 'LICENSE'), join(FONT_DIST, 'newsreader-OFL.txt')),
   copyFile(join(FONT_SOURCE, 'recursive', 'LICENSE'), join(FONT_DIST, 'recursive-OFL.txt')),
   copyFile(join(ROOT, 'site', 'examples', 'demo.css'), join(DIST, 'examples', 'demo.css')),
-  copyFile(join(ROOT, 'site', 'fieldwork', 'index.html'), join(DIST, 'fieldwork', 'index.html')),
-  copyFile(join(ROOT, 'site', 'fieldwork', 'fieldwork.css'), join(DIST, 'fieldwork', 'fieldwork.css')),
-  copyFile(join(ROOT, 'site', 'fieldwork', 'assets', 'manifest.json'), join(DIST, 'fieldwork', 'assets', 'manifest.json')),
-  cp(join(ROOT, 'site', 'fieldwork', 'assets', 'ui'), join(DIST, 'fieldwork', 'assets', 'ui'), { recursive: true }),
   copyFile(join(ROOT, 'parity', 'reports', 'typegpu', TYPEGPU_RECEIPT), join(DIST, 'reports', 'typegpu', TYPEGPU_RECEIPT)),
   ...examplePages.map((name) => copyFile(join(ROOT, 'site', 'examples', name), join(DIST, 'examples', name))),
   ...REPORTS.map(async ({ path }) => {
@@ -112,14 +106,5 @@ await build({
   minify: true,
   outfile: join(DIST, 'examples', 'parity-lab.js'),
   banner: { js: `globalThis.__MATTER_FIELD_PROBE_CONFIG__=${JSON.stringify({ points: liveProbe.points, goldenSet: liveProbe.identity })};` },
-});
-await build({
-  entryPoints: [join(ROOT, 'site', 'fieldwork', 'game.js')],
-  bundle: true,
-  format: 'esm',
-  platform: 'browser',
-  target: 'es2022',
-  minify: true,
-  outfile: join(DIST, 'fieldwork', 'game.js'),
 });
 console.log(`[matter-field] site built at ${DIST}`);

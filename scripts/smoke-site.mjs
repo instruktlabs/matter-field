@@ -67,13 +67,11 @@ try {
   });
 
   await page.goto(`${origin}/`, { waitUntil: 'networkidle', timeout: 30_000 });
-  assert.equal(await page.locator('a[href="./fieldwork/"]').count() > 0, true, 'home page must link FIELDWORK');
-  assert.equal((await page.locator('body').innerText()).toLowerCase().includes('dogfood'), false, 'public home UI must not use internal dogfood framing');
 
   const liveFieldLink = page.locator('header a[href="#examples"]');
   await liveFieldLink.click();
   assert.equal(new URL(page.url()).hash, '#examples', 'Live fields must open the field index instead of another route');
-  assert.equal(await page.locator('.field-entry').count(), 7, 'field index must expose every field, assay, and production-lineage entry');
+  assert.equal(await page.locator('.field-entry').count(), 6, 'field index must expose every field, assay, and production-lineage entry');
 
   const residual = page.locator('[data-field-mode="residual"]');
   await residual.click();
@@ -87,7 +85,6 @@ try {
   assert.equal(new URL(page.url()).pathname, '/', 'sampling the map must not navigate into the dunes demo');
 
   for (const route of [
-    '/fieldwork/',
     '/examples/dunes.html',
     '/examples/swell.html',
     '/examples/wind.html',
@@ -97,8 +94,6 @@ try {
     '/schemas/receipts/common.schema.json',
     '/schemas/receipts/native-v2.schema.json',
     '/schemas/receipts/typegpu-v1.schema.json',
-    '/fieldwork/assets/manifest.json',
-    '/fieldwork/assets/ui/fieldwork-sigil.webp',
     '/assets/brand/matter-field-mark.svg',
     '/assets/brand/matter-field-mark-inverse.svg',
     '/assets/brand/favicon.svg',
@@ -118,87 +113,12 @@ try {
   ]) {
     await page.goto(`${origin}${route}`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     await page.waitForSelector('.field-switcher');
-    assert.equal(await page.locator('.field-switcher a').count(), 7, `${route} must expose the complete field chooser`);
+    assert.equal(await page.locator('.field-switcher a').count(), 6, `${route} must expose the complete field chooser`);
     assert.equal(await page.locator(`.field-switcher [data-field-route="${current}"]`).getAttribute('aria-current'), 'page');
   }
 
-  await page.goto(`${origin}/fieldwork/?backend=webgl2`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.waitForFunction(() => globalThis.__FIELDWORK__ ?? null, null, { timeout: 90_000 });
-  let state = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
-  assert.equal(state.renderer, 'webgl2');
-  assert.equal(state.materializer, 'native-tsl-webgl2');
-  assert.equal(state.phase, 'briefing');
-  assert.equal(
-    await page.locator('[data-materializer-lane][aria-current="page"]').getAttribute('data-materializer-lane'),
-    'native-tsl-webgl2',
-  );
-
-  await page.goto(`${origin}/fieldwork/`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.waitForFunction(() => globalThis.__FIELDWORK__ ?? null, null, { timeout: 90_000 });
-  const defaultLane = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
-  if (defaultLane.renderer === 'webgpu') {
-    assert.equal(defaultLane.materializer, 'native-tsl-webgpu');
-    assert.equal(
-      await page.locator('[data-materializer-lane][aria-current="page"]').getAttribute('data-materializer-lane'),
-      'native-tsl-webgpu',
-    );
-    await page.goto(`${origin}/fieldwork/?materializer=typegpu`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await page.waitForFunction(() => globalThis.__FIELDWORK__ ?? null, null, { timeout: 90_000 });
-    const typegpuWebGPU = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
-    assert.equal(typegpuWebGPU.renderer, 'webgpu');
-    assert.equal(typegpuWebGPU.materializer, 'typegpu-webgpu');
-    assert.equal(
-      await page.locator('[data-materializer-lane][aria-current="page"]').getAttribute('data-materializer-lane'),
-      'typegpu-webgpu',
-    );
-  } else {
-    assert.equal(defaultLane.renderer, 'webgl2');
-    assert.equal(defaultLane.materializer, 'native-tsl-webgl2');
-  }
-
-  await page.goto(`${origin}/fieldwork/?backend=webgl2`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.waitForFunction(() => globalThis.__FIELDWORK__ ?? null, null, { timeout: 90_000 });
-
-  await page.click('#start-game');
-  await page.waitForFunction(() => {
-    const audio = globalThis.__FIELDWORK__?.game?.audio;
-    return !audio?.supported || (audio.context?.state === 'running' && audio.loops?.size === 2);
-  }, null, { timeout: 10_000 });
-  const audio = await page.evaluate(() => ({
-    supported: globalThis.__FIELDWORK__.game.audio.supported,
-    contextState: globalThis.__FIELDWORK__.game.audio.context?.state ?? 'unsupported',
-    loopCount: globalThis.__FIELDWORK__.game.audio.loops?.size ?? 0,
-  }));
-  if (audio.supported) {
-    assert.equal(audio.contextState, 'running', 'audio must unlock from the start gesture');
-    assert.equal(audio.loopCount, 2, 'procedural ambience and engine loops must start exactly once');
-  }
-  await page.evaluate(() => globalThis.advanceTime(1000));
-  state = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
-  assert.equal(state.phase, 'running');
-  assert.ok(state.ticks >= 59, 'fixed-step hook must advance the game');
-  assert.equal(state.readbacksPerFrame, 0);
-
-  await page.click('#pause-game');
-  assert.equal((await page.evaluate(() => globalThis.__FIELDWORK__.game.audio.loops.size)), 2, 'pause must not stack procedural loops');
-  await page.click('#pause-game');
-  assert.equal((await page.evaluate(() => globalThis.__FIELDWORK__.game.audio.loops.size)), 2, 'resume must reuse procedural loops');
-  await page.click('#mute-game');
-  assert.equal((await page.evaluate(() => globalThis.__FIELDWORK__.game.audio.muted)), true, 'mute control must reach audio state');
-  await page.click('#mute-game');
-  assert.equal((await page.evaluate(() => globalThis.__FIELDWORK__.game.audio.muted)), false, 'mute control must restore audio state');
-
-  await page.click('#fault-game');
-  state = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
-  assert.equal(state.authority, 'deliberately-stale-coarse-cpu-proxy');
-
-  await page.evaluate(() => globalThis.__FIELDWORK__.game.handleDeviceLoss({ reason: 'production-smoke' }));
-  state = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
-  assert.equal(state.phase, 'device-lost');
-  assert.equal(await page.locator('#result').isVisible(), true);
-
   assert.deepEqual(faults, [], `production browser faults:\n${faults.join('\n')}`);
-  console.log('[matter-field] production site smoke passed (home, assets, procedural audio, WebGL2 game, fixed-step, fault, device loss)');
+  console.log('[matter-field] production site smoke passed (home, examples, receipts, schemas)');
 } finally {
   await browser?.close();
   await new Promise((resolveClose) => server.close(resolveClose));

@@ -255,7 +255,10 @@ export async function runDunesPlayground({ canvas, controls, readouts }) {
     state.speed += throttle * acceleration * dt;
     state.speed *= Math.exp(-2.1 * dt);
     state.speed = clamp(state.speed, -12, 29);
-    state.heading += steer * (0.75 + Math.abs(state.speed) * 0.034) * dt * (state.speed < 0 ? -1 : 1);
+    // The rover's local +z nose and the camera-facing view make a positive
+    // heading a visual left turn. Keep the familiar controls literal: right
+    // must turn right, left must turn left (reverse steering mirrors it).
+    state.heading -= steer * (0.75 + Math.abs(state.speed) * 0.034) * dt * (state.speed < 0 ? -1 : 1);
     state.x += Math.sin(state.heading) * state.speed * dt;
     state.z += Math.cos(state.heading) * state.speed * dt;
     state.x = clamp(state.x, WORLD.cx - WORLD.width / 2 + 10, WORLD.cx + WORLD.width / 2 - 10);

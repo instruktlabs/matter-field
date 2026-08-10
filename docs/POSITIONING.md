@@ -28,9 +28,9 @@ hardware-scoped receipts.
 ## Market and product shape
 
 Three.js is the beachhead, not an arbitrary limitation. The repository's
-native TSL path, WebGPU/WebGL2 assays, examples, and FIELDWORK application all
-exercise one concrete user problem: a GPU-rendered procedural world that CPU
-gameplay must query immediately.
+native TSL path, WebGPU/WebGL2 assays, and focused examples exercise one
+concrete user problem: a GPU-rendered procedural world that CPU gameplay must
+query immediately.
 
 Use concentric audiences rather than one broad “all developers” message:
 
