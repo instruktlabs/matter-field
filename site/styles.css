@@ -79,8 +79,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav nav a:hover { color: var(--field); text-decoration: underline; text-underline-offset: 5px; }
 .nav .nav-github { color: var(--field); }
 .mark { display: inline-flex; align-items: center; gap: 11px; color: var(--field); font-size: 14px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 650; text-decoration: none; }
-.mark svg { width: 42px; height: 34px; fill: none; stroke: currentColor; stroke-width: 2.4; }
-.mark .registration { stroke: var(--signal); stroke-width: 2; }
+.mark img { width: 38px; height: 38px; display: block; }
 
 .hero {
   min-height: 760px;
@@ -143,6 +142,7 @@ h3 { letter-spacing: -.018em; }
 .instrument-head b { color: var(--instrument-ink); font-weight: 700; }
 .instrument-toolbar { min-height: 50px; padding: 7px 10px; border-bottom: 1px solid var(--instrument-rule); }
 .instrument-toolbar p { margin: 0; padding-right: 4px; color: #aab7ad; }
+.instrument-note { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--instrument-rule); color: #aab7ad; background: rgba(255, 252, 243, .035); font-size: 10px; font-variation-settings: "MONO" 0, "CASL" 0, "wght" 480; line-height: 1.45; }
 .mode-switch { display: flex; gap: 4px; }
 .mode-button { min-height: 34px; padding: 6px 10px; border: 1px solid transparent; color: #acb9ae; background: transparent; font-size: 10px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 600; cursor: pointer; }
 .mode-button:hover { color: var(--instrument-ink); border-color: var(--instrument-rule); }
@@ -184,31 +184,32 @@ pre code { padding: 0; color: inherit; background: transparent; }
 .live { padding-block: 136px; }
 .section-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(48px, 8vw, 112px); align-items: end; }
 .section-head > p { max-width: 520px; margin: 0 0 5px; color: var(--ink-700); font-size: 17px; }
-.live-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 56px; }
-.demo-link { grid-column: span 4; min-height: 292px; display: flex; flex-direction: column; justify-content: space-between; padding: 26px; border: 1px solid var(--rule); color: var(--ink-950); background: var(--paper-0); text-decoration: none; transition: border-color .18s ease, background-color .18s ease; }
-.demo-link:hover { border-color: var(--field); background: #f9f6ee; }
-.demo-link:focus-visible { outline-offset: 3px; }
-.demo-featured { grid-column: span 8; position: relative; overflow: hidden; color: var(--instrument-ink); background: var(--field); }
-.demo-featured:hover { color: var(--instrument-ink); background: #113f43; }
-.demo-game {
-  background-color: #0d302d;
-  background-image: linear-gradient(90deg, rgba(13, 48, 45, .98) 0 50%, rgba(13, 48, 45, .42) 78%, rgba(13, 48, 45, .12)), url("./fieldwork/assets/ui/fieldwork-sigil.webp");
-  background-repeat: no-repeat;
-  background-position: center, 104% center;
-  background-size: cover, min(54%, 430px);
+.field-index { margin-top: 56px; border-top: 1px solid var(--ink-950); }
+.field-entry {
+  min-height: 124px;
+  display: grid;
+  grid-template-columns: minmax(150px, 2fr) minmax(0, 7fr) minmax(150px, 2fr);
+  gap: clamp(24px, 4vw, 60px);
+  align-items: center;
+  padding: 25px 22px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-950);
+  text-decoration: none;
+  transition: color .18s ease, background-color .18s ease, padding-inline .18s ease;
 }
-.demo-game:hover { background-color: #0a2826; }
-.demo-assay { grid-column: span 8; color: var(--instrument-ink); background: var(--ink-950); }
-.demo-assay:hover { background: var(--field); }
-.demo-index { position: relative; z-index: 1; color: var(--signal); font-size: 10px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 700; letter-spacing: .08em; text-transform: uppercase; }
-.demo-featured .demo-index, .demo-assay .demo-index { color: #e77b5e; }
-.demo-link > div:not(.demo-contour), .demo-link strong { position: relative; z-index: 1; }
-.demo-link h3 { margin: 0 0 8px; font-size: 34px; line-height: 1; }
-.demo-link p { max-width: 43ch; margin: 0; color: var(--ink-700); }
-.demo-featured p, .demo-assay p { color: rgba(255, 252, 243, .72); }
-.demo-link strong { color: var(--field); font-size: 12px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 650; }
-.demo-featured strong, .demo-assay strong { color: var(--instrument-ink); }
-.demo-contour { position: absolute; z-index: 0; inset: -20%; opacity: .22; background: repeating-radial-gradient(ellipse at 75% 42%, transparent 0 17px, #f4f0e6 18px 19px, transparent 20px 34px); transform: rotate(-8deg); }
+.field-entry:hover { padding-inline: 28px 16px; color: var(--field); background: rgba(255, 252, 243, .58); }
+.field-entry:focus-visible { outline-offset: -4px; }
+.field-kind { color: var(--signal); font-size: 10px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 700; letter-spacing: .08em; text-transform: uppercase; }
+.field-entry h3 { margin: 0 0 6px; font-size: clamp(29px, 3vw, 39px); line-height: 1; }
+.field-entry p { max-width: 66ch; margin: 0; color: var(--ink-700); }
+.field-entry strong { justify-self: end; color: var(--field); font-size: 11px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 680; text-align: right; }
+.field-entry-featured { color: var(--instrument-ink); background: var(--field); border-color: #0f4145; }
+.field-entry-featured:hover { color: var(--instrument-ink); background: #103f43; }
+.field-entry-featured .field-kind { color: #f1b29f; }
+.field-entry-featured p { color: rgba(255, 252, 243, .74); }
+.field-entry-featured strong { color: var(--instrument-ink); }
+.field-entry-evidence { background: rgba(49, 95, 140, .07); }
+.field-entry-lineage { background: rgba(183, 68, 46, .055); }
 
 .evidence { padding-block: 136px 80px; }
 .matrix-wrap { margin-top: 52px; overflow-x: auto; border: 1px solid var(--ink-950); background: rgba(244, 240, 230, .78); }
@@ -224,6 +225,7 @@ tbody tr:not(.unmeasured):hover { background: rgba(49, 95, 140, .055); }
 .unmeasured { color: #69726d; }
 .matrix-footer { display: flex; justify-content: space-between; gap: 40px; align-items: flex-start; margin-top: 24px; }
 .matrix-footer p { max-width: 800px; margin: 0; color: var(--ink-700); font-size: 13px; }
+.matrix-links { display: grid; flex: 0 0 auto; gap: 9px; justify-items: end; }
 .text-link { flex: 0 0 auto; color: var(--field); font-size: 12px; font-variation-settings: "MONO" 1, "CASL" 0, "wght" 700; text-underline-offset: 4px; }
 
 .tiers { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(48px, 8vw, 112px); padding-block: 56px 136px; }
@@ -251,8 +253,7 @@ footer a { text-underline-offset: 4px; }
   .hero { grid-template-columns: 1fr; }
   .hero-copy { max-width: 800px; }
   .field-instrument { width: min(760px, 100%); }
-  .demo-link { grid-column: span 6; }
-  .demo-featured, .demo-assay { grid-column: span 12; }
+  .field-entry { grid-template-columns: minmax(140px, 2fr) minmax(0, 7fr) minmax(130px, 2fr); }
 }
 
 @media (max-width: 760px) {
@@ -283,9 +284,10 @@ footer a { text-underline-offset: 4px; }
   .problem-copy { padding-top: 0; }
   .materializations { margin-top: 12px; }
   .section-head { gap: 26px; }
-  .live-grid { margin-top: 38px; }
-  .demo-link, .demo-featured, .demo-assay { grid-column: span 12; min-height: 252px; padding: 22px; }
-  .demo-link h3 { font-size: 31px; }
+  .field-index { margin-top: 38px; }
+  .field-entry { grid-template-columns: 1fr; gap: 11px; align-items: start; padding: 22px 16px; }
+  .field-entry:hover { padding-inline: 20px 12px; }
+  .field-entry strong { justify-self: start; margin-top: 4px; text-align: left; }
   .matrix-wrap { overflow: visible; border: 0; background: transparent; }
   table { min-width: 0; }
   thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -295,6 +297,7 @@ footer a { text-underline-offset: 4px; }
   td::before { content: attr(data-label); color: var(--ink-700); font-size: 9px; font-weight: 650; text-transform: uppercase; }
   tbody tr:last-child td, td:last-child { border-bottom: 0; }
   .matrix-footer { display: grid; gap: 20px; }
+  .matrix-links { justify-items: start; }
   .tiers { padding-block: 0 88px; }
   .tiers ol { margin-top: 12px; }
   .tiers li { grid-template-columns: 64px 1fr; }

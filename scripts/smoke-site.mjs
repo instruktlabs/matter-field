@@ -15,6 +15,7 @@ const types = new Map([
   ['.json', 'application/json; charset=utf-8'],
   ['.md', 'text/markdown; charset=utf-8'],
   ['.jpg', 'image/jpeg'],
+  ['.svg', 'image/svg+xml'],
   ['.webp', 'image/webp'],
   ['.woff2', 'font/woff2'],
 ]);
@@ -67,6 +68,23 @@ try {
 
   await page.goto(`${origin}/`, { waitUntil: 'networkidle', timeout: 30_000 });
   assert.equal(await page.locator('a[href="./fieldwork/"]').count() > 0, true, 'home page must link FIELDWORK');
+  assert.equal((await page.locator('body').innerText()).toLowerCase().includes('dogfood'), false, 'public home UI must not use internal dogfood framing');
+
+  const liveFieldLink = page.locator('header a[href="#examples"]');
+  await liveFieldLink.click();
+  assert.equal(new URL(page.url()).hash, '#examples', 'Live fields must open the field index instead of another route');
+  assert.equal(await page.locator('.field-entry').count(), 7, 'field index must expose every field, assay, and production-lineage entry');
+
+  const residual = page.locator('[data-field-mode="residual"]');
+  await residual.click();
+  assert.equal(await residual.getAttribute('aria-pressed'), 'true', 'drift contrast control must remain interactive');
+  assert.equal(new URL(page.url()).pathname, '/', 'drift contrast must not navigate into a field demo');
+  assert.equal(new URL(page.url()).hash, '#examples', 'drift contrast must not hijack the current index location');
+
+  const f64Before = await page.locator('#sample-f64').textContent();
+  await page.locator('#field').click({ position: { x: 84, y: 96 } });
+  await page.waitForFunction((before) => document.querySelector('#sample-f64')?.textContent !== before, f64Before);
+  assert.equal(new URL(page.url()).pathname, '/', 'sampling the map must not navigate into the dunes demo');
 
   for (const route of [
     '/fieldwork/',
@@ -81,11 +99,27 @@ try {
     '/schemas/receipts/typegpu-v1.schema.json',
     '/fieldwork/assets/manifest.json',
     '/fieldwork/assets/ui/fieldwork-sigil.webp',
+    '/assets/brand/matter-field-mark.svg',
+    '/assets/brand/matter-field-mark-inverse.svg',
+    '/assets/brand/favicon.svg',
     '/LICENSE',
     '/THIRD_PARTY_NOTICES.md',
   ]) {
     const response = await context.request.get(`${origin}${route}`);
     assert.equal(response.status(), 200, `${route} must be present in the production artifact`);
+  }
+
+  for (const [route, current] of [
+    ['/examples/dunes.html', 'dunes'],
+    ['/examples/swell.html', 'swell'],
+    ['/examples/wind.html', 'wind'],
+    ['/examples/serpent.html', 'serpent'],
+    ['/examples/parity.html', 'parity'],
+  ]) {
+    await page.goto(`${origin}${route}`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await page.waitForSelector('.field-switcher');
+    assert.equal(await page.locator('.field-switcher a').count(), 7, `${route} must expose the complete field chooser`);
+    assert.equal(await page.locator(`.field-switcher [data-field-route="${current}"]`).getAttribute('aria-current'), 'page');
   }
 
   await page.goto(`${origin}/fieldwork/?backend=webgl2`, { waitUntil: 'domcontentloaded', timeout: 30_000 });

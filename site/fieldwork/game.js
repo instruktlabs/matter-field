@@ -96,6 +96,7 @@ const WORLD = Object.freeze({ cx: 10, cz: -360, width: 520, depth: 420 });
 const START = Object.freeze({ x: -126, z: -445, heading: Math.PI * 0.24 });
 const CORE = Object.freeze({ x: -100, z: -420 });
 const SERPENT = Object.freeze({ x: 10, z: -425, rotation: -Math.PI / 2 });
+const BREACH_LIFT = Object.freeze({ minY: SEA_LEVEL + 3, maxY: SEA_LEVEL + 19, period: 14 });
 const F32 = makeF32Adapter();
 
 const tempA = new Vector3();
@@ -129,6 +130,18 @@ function dampAngle(value, target, rate, dt) {
 
 function wrapTime(value) {
   return ((value % 600) + 600) % 600;
+}
+
+/**
+ * A slow, deterministic world-space lift applied to the authored breach body.
+ * The adapter-authored spine and radius stay unchanged in local space; this
+ * transform is shared by the rendered Group and the CPU collision query.
+ */
+export function breachLiftAtTime(time) {
+  const phase = (((Number(time) || 0) / BREACH_LIFT.period) % 1 + 1) % 1;
+  const triangle = 1 - Math.abs(phase * 2 - 1);
+  const eased = triangle * triangle * (3 - 2 * triangle);
+  return lerp(BREACH_LIFT.minY, BREACH_LIFT.maxY, eased);
 }
 
 function seededRandom(seed = 0x9e3779b9) {
@@ -341,9 +354,9 @@ function makeInput(dom) {
         + touch.forward - touch.reverse;
     },
     get steer() {
-      return (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0)
-        - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0)
-        + touch.right - touch.left;
+      const left = (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) + touch.left;
+      const right = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) + touch.right;
+      return fieldworkSteerIntent(left, right);
     },
     clear() {
       keys.clear();
@@ -382,6 +395,15 @@ function makeInput(dom) {
     for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) listen(button, type, release);
   }
   return input;
+}
+
+/**
+ * Converts camera-relative manual steering into this world's heading sign.
+ * In the follow camera, positive heading is visually left and negative is
+ * visually right. Waypoint steering remains world-space and does not use this.
+ */
+export function fieldworkSteerIntent(left = 0, right = 0) {
+  return clamp(Number(left) || 0, 0, 1) - clamp(Number(right) || 0, 0, 1);
 }
 
 function touchMetrics(touches) {
@@ -553,20 +575,20 @@ class FieldCamera {
   }
 }
 
-function worldToSerpent(x, y, z) {
+function worldToSerpent(x, y, z, rootY = 0) {
   const dx = x - SERPENT.x;
   const dz = z - SERPENT.z;
   const c = Math.cos(SERPENT.rotation);
   const s = Math.sin(SERPENT.rotation);
-  return { x: c * dx - s * dz, y, z: s * dx + c * dz };
+  return { x: c * dx - s * dz, y: y - rootY, z: s * dx + c * dz };
 }
 
-function serpentToWorld(point, target = new Vector3()) {
+function serpentToWorld(point, rootY = 0, target = new Vector3()) {
   const c = Math.cos(SERPENT.rotation);
   const s = Math.sin(SERPENT.rotation);
   return target.set(
     SERPENT.x + c * point.x + s * point.z,
-    point.y,
+    rootY + point.y,
     SERPENT.z - s * point.x + c * point.z,
   );
 }
@@ -812,7 +834,7 @@ async function createWorld(renderer, materializer) {
   scene.add(windPoints);
 
   const serpentRoot = new Group();
-  serpentRoot.position.set(SERPENT.x, 0, SERPENT.z);
+  serpentRoot.position.set(SERPENT.x, breachLiftAtTime(0), SERPENT.z);
   serpentRoot.rotation.y = SERPENT.rotation;
   const serpentP = tsl.positionLocal;
   const serpentU = tsl.attribute('fieldU', 'float');
@@ -981,16 +1003,17 @@ function sampleCraftSurface(state) {
   };
 }
 
-function sampleSerpentContact(state) {
-  const local = worldToSerpent(state.x, state.y, state.z);
+export function sampleSerpentContact(state) {
+  const sampleTime = state.fault ? wrapTime(state.time - 0.35) : state.time;
+  const rootY = breachLiftAtTime(sampleTime);
+  const local = worldToSerpent(state.x, state.y, state.z, rootY);
   const outsideX = local.x < -12 ? -12 - local.x : local.x > 102 ? local.x - 102 : 0;
   const outsideZ = Math.max(0, Math.abs(local.z) - 42);
   const broadDistance = Math.hypot(outsideX, outsideZ);
-  if (broadDistance > 0) return { distance: broadDistance + 18, queries: 0, hit: null };
-  const sampleTime = state.fault ? wrapTime(state.time - 0.35) : state.time;
+  if (broadDistance > 0) return { distance: broadDistance + 18, queries: 0, hit: null, rootY };
   const result = spineHitTest(N, local, sampleTime, { steps: SERPENT_STEPS });
   const distance = result.dist - result.radius - CRAFT_RADIUS;
-  return { distance, queries: SERPENT_STEPS + 19, hit: result };
+  return { distance, queries: SERPENT_STEPS + 19, hit: result, rootY };
 }
 
 function localDriftEstimate(state) {
@@ -1133,6 +1156,7 @@ export class FieldworkGame {
     this.world.target.visible = false;
     this.world.extraction.material.emissiveIntensity = 0.45;
     this.world.timeNode.value = state.time;
+    this.world.serpentRoot.position.y = breachLiftAtTime(state.time);
     this.cameraRig.target.set(state.x, state.y + 2, state.z);
     this.cameraRig.recenter();
     this.cameraRig.update(1, state);
@@ -1388,7 +1412,7 @@ export class FieldworkGame {
     state.serpentDistance = serpent.distance;
     state.serpentHit = serpent.hit;
     if (serpent.distance <= 0 && state.hitCooldown <= 0) {
-      const hitPoint = serpentToWorld(serpent.hit.point, tempB);
+      const hitPoint = serpentToWorld(serpent.hit.point, serpent.rootY, tempB);
       tempC.set(state.x - hitPoint.x, 0, state.z - hitPoint.z);
       if (tempC.lengthSq() < 0.001) tempC.set(-forwardX, 0, -forwardZ);
       tempC.normalize();
@@ -1497,6 +1521,7 @@ export class FieldworkGame {
     this.world.skimmer.position.set(x, y, z);
     this.world.skimmer.rotation.set(pitch, heading, -roll, 'YXZ');
     this.world.timeNode.value = state.time;
+    this.world.serpentRoot.position.y = breachLiftAtTime(state.time);
 
     const coreY = Math.max(dunesField(N, CORE.x, CORE.z), SEA_LEVEL + swellField(N, CORE.x, CORE.z, state.time));
     this.world.core.position.set(CORE.x, coreY + 3.2 + Math.sin(state.time * 2.2) * 0.35, CORE.z);
@@ -1635,6 +1660,11 @@ export class FieldworkGame {
       target: { x: target.cx ?? target.x, z: target.cz ?? target.z },
       wind: { wx: +state.wind.wx.toFixed(4), wz: +state.wind.wz.toFixed(4) },
       serpentDistance: Number.isFinite(state.serpentDistance) ? +state.serpentDistance.toFixed(3) : null,
+      breach: {
+        rootY: +breachLiftAtTime(state.time).toFixed(3),
+        liftCycleSeconds: BREACH_LIFT.period,
+        collision: '3d-craft-sphere-vs-authored-spine-and-radius',
+      },
       authority: state.fault ? 'deliberately-stale-coarse-cpu-proxy' : 'authored-cpu-fields',
       renderer: this.renderer.coordinateSystem === WebGPUCoordinateSystem ? 'webgpu' : 'webgl2',
       materializer: this.materializer.lane,

@@ -1,6 +1,6 @@
 # FIELDWORK: Breach Run
 
-FIELDWORK is Matter Field's integrated dogfood surface. **Breach Run** puts the
+FIELDWORK is Matter Field's integrated application surface. **Breach Run** puts the
 four example families into one fixed-step 3D mission instead of presenting
 them only as isolated technical labs.
 
