@@ -4,15 +4,23 @@ FIELDWORK is Matter Field's integrated dogfood surface. **Breach Run** puts the
 four example families into one fixed-step 3D mission instead of presenting
 them only as isolated technical labs.
 
-The game has two deliberately different GPU paths:
+The game exposes three deliberately different GPU materialization lanes:
 
-- WebGPU consumes the precompiled `matter-field/typegpu/three` integration.
-  Those TypeGPU functions are separately maintained ports, checked against the
-  canonical adapter fields; they are not generated from one shared AST.
-- WebGL2 consumes the native `makeTslAdapter` compatibility materialization,
-  which does evaluate the adapter-authored expression tree directly.
+- The optional `?materializer=typegpu` WebGPU lane consumes the precompiled
+  `matter-field/typegpu/three` integration. Those TypeGPU functions are
+  separately maintained ports, checked against the canonical adapter fields;
+  they are not generated from one shared AST.
+- The default WebGPU lane materializes the authoritative adapter-authored
+  expression tree directly through `makeTslAdapter` and TSL.
+- `?backend=webgl2` materializes that same authoritative tree through native
+  TSL and Three's WebGL2 / GLSL fallback.
 
-In both paths, the CPU owns gameplay at 60 Hz. Dunes provide contact height and
+The command deck links all three lanes so reviewers can replay the same
+mission without conflating a renderer choice with a different gameplay test.
+If the TypeGPU artifact cannot load, the game reports an explicit native-TSL
+fallback instead of silently relabeling the lane.
+
+In every lane, the CPU owns gameplay at 60 Hz. Dunes provide contact height and
 dual-number slope, swell provides four-probe buoyancy, wind applies force, and
 the serpent spine/radius provide proximity and collision. GPU tracers and
 surfaces are visual consumers. Gameplay performs zero per-frame GPU readbacks.
@@ -95,8 +103,9 @@ procedural Web Audio.
 - [x] Core can be recovered, delivered, failed, and retried without reload.
 - [x] Keyboard, click/waypoint, right-drag orbit, wheel zoom, one-finger tap,
       two-finger orbit, and pinch zoom all work without gesture cross-fire.
-- [x] WebGPU reports the TypeGPU/Three materialization; forced WebGL2 reports
-      the native TSL materialization.
+- [x] Default WebGPU and forced WebGL2 report their distinct native-TSL
+      materializations; the optional TypeGPU/Three lane reports itself
+      separately.
 - [x] `render_game_to_text()` exposes objective, craft, authority, field,
       renderer, and camera state.
 - [x] `advanceTime(ms)` advances the fixed-step simulation deterministically.
@@ -108,9 +117,11 @@ procedural Web Audio.
 - [x] Public audio is project-authored procedural Web Audio; no standalone
       ElevenLabs sound-effect files are distributed.
 
-The August 9 application QA used a physical RTX 3070 for the WebGPU /
-TypeGPU path and a forced WebGL2 browser path for fallback behavior. The local
-machine was active, so these runs establish functional integration only—not
-performance. Mobile controls were exercised with a 390 × 844 touch-emulated
-browser viewport; a physical-phone feel check remains useful but is not being
-represented as completed hardware coverage.
+The August 9 application QA used a physical RTX 3070 for the WebGPU / TypeGPU
+path and a forced WebGL2 browser path for fallback behavior. The automated site
+smoke also exercises the default native-TSL WebGPU lane and the optional
+TypeGPU lane when WebGPU is available. The local machine was active, so these
+runs establish functional integration only—not performance. Mobile controls
+were exercised with a 390 × 844 touch-emulated browser viewport; a
+physical-phone feel check remains useful but is not being represented as
+completed hardware coverage.

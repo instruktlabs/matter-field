@@ -36,13 +36,13 @@ export declare function typegpuDunes(x: number, z: number): number;
 export declare function typegpuSwell(x: number, z: number, t: number): number;
 export declare function typegpuWindX(x: number, z: number, t: number): number;
 export declare function typegpuWindZ(x: number, z: number, t: number): number;
-/** Convenience f32 vector packaging; use scalar channels for f64 authority. */
+/** Convenience f32 vector packaging; use scalar channels to avoid vector f32 packaging. */
 export declare function typegpuWind(x: number, z: number, t: number): v2f;
 export declare function typegpuSerpentRadius(u: number): number;
 export declare function typegpuSerpentX(u: number, t: number): number;
 export declare function typegpuSerpentY(u: number, t: number): number;
 export declare function typegpuSerpentZ(u: number, t: number): number;
-/** Convenience f32 vector packaging; use scalar channels for f64 authority. */
+/** Convenience f32 vector packaging; use scalar channels to avoid vector f32 packaging. */
 export declare function typegpuSerpentSpine(u: number, t: number): v3f;
 
 export declare const typegpuKernels: Readonly<{

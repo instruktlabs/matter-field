@@ -61,6 +61,7 @@ await Promise.all([
   copyFile(join(ROOT, 'site', 'og-preview.jpg'), join(DIST, 'og-preview.jpg')),
   copyFile(join(ROOT, 'LICENSE'), join(DIST, 'LICENSE')),
   copyFile(join(ROOT, 'THIRD_PARTY_NOTICES.md'), join(DIST, 'THIRD_PARTY_NOTICES.md')),
+  cp(join(ROOT, 'schemas'), join(DIST, 'schemas'), { recursive: true }),
   copyFile(join(FONT_SOURCE, 'newsreader', 'files', 'newsreader-latin-standard-normal.woff2'), join(FONT_DIST, 'newsreader-latin-standard-normal.woff2')),
   copyFile(join(FONT_SOURCE, 'recursive', 'files', 'recursive-latin-full-normal.woff2'), join(FONT_DIST, 'recursive-latin-full-normal.woff2')),
   copyFile(join(FONT_SOURCE, 'newsreader', 'LICENSE'), join(FONT_DIST, 'newsreader-OFL.txt')),

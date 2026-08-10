@@ -18,16 +18,68 @@ import { numberAdapter, makeF32Adapter } from '../src/number.js';
 import { evalWithGradient } from '../src/dual.js';
 import { makeGoldenPoints, ulpDelta32 } from './golden.js';
 
+/** @import { Adapter, Field } from '../src/adapter.js' */
+/** @import { Dual } from '../src/dual.js' */
+/** @import { GoldenPoint } from './golden.js' */
+
+/**
+ * A field accepted by the CPU assay: the same function must support the
+ * numeric and dual adapter specializations.
+ * @typedef {Field<number, number, [number, number]> & Field<Dual, number, [Dual, Dual]>} AssayField
+ */
+
+/** @typedef {GoldenPoint & { f64: number, f32: number, ulp: number, abs: number }} DriftSample */
+/** @typedef {GoldenPoint & { number: number, dual: number }} DualMismatch */
+/** @typedef {GoldenPoint & { dual: { v?: number, dx: number, dz: number }, fd: { dx: number, dz: number }, relErr?: number }} GradientSample */
+
+/**
+ * @typedef {{
+ *   points?: readonly GoldenPoint[],
+ *   fdEps?: number,
+ *   benchN?: number,
+ * }} CpuAssayOptions
+ */
+
+/**
+ * @typedef {{
+ *   schema: 'matter-field-cpu-assay/v1',
+ *   n: number,
+ *   deterministic: boolean,
+ *   f64VsF32: {
+ *     maxUlp: number,
+ *     maxAbs: number,
+ *     maxUlpSample: DriftSample | null,
+ *     maxAbsSample: DriftSample | null,
+ *     worst: DriftSample | null,
+ *     nonFiniteCount: number,
+ *     firstNonFinite: (GoldenPoint & { f64: number, f32: number }) | null,
+ *   },
+ *   dual: { bitExact: boolean, worst: DualMismatch | null },
+ *   gradient: {
+ *     checked: number,
+ *     mismatchFraction: number,
+ *     worst: ({ relErr: number } & Partial<GradientSample>),
+ *     fdEps: number,
+ *     nonFiniteCount: number,
+ *     firstNonFinite: GradientSample | null,
+ *   },
+ *   usPerSample: number,
+ * }} CpuAssayReport
+ */
+
+/** @typedef {{ maxAbs?: number, maxUlp?: number | null, maxGradMismatch?: number }} AssayBudgets */
+
+/** @typedef {{ pass: boolean, fails: string[] }} AssayVerdict */
+
 /**
  * Run the full CPU assay on a field.
  *
- * @param {(A: object, x: any, z: any) => any} field  single-output field
- *        written against the adapter contract (returns V)
- * @param {object} [opts]
+ * @param {AssayField} field single-output field written against the contract
+ * @param {CpuAssayOptions} [opts]
  *        points   - golden points (default: 500 generated, extent 20000)
  *        fdEps    - finite-difference epsilon in world units (default 0.01)
  *        benchN   - samples for the cost measurement (default 2000)
- * @returns assay report (plain serializable object)
+ * @returns {CpuAssayReport} plain serializable assay report
  */
 export function runCpuAssay(field, opts = {}) {
   const points = opts.points ?? makeGoldenPoints(500);
@@ -35,7 +87,9 @@ export function runCpuAssay(field, opts = {}) {
   const benchN = opts.benchN ?? 2000;
   const f32A = makeF32Adapter();
 
+  /** @type {(x: number, z: number) => number} */
   const sampleF64 = (x, z) => field(numberAdapter, x, z);
+  /** @type {(x: number, z: number) => number} */
   const sampleF32 = (x, z) => field(f32A, x, z);
 
   // -- determinism: bit-identical re-evaluation
@@ -48,6 +102,7 @@ export function runCpuAssay(field, opts = {}) {
   }
 
   // -- f64 vs f32-emulated drift
+  /** @type {Omit<CpuAssayReport['f64VsF32'], 'worst'>} */
   let drift = {
     maxUlp: 0,
     maxAbs: 0,
@@ -78,6 +133,7 @@ export function runCpuAssay(field, opts = {}) {
 
   // -- dual backend value exactness (bit-for-bit vs number backend)
   let dualBitExact = true;
+  /** @type {DualMismatch | null} */
   let dualWorst = null;
   for (const p of points) {
     const n = sampleF64(p.x, p.z);
@@ -96,7 +152,9 @@ export function runCpuAssay(field, opts = {}) {
   let gradChecked = 0;
   let gradMismatch = 0;
   let gradNonFinite = 0;
+  /** @type {GradientSample | null} */
   let gradFirstNonFinite = null;
+  /** @type {{ relErr: number } & Partial<GradientSample>} */
   let gradWorst = { relErr: 0 };
   for (const p of points) {
     const g = evalWithGradient(field, p.x, p.z);
@@ -162,6 +220,9 @@ export function runCpuAssay(field, opts = {}) {
  * toward zero, so a physically negligible absolute drift can measure as
  * thousands of ulps - budgeting ulps naively fails healthy fields at their
  * zero crossings. Pass `maxUlp` only when your field's range excludes zero.
+ * @param {CpuAssayReport} report
+ * @param {AssayBudgets} [budgets]
+ * @returns {AssayVerdict}
  */
 export function assayVerdict(report, { maxAbs = 0.01, maxUlp = null, maxGradMismatch = 0.05 } = {}) {
   const fails = [];

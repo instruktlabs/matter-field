@@ -15,9 +15,15 @@
 
 import { LATTICE_OFFSET, hash01, hash01f32 } from './hash.js';
 
+// @matter-field-type-only-start
+/** @import { Adapter } from './adapter.js' */
+// @matter-field-type-only-end
 export { LATTICE_OFFSET };
 
 /** f64 backend. V = number. */
+// @matter-field-type-only-start
+/** @type {Adapter<number, number>} */
+// @matter-field-type-only-end
 export const numberAdapter = Object.freeze({
   f: (x) => x,
   add: (a, b) => a + b,
@@ -46,6 +52,9 @@ const fr = Math.fround;
  * f32-emulation backend. V = number, but every op result is rounded to f32.
  * The formulas mirror numberAdapter exactly, op for op, in the same order.
  */
+// @matter-field-type-only-start
+/** @returns {Adapter<number, number>} */
+// @matter-field-type-only-end
 export function makeF32Adapter() {
   return Object.freeze({
     f: (x) => fr(x),

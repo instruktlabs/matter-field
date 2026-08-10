@@ -6,6 +6,22 @@
 //   import { makeTslAdapter } from 'matter-field/backend-tsl';  // shader graph
 //   import { runCpuAssay } from 'matter-field/parity';   // measured CPU assay
 
+/**
+ * @template V
+ * @template L
+ * @typedef {import('./adapter.js').Adapter<V, L>} Adapter
+ */
+
+/**
+ * @template V
+ * @template L
+ * @template {readonly unknown[]} Args
+ * @typedef {import('./adapter.js').Field<V, L, Args>} Field
+ */
+
+/** @typedef {import('./dual.js').Dual} Dual */
+/** @typedef {import('./dual.js').SurfaceNormal} SurfaceNormal */
+
 export { ADAPTER_OPS, adapterProblems, numericAdapterProblems } from './adapter.js';
 export {
   LATTICE_OFFSET, LATTICE_FLOOR_MIN, LATTICE_FLOOR_MAX,

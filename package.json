@@ -1,7 +1,7 @@
 {
   "name": "matter-field",
   "version": "0.0.1",
-  "description": "Authoritative procedural fields with measured CPU/GPU parity, analytic gradients, native TSL, and a first-class TypeGPU/WebGPU materialization.",
+  "description": "Authoritative procedural fields with measured CPU/GPU drift, analytic gradients, native TSL, and optional TypeGPU integration.",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -14,7 +14,9 @@
   "homepage": "https://instruktlabs.github.io/matter-field/",
   "files": [
     "src/",
+    "dist-types/",
     "dist-typegpu/",
+    "schemas/",
     "benchmarks/",
     "parity/harness.js",
     "parity/golden.js",
@@ -29,7 +31,10 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.js",
+    ".": {
+      "types": "./dist-types/src/index.d.ts",
+      "default": "./src/index.js"
+    },
     "./typegpu": {
       "types": "./dist-typegpu/index.d.ts",
       "default": "./dist-typegpu/index.js"
@@ -38,15 +43,42 @@
       "types": "./dist-typegpu/three.d.ts",
       "default": "./dist-typegpu/three.js"
     },
-    "./adapter-core": "./src/index.js",
-    "./adapter": "./src/adapter.js",
-    "./number": "./src/number.js",
-    "./hash": "./src/hash.js",
-    "./dual": "./src/dual.js",
-    "./noise": "./src/noise.js",
-    "./backend-tsl": "./src/backend-tsl.js",
-    "./parity": "./parity/harness.js",
-    "./parity/golden": "./parity/golden.js"
+    "./adapter-core": {
+      "types": "./dist-types/src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./adapter": {
+      "types": "./dist-types/src/adapter.d.ts",
+      "default": "./src/adapter.js"
+    },
+    "./number": {
+      "types": "./dist-types/src/number.d.ts",
+      "default": "./src/number.js"
+    },
+    "./hash": {
+      "types": "./dist-types/src/hash.d.ts",
+      "default": "./src/hash.js"
+    },
+    "./dual": {
+      "types": "./dist-types/src/dual.d.ts",
+      "default": "./src/dual.js"
+    },
+    "./noise": {
+      "types": "./dist-types/src/noise.d.ts",
+      "default": "./src/noise.js"
+    },
+    "./backend-tsl": {
+      "types": "./dist-types/src/backend-tsl.d.ts",
+      "default": "./src/backend-tsl.js"
+    },
+    "./parity": {
+      "types": "./dist-types/parity/harness.d.ts",
+      "default": "./parity/harness.js"
+    },
+    "./parity/golden": {
+      "types": "./dist-types/parity/golden.d.ts",
+      "default": "./parity/golden.js"
+    }
   },
   "scripts": {
     "test": "node --test",
@@ -54,10 +86,14 @@
     "test:package": "npm pack --dry-run",
     "build:typegpu": "node scripts/build-typegpu.mjs",
     "build:typegpu:package": "node scripts/build-typegpu-package.mjs",
+    "test:ir:build": "node --test tooling-tests/canonical-ir-build-check.mjs",
     "test:typegpu:build": "node --test tooling-tests/typegpu-build-check.mjs",
     "test:typegpu:types": "npm run build:typegpu:package && tsc -p tsconfig.typegpu.json",
     "test:typegpu:consumer": "node scripts/verify-typegpu-package.mjs",
-    "prepack": "npm run build:typegpu:package",
+    "check:js": "node node_modules/typescript-upstream/bin/tsc -p tsconfig.check.json",
+    "build:types": "node scripts/build-types.mjs",
+    "test:types": "npm run check:js && npm run build:types",
+    "prepack": "npm run build:types && npm run build:typegpu:package",
     "prepublishOnly": "node scripts/check-publish-readiness.mjs",
     "assay": "node examples/demo.mjs",
     "bench": "node examples/bench.mjs",
@@ -112,11 +148,13 @@
     "@typegpu/three": "0.11.0",
     "@types/three": "0.185.4",
     "@webgpu/types": "0.1.71",
+    "ajv": "8.20.0",
     "esbuild": "^0.28.2",
     "playwright": "^1.59.1",
     "three": "0.185.1",
     "typegpu": "0.11.9",
     "typescript": "npm:tsover@6.0.2",
+    "typescript-upstream": "npm:typescript@7.0.2",
     "unplugin-typegpu": "0.11.6"
   },
   "allowScripts": {

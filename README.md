@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-174e52.svg)](./LICENSE)
 
 Authoritative procedural fields for JavaScript gameplay and Three.js TSL
-rendering.
+rendering. If gameplay must touch it, do not leave it trapped in a shader.
 
 Matter Field lets collision, buoyancy, forces, hit tests, and shader graphs
 materialize one pure expression tree through different math adapters. It does
@@ -20,14 +20,46 @@ and a repeatable assay for measuring the remaining drift on real hardware.
 > Apple silicon remain open cells; this is multi-device evidence, not a
 > vendor-wide portability claim.
 
+The current public artifact is
+[`v0.0.1-preview.2`](https://github.com/instruktlabs/matter-field/releases/tag/v0.0.1-preview.2).
+It is a GitHub prerelease, not an npm release or a stable-API promise.
+
 [Open the live examples](https://instruktlabs.github.io/matter-field/#examples)
 · [Inspect the receipts](https://instruktlabs.github.io/matter-field/#evidence)
 · [Contribute a hardware result](./docs/RECEIPTS.md)
 · [Read the hardware-lab plan](./docs/HARDWARE-LAB.md)
 
-## TypeGPU-first experiment
+## One product, two entry points, one authority
 
-The current preview adds precompiled `matter-field/typegpu` and
+Matter Field has one job: keep a restricted procedural field queryable by CPU
+systems and renderable by the GPU, then measure the numeric residual between
+those materializations.
+
+It currently exposes two integration entry points:
+
+1. **Core + native Three.js TSL:** the primary, dependency-free path. An
+   adapter-authored field materializes to JavaScript f64, a CPU f32 diagnostic,
+   dual-number gradients, and caller-supplied TSL. Three's renderer can target
+   WebGPU or WebGL2.
+2. **Optional TypeGPU:** a precompiled WebGPU-oriented path for projects that
+   already prefer TypeGPU functions and `@typegpu/three`.
+
+These are not separate products or competing authorities. The adapter-authored
+field definition remains authoritative today. The current TypeGPU fields are a
+second handwritten implementation, continuously compared with that authority.
+A research-only canonical-IR prototype now records dunes and emits reviewable
+TypeGPU source from the adapter-authored field. It is not a package backend,
+has no generated-GPU receipt, and does not replace the handwritten TypeGPU
+lane. See the [prototype record](./research/canonical-ir/README.md).
+
+Three.js developers are the initial product beachhead because TSL rendering
+plus immediate CPU gameplay queries is the concrete problem already extracted,
+dogfooded, and measured here. TypeGPU developers are the closest adjacent
+audience, not a reason to turn Matter Field into a general WebGPU framework.
+
+## Optional TypeGPU materialization
+
+The preview includes precompiled `matter-field/typegpu` and
 `matter-field/typegpu/three` subpaths. It rewrites the shipped fields as
 ordinary CPU-callable `'use gpu'` functions, exposes typed TypeGPU kernels,
 runs a native TypeGPU compute/readback assay, and provides an optional
@@ -45,18 +77,25 @@ const wgsl = tgpu.resolve({
 });
 ```
 
-Matter Field is intentionally not published to npm yet. Current npm releases
-may reject Git dependencies by default and may skip their `prepack` scripts, so
-this preview does not pretend that a `github:` dependency is portable. Clone
-`main`, build the precompiled artifacts from checked-in source with Node 20.19
-or newer, and install that local package into a consumer. TypeScript consumers
-of the Three bridge also need `@types/three@0.185.4`:
+Matter Field is intentionally not published to npm yet. Install the tested,
+uniquely named tarball attached to `v0.0.1-preview.2`, or clone `main`, build the precompiled
+artifacts from checked-in source with Node 20.19 or newer, and install that
+local package into a consumer. TypeScript consumers of the Three bridge also
+need `@types/three@0.185.4`:
 
 ```sh
+# Published GitHub prerelease artifact:
+npm install \
+  https://github.com/instruktlabs/matter-field/releases/download/v0.0.1-preview.2/matter-field-0.0.1-preview.2.tgz \
+  typegpu@0.11.9 @typegpu/three@0.11.0 three@0.185.1
+npm install --save-dev @types/three@0.185.4
+
+# Or build the exact current source locally:
 git clone --branch main --single-branch \
   https://github.com/instruktlabs/matter-field.git
 cd matter-field
 npm ci
+npm run test:types
 npm run build:typegpu:package
 
 # From your consumer project:
@@ -64,9 +103,14 @@ npm install ../matter-field typegpu@0.11.9 @typegpu/three@0.11.0 three@0.185.1
 npm install --save-dev @types/three@0.185.4
 ```
 
-The first preview tag will provide a tested package tarball so consumers do not
-need the repository's authoring toolchain. The installed core and generated
-precompiled artifacts themselves remain compatible with Node 18 or newer.
+The package manifest remains `0.0.1` so the existing source- and
+package-version-bound hardware receipts remain exact. The preview tag and
+asset filename distinguish this immutable artifact from `preview.1`; neither
+artifact has been published to npm.
+
+The attached tarball lets consumers avoid the repository's authoring
+toolchain. The installed core and generated precompiled artifacts themselves
+remain compatible with Node 18 or newer.
 
 ```js
 import { typegpuDunesNode } from 'matter-field/typegpu/three';
@@ -83,7 +127,8 @@ therefore remains authoritative while the TypeGPU lane is evaluated. Read the
 [full spike report](./docs/TYPEGPU-SPIKE.md) before treating it as a migration
 recommendation.
 
-One clean correctness receipt is committed for the exact precompiled artifact:
+One clean correctness receipt is committed for the exact emitted TypeGPU
+JavaScript modules and final browser bundle:
 [Windows / RTX 3070 / Chrome / TypeGPU WebGPU](./parity/reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json).
 It records one physical configuration and finite sample set. It is not speed
 evidence, a cross-vendor result, or proof that the handwritten port cannot drift
@@ -245,7 +290,8 @@ Use it when a procedural field is rendered densely on the GPU but queried
 sparsely and immediately by CPU gameplay, Workers, or a server. Skip it when
 only the shader consumes the field, a CPU-authored mesh or texture is already
 the authority, the result can be baked, or the problem is a stateful
-simulation. It is an inference surface, not a neural-network training system.
+simulation. Machine learning, raw-WGSL expansion, and integrations for general
+game engines are deferred research directions, not current product claims.
 
 ### Relationship to TypeGPU
 
@@ -259,7 +305,7 @@ data schemas, resources, pipelines, and application structure.
 Matter Field's adapter core explores a smaller evidence-first contract: no
 transform step or required runtime dependency, f64/f32-estimate/dual/TSL
 materializations, current Three WebGPU and WebGL2 probe paths, and public
-hardware-scoped numeric receipts. The experimental TypeGPU subpath is
+hardware-scoped numeric receipts. The optional TypeGPU subpath is
 precompiled, but it has optional pinned runtime peers. Those are distinctions,
 not proof that Matter Field is categorically better.
 
@@ -318,7 +364,10 @@ src/noise.js                   portable field building blocks
 src/hash.js                    raw u32 hash and shader references
 src/backend-tsl.js             caller-supplied Three.js TSL backend
 src/typegpu/                   handwritten optional TypeGPU materialization
+dist-types/                    generated declarations for core public exports
 dist-typegpu/                  generated precompiled publish artifacts
+schemas/receipts/              versioned native and TypeGPU receipt contracts
+research/canonical-ir/         non-exported dunes recorder/source-emitter spike
 parity/harness.js              CPU assay and field-unit verdicts
 parity/golden.js               deterministic points and f32 diagnostics
 parity/gpu-probe-template.js   implemented WebGPU/WebGL2 assay
@@ -343,7 +392,8 @@ The most useful contributions right now are:
 - accessible interactive examples that pair real GPU rendering with CPU
   gameplay queries;
 - field-identity and receipt-schema improvements;
-- careful backend experiments that preserve the small core.
+- review and extension of the dunes canonical-IR prototype toward a packaged,
+  identity-bound GPU assay without changing field identity or numeric results.
 
 Start with [CONTRIBUTING.md](./CONTRIBUTING.md), the
 [roadmap](./ROADMAP.md), the [receipt guide](./docs/RECEIPTS.md), and the

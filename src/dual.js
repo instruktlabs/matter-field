@@ -33,10 +33,21 @@
 
 import { LATTICE_OFFSET, hash01 } from './hash.js';
 
-/** Lift a plain constant. */
+/** @import { Adapter, Field } from './adapter.js' */
+
+/** @typedef {{ v: number, dx: number, dz: number }} Dual */
+
+/** @typedef {{ x: number, y: number, z: number, h: number }} SurfaceNormal */
+
+/** @param {number} x @returns {Dual} Lift a plain constant. */
 const K = (x) => ({ v: x, dx: 0, dz: 0 });
 
-/** Seed an evaluation point: x varies in dx, z varies in dz. */
+/**
+ * Seed an evaluation point: x varies in dx, z varies in dz.
+ * @param {number} x
+ * @param {number} z
+ * @returns {{ x: Dual, z: Dual }}
+ */
 export function dualInputs(x, z) {
   return {
     x: { v: x, dx: 1, dz: 0 },
@@ -44,7 +55,7 @@ export function dualInputs(x, z) {
   };
 }
 
-/** Dual-number backend. V = { v, dx, dz }. */
+/** @type {Adapter<Dual, number>} Dual-number backend. */
 export const dualAdapter = Object.freeze({
   f: K,
   add: (a, b) => ({ v: a.v + b.v, dx: a.dx + b.dx, dz: a.dz + b.dz }),
@@ -91,9 +102,10 @@ export const dualAdapter = Object.freeze({
 
 /**
  * Evaluate a field's value and gradient at (x, z) in one pass.
- * @param {(A: object, x: any, z: any) => any} field  field over the contract,
- *        returning a single V
- * @returns {{ v: number, dx: number, dz: number }}
+ * @param {Field<Dual, number, [Dual, Dual]>} field field over the contract
+ * @param {number} x
+ * @param {number} z
+ * @returns {Dual}
  */
 export function evalWithGradient(field, x, z) {
   const s = dualInputs(x, z);
@@ -102,7 +114,10 @@ export function evalWithGradient(field, x, z) {
 
 /**
  * Y-up unit surface normal of a heightfield from one dual evaluation.
- * @param {(A: object, x: any, z: any) => any} heightField returns height V
+ * @param {Field<Dual, number, [Dual, Dual]>} heightField returns height V
+ * @param {number} x
+ * @param {number} z
+ * @returns {SurfaceNormal}
  */
 export function surfaceNormal(heightField, x, z) {
   const g = evalWithGradient(heightField, x, z);
