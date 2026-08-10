@@ -1,7 +1,13 @@
 import { numberAdapter as N } from '../../src/number.js';
-import { buoyancy, swellField } from '../../examples/swell.js';
 import { windField } from '../../examples/wind.js';
 import { serpentRadius, serpentSpine } from '../../examples/serpent.js';
+import {
+  SWELL_DISPLAY_SCALE,
+  demoSwellBuoyancy,
+  demoSwellField,
+  scaleSwellBuoyancy,
+  scaleSwellHeight,
+} from './demo-tuning.js';
 import {
   addButton,
   addDriveControls,
@@ -74,11 +80,11 @@ export function runSwellPlayground({ canvas, controls, readouts }) {
   const gates = [{ x: -25, z: -18 }, { x: 42, z: 30 }, { x: 88, z: -25 }];
   const updateReadouts = createReadouts(readouts, [
     ['mode', 'buoyancy mode'], ['surface', 'surface / heave'], ['attitude', 'pitch / roll'],
-    ['speed', 'boat speed'], ['goal', 'navigation gates'], ['readback', 'GPU readback'],
+    ['speed', 'boat speed'], ['scale', 'display swell'], ['goal', 'navigation gates'], ['readback', 'GPU readback'],
   ]);
   const reset = () => Object.assign(state, { t: 0, x: -78, z: 28, yaw: Math.PI / 2, speed: 0, gate: 0, target: null });
   addStandardControls(controls, state, input, reset, () => setStageStatus(
-    state.mode === 'unified' ? 'four hull probes share swellField' : 'fault injected: hull responds to a flat proxy plane',
+    state.mode === 'unified' ? 'four hull probes share the directional demo swell' : 'fault injected: hull responds to a flat proxy plane',
     state.mode === 'unified' ? 'pass' : 'warn',
   ));
   installFullscreen(canvas);
@@ -119,7 +125,7 @@ export function runSwellPlayground({ canvas, controls, readouts }) {
     state.x = clamp(state.x + Math.cos(state.yaw) * state.speed * dt, view.minX + 4, view.maxX - 4);
     state.z = clamp(state.z + Math.sin(state.yaw) * state.speed * dt, view.minZ + 4, view.maxZ - 4);
     const boat = { x: state.x, z: state.z, yaw: state.yaw, halfL: 7, halfW: 2.4 };
-    state.actual = buoyancy(N, boat, state.t);
+    state.actual = scaleSwellBuoyancy(demoSwellBuoyancy(N, boat, state.t));
     state.applied = state.mode === 'unified' ? state.actual : { heave: 0, pitch: 0, roll: 0 };
     if (state.gate < gates.length && Math.hypot(state.x - gates[state.gate].x, state.z - gates[state.gate].z) < 13) state.gate++;
   }
@@ -137,8 +143,8 @@ export function runSwellPlayground({ canvas, controls, readouts }) {
       for (let x = 0; x < water.width; x++) {
         const wx = lerp(view.minX, view.maxX, x / (water.width - 1));
         const wz = lerp(view.minZ, view.maxZ, y / (water.height - 1));
-        const h = swellField(N, wx, wz, state.t);
-        const t = clamp((h + 1.6) / 3.2, 0, 1);
+        const h = scaleSwellHeight(N, demoSwellField(N, wx, wz, state.t));
+        const t = clamp((h + 2.1) / 4.2, 0, 1);
         const i = (y * water.width + x) * 4;
         waterImage.data[i] = 15 + t * 34;
         waterImage.data[i + 1] = 52 + t * 100;
@@ -173,12 +179,13 @@ export function runSwellPlayground({ canvas, controls, readouts }) {
       const q = worldToScreen(state.target.x, state.target.z);
       ctx.strokeStyle = '#7af2ce'; ctx.beginPath(); ctx.arc(q.x, q.y, 8 * scale, 0, Math.PI * 2); ctx.stroke();
     }
-    const center = swellField(N, state.x, state.z, state.t);
+    const center = scaleSwellHeight(N, demoSwellField(N, state.x, state.z, state.t));
     updateReadouts({
       mode: formatMode(state.mode),
       surface: `${center.toFixed(3)} / ${state.applied.heave.toFixed(3)} m`,
       attitude: `${(state.applied.pitch * 57.2958).toFixed(1)}° / ${(state.applied.roll * 57.2958).toFixed(1)}°`,
       speed: `${state.speed.toFixed(1)} m/s`,
+      scale: `${SWELL_DISPLAY_SCALE.toFixed(2)}×`,
       goal: state.gate >= gates.length ? 'COURSE COMPLETE' : `${state.gate} / ${gates.length}`,
       readback: '0 per frame',
     });
@@ -189,6 +196,7 @@ export function runSwellPlayground({ canvas, controls, readouts }) {
     mode: state.mode, paused: state.paused, time: +state.t.toFixed(3),
     boat: { x: +state.x.toFixed(3), z: +state.z.toFixed(3), yaw: +state.yaw.toFixed(3), speed: +state.speed.toFixed(3) },
     buoyancy: Object.fromEntries(Object.entries(state.applied).map(([key, value]) => [key, +value.toFixed(5)])),
+    displaySwellScale: SWELL_DISPLAY_SCALE,
     gatesPassed: state.gate, gateCount: gates.length, target: state.target,
     rendering: 'CPU canvas visualization; CPU numberAdapter buoyancy (GPU parity is measured in the parity lab)',
     controls: 'WASD/arrows or on-screen arrows; click water to set course; F fullscreen',

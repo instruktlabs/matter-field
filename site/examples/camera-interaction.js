@@ -69,6 +69,13 @@ export function installFieldCamera({
     applyOrbit();
   }
 
+  function setTarget(nextTarget) {
+    const next = nextTarget instanceof Vector3 ? nextTarget : new Vector3(...nextTarget);
+    camera.position.add(next.clone().sub(target));
+    target.copy(next);
+    applyOrbit();
+  }
+
   function capturePointer(pointerId) {
     try {
       canvas.setPointerCapture?.(pointerId);
@@ -167,6 +174,7 @@ export function installFieldCamera({
 
   return {
     reset,
+    setTarget,
     getState: () => ({
       position: camera.position.toArray().map((value) => +value.toFixed(3)),
       target: target.toArray().map((value) => +value.toFixed(3)),

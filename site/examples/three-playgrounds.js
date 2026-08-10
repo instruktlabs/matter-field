@@ -1,20 +1,21 @@
 import {
+  AgXToneMapping,
   AmbientLight,
   ArrowHelper,
   BoxGeometry,
   BufferGeometry,
   Color,
-  ConeGeometry,
-  CylinderGeometry,
   DirectionalLight,
   Float32BufferAttribute,
   Group,
+  HemisphereLight,
   Line,
   LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
   MeshBasicNodeMaterial,
   MeshStandardMaterial,
+  MeshStandardNodeMaterial,
   PerspectiveCamera,
   Plane,
   PlaneGeometry,
@@ -31,10 +32,16 @@ import {
 import * as tsl from 'three/tsl';
 import { makeTslAdapter } from '../../src/backend-tsl.js';
 import { numberAdapter as N } from '../../src/number.js';
-import { buoyancy, swellField } from '../../examples/swell.js';
 import { windField } from '../../examples/wind.js';
 import { serpentRadius, serpentSpine } from '../../examples/serpent.js';
 import { installFieldCamera } from './camera-interaction.js';
+import {
+  SWELL_DISPLAY_SCALE,
+  demoSwellBuoyancy,
+  demoSwellField,
+  scaleSwellBuoyancy,
+  scaleSwellHeight,
+} from './demo-tuning.js';
 import {
   runSerpentPlayground as runSerpentFallback,
   runSwellPlayground as runSwellFallback,
@@ -53,7 +60,12 @@ import {
   wrap,
 } from './runtime.js';
 
-async function createThreeStage(canvas, { background, cameraPosition, lookAt }) {
+async function createThreeStage(canvas, {
+  background,
+  cameraPosition,
+  lookAt,
+  waterLighting = false,
+}) {
   const make = (forceWebGL) => new WebGPURenderer({ canvas, antialias: true, forceWebGL, powerPreference: 'high-performance' });
   let renderer = make(!navigator.gpu);
   try {
@@ -66,9 +78,14 @@ async function createThreeStage(canvas, { background, cameraPosition, lookAt }) 
   }
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
   renderer.setClearColor(new Color(background));
+  if (waterLighting) {
+    renderer.toneMapping = AgXToneMapping;
+    renderer.toneMappingExposure = 1.08;
+  }
   const scene = new Scene();
   scene.background = new Color(background);
-  scene.add(new AmbientLight(0xcad8bd, 2.1));
+  if (waterLighting) scene.add(new HemisphereLight(0x94b7c6, 0x163b42, 0.7));
+  else scene.add(new AmbientLight(0xcad8bd, 2.1));
   const sun = new DirectionalLight(0xffe8bd, 3.2);
   sun.position.set(120, 180, 100);
   scene.add(sun);
@@ -109,18 +126,59 @@ async function withFallback(args, run3d, fallback, label) {
   }
 }
 
+function buildBoatHullGeometry() {
+  const sections = [
+    { x: -7.5, bottomY: -0.55, topY: 2.15, bottomHalf: 2.25, topHalf: 2.9 },
+    { x: 3.8, bottomY: -0.65, topY: 2.2, bottomHalf: 2.35, topHalf: 3.0 },
+    { x: 7.2, bottomY: -0.25, topY: 2.05, bottomHalf: 1.55, topHalf: 2.0 },
+    { x: 9.45, bottomY: 0.5, topY: 1.65, bottomHalf: 0.55, topHalf: 0.78 },
+  ];
+  const vertices = [];
+  for (const section of sections) {
+    vertices.push(
+      section.x, section.bottomY, -section.bottomHalf,
+      section.x, section.bottomY, section.bottomHalf,
+      section.x, section.topY, -section.topHalf,
+      section.x, section.topY, section.topHalf,
+    );
+  }
+  const indices = [];
+  const quad = (a, b, c, d) => indices.push(a, b, c, a, c, d);
+  for (let index = 0; index < sections.length - 1; index++) {
+    const a = index * 4;
+    const b = (index + 1) * 4;
+    quad(a, b, b + 1, a + 1);
+    quad(a, a + 2, b + 2, b);
+    quad(a + 1, b + 1, b + 3, a + 3);
+    quad(a + 2, a + 3, b + 3, b + 2);
+  }
+  quad(0, 1, 3, 2);
+  const nose = (sections.length - 1) * 4;
+  quad(nose, nose + 2, nose + 3, nose + 1);
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 function buildBoat() {
   const root = new Group();
-  const hull = new Mesh(new BoxGeometry(14, 2.8, 6), new MeshStandardMaterial({ color: 0xd4ff52, roughness: 0.6, metalness: 0.15 }));
-  hull.position.y = 1.3;
+  const hull = new Mesh(
+    buildBoatHullGeometry(),
+    new MeshStandardMaterial({ color: 0xd4ff52, roughness: 0.52, metalness: 0.16, side: 2 }),
+  );
+  hull.position.y = 1.15;
   root.add(hull);
-  const bow = new Mesh(new ConeGeometry(3, 6, 4), new MeshStandardMaterial({ color: 0xe8ff9d, roughness: 0.5 }));
-  bow.rotation.z = -Math.PI / 2;
-  bow.position.set(9.5, 1.3, 0);
-  root.add(bow);
   const cabin = new Mesh(new BoxGeometry(5, 3.4, 4.2), new MeshStandardMaterial({ color: 0x173536, roughness: 0.25, metalness: 0.35 }));
-  cabin.position.set(-1.5, 4, 0);
+  cabin.position.set(-1.4, 4.15, 0);
   root.add(cabin);
+  const windshield = new Mesh(
+    new BoxGeometry(0.35, 2.25, 3.65),
+    new MeshStandardMaterial({ color: 0x78c9ca, roughness: 0.12, metalness: 0.2, transparent: true, opacity: 0.72 }),
+  );
+  windshield.position.set(1.2, 4.35, 0);
+  root.add(windshield);
   return root;
 }
 
@@ -143,7 +201,8 @@ function addModeControls(controls, state, input, reset, faultLabel, onMode, acti
 async function runSwell3D({ canvas, controls, readouts }) {
   setStageStatus('initializing TSL water…');
   const { renderer, scene, camera, backend } = await createThreeStage(canvas, {
-    background: 0x07131a, cameraPosition: [128, 102, 134], lookAt: [0, 0, 0],
+    background: 0x0e2638, cameraPosition: [58, 31, 76], lookAt: [-28, 0.5, 10],
+    waterLighting: true,
   });
   const state = { paused: false, mode: 'unified', t: 0, x: -82, z: 42, yaw: -0.38, speed: 0, gate: 0, target: null, actual: null, applied: null };
   const input = createInput(canvas);
@@ -151,10 +210,16 @@ async function runSwell3D({ canvas, controls, readouts }) {
   const A = makeTslAdapter(tsl, { fnName: 'mfSwellPlaygroundHash' });
   const p = tsl.positionLocal;
   const worldZ = p.y.negate();
-  const height = swellField(A, p.x, worldZ, timeNode);
-  const waterMaterial = new MeshBasicNodeMaterial({ side: 2, transparent: true, opacity: 0.94 });
+  const rawHeight = demoSwellField(A, p.x, worldZ, timeNode);
+  const height = scaleSwellHeight(A, rawHeight);
+  const waterMaterial = new MeshStandardNodeMaterial({ side: 2, roughness: 0.2, metalness: 0 });
   waterMaterial.positionNode = tsl.vec3(p.x, p.y, height);
-  waterMaterial.colorNode = tsl.mix(tsl.color(0x0b4051), tsl.color(0x72e1cf), tsl.clamp(height.add(1.5).div(3), 0, 1));
+  waterMaterial.normalNode = tsl.bumpMap(height, 0.72);
+  const waterBand = tsl.clamp(height.add(2.1).div(4.2), 0, 1);
+  const crest = tsl.smoothstep(1.05, 1.55, height);
+  const waterBody = tsl.mix(tsl.color(0x071d29), tsl.color(0x1f756f), waterBand);
+  waterMaterial.colorNode = tsl.mix(waterBody, tsl.color(0xa9d8d0), crest.mul(0.13));
+  waterMaterial.roughnessNode = tsl.mix(tsl.float(0.27), tsl.float(0.14), crest);
   const water = new Mesh(new PlaneGeometry(240, 160, 120, 80), waterMaterial);
   water.rotation.x = -Math.PI / 2;
   scene.add(water);
@@ -164,7 +229,7 @@ async function runSwell3D({ canvas, controls, readouts }) {
   const gateMeshes = gates.map((gate) => {
     const mesh = new Mesh(new RingGeometry(10, 12, 48), new MeshBasicMaterial({ color: 0x6c7862, transparent: true, opacity: 0.8, side: 2 }));
     mesh.rotation.x = -Math.PI / 2;
-    mesh.position.set(gate.x, swellField(N, gate.x, gate.z, 0) + 0.35, gate.z);
+    mesh.position.set(gate.x, scaleSwellHeight(N, demoSwellField(N, gate.x, gate.z, 0)) + 0.35, gate.z);
     scene.add(mesh);
     return mesh;
   });
@@ -172,11 +237,11 @@ async function runSwell3D({ canvas, controls, readouts }) {
   targetMarker.rotation.x = -Math.PI / 2; targetMarker.visible = false; scene.add(targetMarker);
   const updateReadouts = createReadouts(readouts, [
     ['mode', 'buoyancy mode'], ['backend', 'visual / hull'], ['surface', 'surface / heave'],
-    ['attitude', 'pitch / roll'], ['goal', 'navigation gates'], ['readback', 'GPU readback'],
+    ['attitude', 'pitch / roll'], ['scale', 'display swell'], ['goal', 'navigation gates'], ['readback', 'GPU readback'],
   ]);
   const reset = () => Object.assign(state, { t: 0, x: -82, z: 42, yaw: -0.38, speed: 0, gate: 0, target: null });
   addModeControls(controls, state, input, reset, 'Inject flat proxy', () => setStageStatus(
-    state.mode === 'unified' ? 'GPU water and CPU hull share swellField' : 'fault injected: CPU hull responds to a flat plane',
+    state.mode === 'unified' ? 'GPU water and CPU hull share the directional demo swell' : 'fault injected: CPU hull responds to a flat plane',
     state.mode === 'unified' ? 'pass' : 'warn',
   ));
   installFullscreen(canvas);
@@ -190,7 +255,7 @@ async function runSwell3D({ canvas, controls, readouts }) {
   const cameraControls = installFieldCamera({
     canvas,
     camera,
-    focus: [0, 0, 0],
+    focus: [-28, 0.5, 10],
     controls,
     onPrimaryDown: setCourseFromPointer,
     minDistance: 75,
@@ -212,7 +277,7 @@ async function runSwell3D({ canvas, controls, readouts }) {
     state.yaw += steer * (0.55 + Math.abs(state.speed) * 0.035) * dt;
     state.x = clamp(state.x + Math.cos(state.yaw) * state.speed * dt, -112, 112);
     state.z = clamp(state.z + Math.sin(state.yaw) * state.speed * dt, -72, 72);
-    state.actual = buoyancy(N, { x: state.x, z: state.z, yaw: state.yaw, halfL: 7, halfW: 3 }, state.t);
+    state.actual = scaleSwellBuoyancy(demoSwellBuoyancy(N, { x: state.x, z: state.z, yaw: state.yaw, halfL: 7, halfW: 3 }, state.t));
     state.applied = state.mode === 'unified' ? state.actual : { heave: 0, pitch: 0, roll: 0 };
     if (state.gate < gates.length && Math.hypot(state.x - gates[state.gate].x, state.z - gates[state.gate].z) < 12) state.gate++;
   }
@@ -223,18 +288,19 @@ async function runSwell3D({ canvas, controls, readouts }) {
     boat.rotation.order = 'YXZ';
     boat.rotation.set(-state.applied.pitch, -state.yaw, state.applied.roll);
     gateMeshes.forEach((mesh, index) => {
-      mesh.position.y = swellField(N, gates[index].x, gates[index].z, state.t) + 0.25;
+      mesh.position.y = scaleSwellHeight(N, demoSwellField(N, gates[index].x, gates[index].z, state.t)) + 0.25;
       mesh.material.color.set(index < state.gate ? 0x7af2ce : index === state.gate ? 0xd4ff52 : 0x6c7862);
     });
     if (state.target) {
-      targetMarker.visible = true; targetMarker.position.set(state.target.x, swellField(N, state.target.x, state.target.z, state.t) + 0.3, state.target.z);
+      targetMarker.visible = true; targetMarker.position.set(state.target.x, scaleSwellHeight(N, demoSwellField(N, state.target.x, state.target.z, state.t)) + 0.3, state.target.z);
     } else targetMarker.visible = false;
     renderer.render(scene, camera);
-    const center = swellField(N, state.x, state.z, state.t);
+    const center = scaleSwellHeight(N, demoSwellField(N, state.x, state.z, state.t));
     updateReadouts({
       mode: state.mode === 'unified' ? 'UNIFIED FIELD' : 'FAULT: FLAT PLANE', backend: `${backend} TSL / CPU f64`,
       surface: `${center.toFixed(3)} / ${state.applied.heave.toFixed(3)} m`,
       attitude: `${(state.applied.pitch * 57.2958).toFixed(1)}° / ${(state.applied.roll * 57.2958).toFixed(1)}°`,
+      scale: `${SWELL_DISPLAY_SCALE.toFixed(2)}×`,
       goal: state.gate >= gates.length ? 'COURSE COMPLETE' : `${state.gate} / ${gates.length}`, readback: '0 per frame',
     });
   }
@@ -242,6 +308,7 @@ async function runSwell3D({ canvas, controls, readouts }) {
     demo: 'swell-3d', coordinateSystem: 'world metres; +x right, +y up, +z depth', renderer: backend, mode: state.mode, paused: state.paused, time: +state.t.toFixed(3),
     boat: { x: +state.x.toFixed(3), y: +state.applied.heave.toFixed(3), z: +state.z.toFixed(3), yaw: +state.yaw.toFixed(3), speed: +state.speed.toFixed(3) },
     buoyancy: Object.fromEntries(Object.entries(state.applied).map(([key, value]) => [key, +value.toFixed(5)])), gatesPassed: state.gate, gateCount: gates.length, target: state.target,
+    displaySwellScale: SWELL_DISPLAY_SCALE,
     camera: cameraControls.getState(),
     materialization: 'GPU TSL water displacement; CPU numberAdapter four-point buoyancy; zero per-frame readbacks',
     controls: 'WASD/arrows drive; left-click/one-finger sets course; right-drag/two-finger orbit; wheel/pinch zoom; C camera reset; F fullscreen',
@@ -251,12 +318,30 @@ async function runSwell3D({ canvas, controls, readouts }) {
 
 function buildGlider() {
   const root = new Group();
-  const wing = new Mesh(new BoxGeometry(16, 0.8, 4), new MeshStandardMaterial({ color: 0xd4ff52, roughness: 0.45, metalness: 0.18 }));
-  root.add(wing);
-  const nose = new Mesh(new ConeGeometry(2.2, 8, 4), new MeshStandardMaterial({ color: 0x7af2ce, roughness: 0.38 }));
-  nose.rotation.z = -Math.PI / 2; nose.position.x = 7; root.add(nose);
-  const tail = new Mesh(new BoxGeometry(5, 3, 0.8), new MeshStandardMaterial({ color: 0xb8c49e, roughness: 0.7 }));
-  tail.position.set(-7, 2, 0); root.add(tail);
+  const nose = [9, 0, 0];
+  const ridge = [0, 0.85, 0];
+  const tail = [-7, 0.1, 0];
+  const leftWing = [-3.2, 0, -7.5];
+  const rightWing = [-3.2, 0, 7.5];
+  const positions = [
+    ...nose, ...ridge, ...leftWing,
+    ...ridge, ...tail, ...leftWing,
+    ...nose, ...rightWing, ...ridge,
+    ...ridge, ...rightWing, ...tail,
+  ];
+  const paperGeometry = new BufferGeometry();
+  paperGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  paperGeometry.computeVertexNormals();
+  root.add(new Mesh(
+    paperGeometry,
+    new MeshStandardMaterial({ color: 0xf0ead9, roughness: 0.88, metalness: 0, side: 2 }),
+  ));
+  const foldGeometry = new BufferGeometry().setFromPoints([
+    new Vector3(...nose),
+    new Vector3(...ridge),
+    new Vector3(...tail),
+  ]);
+  root.add(new Line(foldGeometry, new LineBasicMaterial({ color: 0x80958b })));
   return root;
 }
 
