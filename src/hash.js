@@ -29,6 +29,15 @@ export const LATTICE_FLOOR_MAX = 131071;
  * Raw u32 lattice hash bits. Exposed so the GPU assay can compare the integer
  * pipeline before the intentionally lossy u32 -> f32 conversion.
  */
+// @matter-field-type-only-start
+/**
+ * @param {number} ix
+ * @param {number} iz
+ * @param {number} ox
+ * @param {number} oz
+ * @returns {number}
+ */
+// @matter-field-type-only-end
 export function hashU32(ix, iz, ox, oz) {
   const a = (ix + ox) | 0;
   const b = (iz + oz) | 0;
@@ -55,6 +64,15 @@ export function hash01(ix, iz, ox, oz) {
  * identical; only the last two ops round. Use with the f32 adapter when
  * emulating GPU arithmetic on the CPU.
  */
+// @matter-field-type-only-start
+/**
+ * @param {number} ix
+ * @param {number} iz
+ * @param {number} ox
+ * @param {number} oz
+ * @returns {number}
+ */
+// @matter-field-type-only-end
 export function hash01f32(ix, iz, ox, oz) {
   const h = hashU32(ix, iz, ox, oz);
   // 1/4294967296 is 2^-32, exactly representable in f32, so the only rounding

@@ -1,6 +1,6 @@
 import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import tgpu from 'typegpu';
@@ -13,16 +13,36 @@ import { swellField } from '../examples/swell.js';
 import { windField } from '../examples/wind.js';
 import { serpentRadius, serpentSpine } from '../examples/serpent.js';
 import { buildTypegpu } from '../scripts/build-typegpu.mjs';
+import { buildTypegpuProbe } from '../scripts/build-typegpu-probe.mjs';
 
-const artifacts = join(dirname(fileURLToPath(import.meta.url)), '..', 'artifacts', 'tooling-tests');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const artifacts = join(root, 'artifacts', 'tooling-tests');
 await mkdir(artifacts, { recursive: true });
 const temporary = await mkdtemp(join(artifacts, 'typegpu-'));
+const probeTemporary = await mkdtemp(join(artifacts, 'typegpu-probe-'));
 await buildTypegpu({ outDir: temporary, logLevel: 'silent' });
 const compiled = await import(pathToFileURL(join(temporary, 'index.js')).href);
 const compiledThree = await import(pathToFileURL(join(temporary, 'three.js')).href);
 
 after(async () => {
-  await rm(temporary, { recursive: true, force: true });
+  await Promise.all([
+    rm(temporary, { recursive: true, force: true }),
+    rm(probeTemporary, { recursive: true, force: true }),
+  ]);
+});
+
+test('committed TypeGPU receipt remains bound to the current exact build', async () => {
+  const receipt = JSON.parse(await readFile(join(
+    root,
+    'parity',
+    'reports',
+    'typegpu',
+    'windows-rtx3070-chrome-webgpu-2026-08-09.json',
+  ), 'utf8'));
+  const current = await buildTypegpuProbe({ outDir: probeTemporary, count: 300 });
+
+  assert.deepEqual(current.goldenSet, receipt.goldenSet, 'TypeGPU assay identity drifted');
+  assert.equal(current.bundleSha256, receipt.build.probeBundleSha256, 'TypeGPU browser bundle drifted');
 });
 
 test('precompiled TypeGPU artifact preserves every adapter scalar at committed points', () => {

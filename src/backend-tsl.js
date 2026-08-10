@@ -16,13 +16,34 @@
 
 import { LATTICE_OFFSET } from './hash.js';
 
+// @matter-field-type-only-start
+/** @import { Adapter } from './adapter.js' */
+/** @typedef {import('three/webgpu').TSL.NodeObject<import('three/webgpu').Node<'float'>>} TslFloatNode */
+/** @typedef {import('three/webgpu').TSL.NodeObject<import('three/webgpu').Node<'uint'>>} TslUintNode */
+/** @typedef {(ix: TslUintNode, iz: TslUintNode, ox: number, oz: number) => TslUintNode} TslHashU32 */
+/** @typedef {(ix: TslUintNode, iz: TslUintNode, ox: number, oz: number) => TslFloatNode} TslHash */
+/** @typedef {{ fnName?: string }} TslHashOptions */
+/** @typedef {TslHashOptions & { hash01?: TslHash }} TslAdapterOptions */
+// @matter-field-type-only-end
 /**
  * Build the raw u32 hash as a named TSL function. This is the Tier 2 probe
  * surface: read these bits back before the u32 -> f32 conversion and compare
  * them directly with `hashU32`.
  */
+// @matter-field-type-only-start
+/**
+ * @overload
+ * @param {typeof import('three/tsl')} tsl
+ * @param {TslHashOptions} [options]
+ * @returns {TslHashU32}
+ */
+/** @param {any} tsl @param {TslHashOptions} [options] @returns {TslHashU32} */
+// @matter-field-type-only-end
 export function makeTslHashU32(tsl, { fnName = 'mfHashU32' } = {}) {
   const { Fn, uint } = tsl;
+  // @matter-field-type-only-start
+  // @ts-expect-error the public overload owns Three's evolving Fn callback type
+  // @matter-field-type-only-end
   const hashCore = Fn(([a, b]) => {
     const h = a.mul(uint(0x85ebca6b)).bitXor(b.mul(uint(0xc2b2ae3d))).toVar();
     h.assign(h.bitXor(h.shiftRight(uint(13))).mul(uint(0x27d4eb2f)));
@@ -48,6 +69,15 @@ export function makeTslHashU32(tsl, { fnName = 'mfHashU32' } = {}) {
  * @param {object} tsl the caller's `three/tsl` namespace
  * @returns {(ix, iz, ox: number, oz: number) => Node} hash01 for the adapter
  */
+// @matter-field-type-only-start
+/**
+ * @overload
+ * @param {typeof import('three/tsl')} tsl
+ * @param {TslHashOptions} [options]
+ * @returns {TslHash}
+ */
+/** @param {any} tsl @param {TslHashOptions} [options] @returns {TslHash} */
+// @matter-field-type-only-end
 export function makeTslHash(tsl, { fnName = 'mfHash01' } = {}) {
   const { float } = tsl;
   const hashBits = makeTslHashU32(tsl, { fnName: `${fnName}Bits` });
@@ -60,6 +90,15 @@ export function makeTslHash(tsl, { fnName = 'mfHash01' } = {}) {
  * The TSL adapter. V = TSL node.
  * @param {object} tsl the caller's `three/tsl` namespace
  */
+// @matter-field-type-only-start
+/**
+ * @overload
+ * @param {typeof import('three/tsl')} tsl
+ * @param {TslAdapterOptions} [opts]
+ * @returns {Adapter<TslFloatNode, TslUintNode>}
+ */
+/** @param {any} tsl @param {TslAdapterOptions} [opts] @returns {Adapter<any, any>} */
+// @matter-field-type-only-end
 export function makeTslAdapter(tsl, opts = {}) {
   const { float, uint, abs, floor, min, max, mix, clamp, smoothstep } = tsl;
   const hash01 = opts.hash01 ?? makeTslHash(tsl, opts);

@@ -1,7 +1,22 @@
-# TypeGPU-first architecture spike
+# Optional TypeGPU materialization spike
 
-Status: working optional integration, not a recommendation to replace the
-adapter core.
+Status: working optional, separately assayed integration. It is not the product
+authority and is not a recommendation to replace the adapter core.
+
+## Product decision
+
+Matter Field remains one product with two entry points:
+
+- core plus native Three.js TSL is the primary dependency-free entry;
+- TypeGPU plus `@typegpu/three` is the optional WebGPU-oriented entry.
+
+The adapter-authored field is the authority for both. Today, however, the
+TypeGPU fields are handwritten twins whose comparison tests detect drift; they
+are not generated from that authority. A research-only dunes recorder and
+TypeGPU source emitter now demonstrates a possible canonical-IR boundary, but
+it is not packaged or GPU-assayed. Until generated artifacts pass the remaining
+exit gates, documentation and release notes must continue to call the shipped
+TypeGPU lane handwritten.
 
 Reviewed implementation commit:
 [`0ffc635`](https://github.com/instruktlabs/matter-field/commit/0ffc635c58fdb21b318686cfd715df07071ae0df).
@@ -48,8 +63,8 @@ u32 product above JavaScript's exact-integer range.
 
 A clean NVIDIA GeForce RTX 3070 / Windows / Chrome 151 WebGPU correctness run
 on August 9, 2026 used the same 300 f32 points and absolute field-unit budgets
-as the existing assay. The report binds the exact precompiled publish artifact,
-final browser bundle, dependency versions, clean worktree, and commit
+as the existing assay. The report binds the exact emitted TypeGPU JavaScript
+modules, final browser bundle, dependency versions, clean worktree, and commit
 `0ffc635c58fdb21b318686cfd715df07071ae0df`. Its raw file SHA-256 is
 `85a664d7db123813f995be6a7444889763c6f1b8b7ce5fe28152ab85090034f2`.
 Timing from this machine is intentionally ignored because the host was in
@@ -95,7 +110,7 @@ field expression:
   than explicit adapter calls;
 - typed buffers, resources, pipelines, and compute readback are first-class;
 - one ecosystem can cover field evaluation, particle compute, grid updates,
-  and neural-network/inference kernels;
+  and other general compute kernels;
 - `@typegpu/three` can place a TypeGPU function inside a Three node material;
 - TypeGPU's package ecosystem includes reusable noise and resource-aware
   caches, although substituting those would intentionally change Matter
@@ -107,13 +122,14 @@ adapter syntax.
 
 ## Where the adapter core is still better
 
-The native port does not reproduce Matter Field's full contract:
+The TypeGPU port does not reproduce Matter Field's full contract:
 
 - TypeGPU's direct scalar CPU operations are ordinary JavaScript f64; they are
   not an operation-by-operation f32 evaluator.
-- TypeGPU's typed vector constructors package CPU components as f32. The
-  exported scalar wind and serpent channels remain the f64 authority; vector
-  helpers are explicitly convenience values.
+- TypeGPU's typed vector constructors package CPU components as f32. Use the
+  scalar wind and serpent channels when comparing the handwritten port's f64
+  query values with the adapter authority; vector helpers are explicitly
+  convenience values.
 - TypeGPU has shader derivatives, but not Matter Field's generic forward-mode
   world-coordinate dual gradients.
 - TypeGPU permits a much broader language and does not enforce the restricted
@@ -130,20 +146,20 @@ not a rendering-throughput benchmark.
 
 ## Verdict
 
-The TypeGPU implementation works and deserves to be a first-class optional
+The TypeGPU implementation works and deserves to remain an optional assayed
 materialization and integration. It is not a general backend for arbitrary
-adapter-authored fields, nor is it better as the sole source of truth in its
-current handwritten form.
+adapter-authored fields, nor is it a second source of truth in its current
+handwritten form.
 
 The strongest near-term architecture is:
 
-1. keep the restricted adapter/IR as authority for f64, f32 diagnostic, dual
-   gradients, identity, and native TSL/WebGL2;
+1. keep the restricted adapter-authored definition as authority for f64, f32
+   diagnostic, dual gradients, identity, and native TSL/WebGL2;
 2. ship a precompiled `matter-field/typegpu` materialization for TypeGPU and
    WebGPU users;
 3. assay that materialization against the existing authority on every change;
-4. investigate a generated TypeGPU backend from a typed canonical IR, rather
-   than maintaining two handwritten formulas.
+4. advance the existing dunes canonical-IR prototype through packaged-artifact
+   and GPU assay gates before attempting a broad rewrite.
 
 If natural `'use gpu'` source must become the authoring center, Matter Field
 would need its own supported source transform that lowers the original source
@@ -151,21 +167,52 @@ to a canonical operation IR before TypeGPU transforms it. TypeGPU exposes no
 stable public AST visitor for this; consuming its internal metadata would be a
 semver hazard.
 
-## Promotion gates
+## Canonical-generation phases and gates
 
-Before making TypeGPU the default package surface:
+### Phase A — record one authoritative field
 
-1. Generate, rather than hand-copy, at least the f32, dual, and native-TSL
-   materializations from one authoritative representation.
-2. Bind source, generator, comparison harness, build plugin, emitted artifact,
-   dependency versions, and commit state into fresh receipts.
-3. Add adversarial float-to-lattice GPU boundary vectors.
-4. Repeat TypeGPU WebGPU receipts on NVIDIA, AMD, Intel, and Apple silicon.
-5. Retain and independently test native TSL WebGL2 while the TypeGPU bridge is
-   WebGPU-only.
-6. Benchmark on a quiet host with GPU timestamps and timed readback excluded;
-   separately measure CPU f64, gradients, resolution/compile cost, and bundle
-   weight.
+- Execute dunes once against an expression-recording adapter.
+- Preserve constants, parenthesization, operation order, stamp order,
+  float-to-lattice boundaries, and field identity in a small typed IR.
+- Make the serialized IR reviewable and deterministic.
+
+**Exit gate:** recorded dunes reproduces the authoritative f64 evaluation,
+operation-wise f32 diagnostic, and committed golden set without an identity
+change.
+
+**Research status:** met for the recorder and direct CPU evaluators at all 300
+committed assay points. The emitted source also passes the actual
+TypeGPU/esbuild transform. This does not satisfy Phase B or establish generated
+GPU behavior.
+
+### Phase B — generate and assay TypeGPU
+
+- Generate a precompiled dunes TypeGPU function from the reviewed IR.
+- Compare it with the current handwritten TypeGPU result and bind source,
+  generator, comparison harness, build plugin, emitted artifact, dependency
+  versions, and commit into fresh evidence.
+- Do not depend on TypeGPU private transform metadata as a public contract.
+
+**Exit gate:** the generated result passes the clean consumer, TypeGPU/Three
+integration, raw hash, and numeric probe checks for the exact artifact. Any
+output change receives a new field identity, golden, and receipt rather than
+inheriting previous evidence.
+
+### Phase C — decide whether to expand
+
+- Review whether the IR and generator are easier to maintain and debug than the
+  synchronized handwritten twin.
+- Only then expand to swell, wind, and serpent.
+- Retain and independently test native TSL WebGL2 while the TypeGPU bridge is
+  WebGPU-only.
+- Add adversarial float-to-lattice vectors and repeat separate TypeGPU receipts
+  on AMD, Intel, and Apple silicon before a stable TypeGPU claim.
+- Benchmark only on a quiet host, separating CPU f64, gradients,
+  resolution/compile cost, GPU throughput, and readback.
+
+**Exit gate:** all advertised TypeGPU fields are generated or the documentation
+explicitly retains the synchronized-port boundary. TypeGPU remains an optional
+entry point either way; it does not need to become the default package surface.
 
 ## Primary references
 

@@ -1,0 +1,812 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://instruktlabs.github.io/matter-field/schemas/receipts/typegpu-v1.schema.json",
+  "title": "Matter Field TypeGPU parity receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "implementation",
+    "backend",
+    "adapter",
+    "goldenSet",
+    "pointCount",
+    "sampleSemantics",
+    "dispatchAndReadbackMs",
+    "pass",
+    "passCriterion",
+    "fields",
+    "hash",
+    "migration",
+    "three",
+    "build",
+    "browser",
+    "os",
+    "chromeGpu",
+    "run"
+  ],
+  "properties": {
+    "schema": {
+      "const": "matter-field-typegpu-parity/v1"
+    },
+    "implementation": {
+      "const": "typegpu-first-class-spike"
+    },
+    "backend": {
+      "const": "webgpu"
+    },
+    "adapter": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/webGpuAdapter"
+    },
+    "goldenSet": {
+      "$ref": "#/$defs/goldenSet"
+    },
+    "pointCount": {
+      "const": 300
+    },
+    "sampleSemantics": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dispatchAndReadbackMs": {
+      "type": "number",
+      "minimum": 0
+    },
+    "pass": {
+      "type": "boolean"
+    },
+    "passCriterion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "error": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    },
+    "hash": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/hashSummary"
+    },
+    "migration": {
+      "$ref": "#/$defs/migration"
+    },
+    "three": {
+      "$ref": "#/$defs/three"
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "probeBundleSha256"
+      ],
+      "properties": {
+        "probeBundleSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "browser": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/browser"
+    },
+    "os": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/os"
+    },
+    "chromeGpu": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/chromeGpu"
+    },
+    "run": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/typegpuRun"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "pass": {
+            "const": true
+          }
+        },
+        "required": [
+          "pass"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fields": {
+            "items": {
+              "properties": {
+                "pass": {
+                  "const": true
+                }
+              },
+              "required": [
+                "pass"
+              ]
+            }
+          },
+          "hash": {
+            "properties": {
+              "bitExact": {
+                "const": true
+              }
+            },
+            "required": [
+              "bitExact"
+            ]
+          },
+          "migration": {
+            "properties": {
+              "bitExactAtSampledPoints": {
+                "const": true
+              }
+            },
+            "required": [
+              "bitExactAtSampledPoints"
+            ]
+          },
+          "three": {
+            "properties": {
+              "pass": {
+                "const": true
+              }
+            },
+            "required": [
+              "pass"
+            ]
+          }
+        }
+      },
+      "else": {
+        "anyOf": [
+          {
+            "properties": {
+              "fields": {
+                "contains": {
+                  "properties": {
+                    "pass": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "pass"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "hash": {
+                "properties": {
+                  "bitExact": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "bitExact"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "migration": {
+                "properties": {
+                  "bitExactAtSampledPoints": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "bitExactAtSampledPoints"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "three": {
+                "properties": {
+                  "pass": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "pass"
+                ]
+              }
+            }
+          },
+          {
+            "required": [
+              "error"
+            ],
+            "properties": {
+              "error": {
+                "type": "string",
+                "minLength": 1
+              },
+              "run": {
+                "properties": {
+                  "softwareAdapter": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "softwareAdapter"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "error": {}
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "then": {
+        "properties": {
+          "pass": {
+            "const": false
+          },
+          "run": {
+            "properties": {
+              "softwareAdapter": {
+                "const": true
+              }
+            },
+            "required": [
+              "softwareAdapter"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "goldenSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "generator",
+        "seed",
+        "extent",
+        "coordinateType",
+        "composition",
+        "pointCount",
+        "fields",
+        "coordinatesSha256",
+        "valuesSha256",
+        "typegpuCpuValuesSha256",
+        "sourceSha256",
+        "publishArtifactsSha256",
+        "packageVersion",
+        "typegpuVersion",
+        "typegpuThreeVersion",
+        "unpluginTypegpuVersion",
+        "esbuildVersion",
+        "threeVersion",
+        "sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "matter-field-typegpu-assay-set/v1"
+        },
+        "generator": {
+          "const": "matter-field-assay-points/v2"
+        },
+        "seed": {
+          "const": "0x9e3779b9"
+        },
+        "extent": {
+          "const": 20000
+        },
+        "coordinateType": {
+          "const": "f32"
+        },
+        "composition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pointCount": {
+          "const": 300
+        },
+        "fields": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "typegpuDunes(x,z)"
+            },
+            {
+              "const": "typegpuSwell(x,z,2.5)"
+            },
+            {
+              "const": "typegpuWindX(x,z,1)"
+            },
+            {
+              "const": "typegpuWindZ(x,z,1)"
+            }
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "coordinatesSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "valuesSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "typegpuCpuValuesSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "sourceSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "publishArtifactsSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "packageVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "typegpuVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "typegpuThreeVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "unpluginTypegpuVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "esbuildVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "threeVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "sha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "fields": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "dunes"
+                },
+                "budget": {
+                  "const": 0.004
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "swell-t2.5"
+                },
+                "budget": {
+                  "const": 0.001
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "wind.wx-t1"
+                },
+                "budget": {
+                  "const": 0.0001
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "wind.wz-t1"
+                },
+                "budget": {
+                  "const": 0.0001
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "items": false,
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bitExactAtSampledPoints",
+        "scalarCount",
+        "mismatchCount",
+        "nonFiniteCount",
+        "maxAbs",
+        "firstMismatch",
+        "reference"
+      ],
+      "properties": {
+        "bitExactAtSampledPoints": {
+          "type": "boolean"
+        },
+        "scalarCount": {
+          "const": 1200
+        },
+        "mismatchCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1200
+        },
+        "nonFiniteCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1200
+        },
+        "maxAbs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "firstMismatch": {
+          "anyOf": [
+            {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "bitExactAtSampledPoints": {
+                "const": true
+              }
+            },
+            "required": [
+              "bitExactAtSampledPoints"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mismatchCount": {
+                "const": 0
+              },
+              "nonFiniteCount": {
+                "const": 0
+              },
+              "maxAbs": {
+                "const": 0
+              },
+              "firstMismatch": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "anyOf": [
+              {
+                "properties": {
+                  "mismatchCount": {
+                    "minimum": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "nonFiniteCount": {
+                    "minimum": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "firstMismatch": {
+                    "type": "object"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "threeField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "pass",
+        "pixelArrayType",
+        "readbackElements",
+        "sampledPixels",
+        "rowStrideElements",
+        "spatiallyNonconstant",
+        "minChannel",
+        "maxChannel"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "dunes",
+            "swell",
+            "wind",
+            "serpentSpine",
+            "serpentRadius"
+          ]
+        },
+        "pass": {
+          "type": "boolean"
+        },
+        "pixelArrayType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "readbackElements": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sampledPixels": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rowStrideElements": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "spatiallyNonconstant": {
+          "type": "boolean"
+        },
+        "minChannel": {
+          "type": "number"
+        },
+        "maxChannel": {
+          "type": "number"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "pass": {
+                "const": true
+              }
+            },
+            "required": [
+              "pass"
+            ]
+          },
+          "then": {
+            "properties": {
+              "spatiallyNonconstant": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "three": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pass",
+        "backend",
+        "adapterRelationship",
+        "criterion",
+        "fields",
+        "compiledFields"
+      ],
+      "properties": {
+        "pass": {
+          "type": "boolean"
+        },
+        "backend": {
+          "const": "webgpu"
+        },
+        "adapterRelationship": {
+          "type": "string",
+          "minLength": 1
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fields": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/threeField"
+                },
+                {
+                  "properties": {
+                    "name": {
+                      "const": "dunes"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/threeField"
+                },
+                {
+                  "properties": {
+                    "name": {
+                      "const": "swell"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/threeField"
+                },
+                {
+                  "properties": {
+                    "name": {
+                      "const": "wind"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/threeField"
+                },
+                {
+                  "properties": {
+                    "name": {
+                      "const": "serpentSpine"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/threeField"
+                },
+                {
+                  "properties": {
+                    "name": {
+                      "const": "serpentRadius"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "items": false,
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "compiledFields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "dunes",
+              "swell",
+              "wind",
+              "serpentSpine",
+              "serpentRadius"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 5
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "pass": {
+                "const": true
+              }
+            },
+            "required": [
+              "pass"
+            ]
+          },
+          "then": {
+            "properties": {
+              "fields": {
+                "items": {
+                  "properties": {
+                    "pass": {
+                      "const": true
+                    },
+                    "spatiallyNonconstant": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "pass",
+                    "spatiallyNonconstant"
+                  ]
+                }
+              },
+              "compiledFields": {
+                "minItems": 5,
+                "maxItems": 5
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "fields": {
+                "contains": {
+                  "properties": {
+                    "pass": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "pass"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -5,10 +5,11 @@ a receipt proves, what it does not prove, and how field budgets are interpreted.
 
 ## Structural identity versus numeric result
 
-One field definition is materialized through several adapters. Sharing that
-definition removes a hand-maintained second formula, but it does not remove
-backend arithmetic differences. A receipt compares specific materializations
-at specific inputs.
+On the native adapter path, one field definition is materialized through
+several adapters. Sharing that definition removes a hand-maintained second
+formula, but it does not remove backend arithmetic differences. The optional
+TypeGPU v1 path is still a synchronized handwritten twin. A receipt compares
+specific materializations at specific inputs.
 
 Current probes evaluate four scalar outputs:
 
@@ -52,6 +53,32 @@ repository state reviewable.
 Source files are decoded as UTF-8 and line endings are canonicalized to LF
 before hashing. An otherwise identical Windows or Linux checkout therefore
 keeps one source identity.
+
+Type-only JSDoc may be added inside complete line blocks delimited by
+`// @matter-field-type-only-start` and
+`// @matter-field-type-only-end`. The receipt normalizer removes only those
+blocks, and only when every enclosed line is comment or whitespace. Nested or
+unbalanced markers and executable text inside a block fail closed. This keeps
+historical receipts bound to the same executable source while allowing editor
+and declaration metadata to improve. Runtime code and unmarked comments remain
+identity-bearing; changing either requires new receipts.
+
+## Versioned receipt schemas
+
+Committed native `matter-field-gpu-parity/v2` receipts are validated against
+[`native-v2.schema.json`](../schemas/receipts/native-v2.schema.json). The
+TypeGPU experiment has a separate
+[`typegpu-v1.schema.json`](../schemas/receipts/typegpu-v1.schema.json) because
+its migration assay, Three integration smoke, and build identity are different
+evidence. Both reuse only structural definitions from
+[`common.schema.json`](../schemas/receipts/common.schema.json).
+
+These schemas validate report shape, the fixed 300-point assay summary,
+backend/adapter agreement, source and run identity, and consistent pass-state
+structure. The test suite adds value-to-state checks that standard JSON Schema
+cannot express. Native v2 still does not bind the exact probe harness or bundle
+bytes. That stronger identity belongs in a future receipt v3; historical v2
+receipts remain byte-immutable.
 
 ## How to read a pass
 

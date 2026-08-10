@@ -36,10 +36,12 @@ jobs:
           cache: npm
           package-manager-cache: true
       - run: npm ci
+      - run: npm run test:types
       - run: npm run probe:build
       - run: npm run probe:typegpu:build
       - run: npm run build:typegpu
       - run: npm run test:typegpu:build
+      - run: npm run test:ir:build
       - run: npm run test:typegpu:types
       - run: npm run test:typegpu:consumer
       - run: npm run test:package

@@ -78,6 +78,26 @@ OS:
 backend:
 ```
 
+## Validate the receipt envelope
+
+Run the committed schema and integrity checks before submitting:
+
+```bash
+node --test test/receipt-schema.test.js
+```
+
+Native adapter receipts use
+[`schemas/receipts/native-v2.schema.json`](../schemas/receipts/native-v2.schema.json).
+The separately measured TypeGPU spike uses
+[`schemas/receipts/typegpu-v1.schema.json`](../schemas/receipts/typegpu-v1.schema.json).
+The two report families are deliberately not interchangeable. The test also
+checks relationships portable JSON Schema cannot compare directly, including
+hash value/equality flags, recorded counts, and derived pass states.
+
+Schema validation does not upgrade old evidence. Keep committed receipt bytes
+unchanged. A future receipt v3 is expected to bind the probe harness or bundle
+identity; that work is not retroactively claimed by native receipt v2.
+
 ## Submit
 
 Use the “Hardware receipt” GitHub issue form. Attach the JSON or open a focused

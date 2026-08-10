@@ -7,6 +7,8 @@ Three.js TSL worlds: define a restricted field once, query it from gameplay,
 materialize it for rendering, derive analytic gradients, and measure the
 remaining numeric drift.
 
+> If gameplay must touch it, do not leave it trapped in a shader.
+
 The project is for developers who already recognize the split between what a
 shader draws and what CPU systems can touch.
 
@@ -22,6 +24,39 @@ Matter Field combines four small surfaces:
 Its differentiator is not a new noise algorithm. It is the combination of one
 authoritative expression, a deliberately restricted numeric vocabulary, and
 hardware-scoped receipts.
+
+## Market and product shape
+
+Three.js is the beachhead, not an arbitrary limitation. The repository's
+native TSL path, WebGPU/WebGL2 assays, examples, and FIELDWORK dogfood game all
+exercise one concrete user problem: a GPU-rendered procedural world that CPU
+gameplay must query immediately.
+
+Use concentric audiences rather than one broad “all developers” message:
+
+1. **Primary users — Three.js/TSL and React Three Fiber game or simulation
+   developers.** They need terrain contact, buoyancy, wind, placement, AI, or
+   hit tests to agree with a shader-defined world.
+2. **Adjacent users — TypeGPU developers building procedural world fields.**
+   They may value Matter Field's restricted numeric contract, generic CPU dual
+   derivatives, native TSL/WebGL2 lane, and receipt system while retaining
+   TypeGPU for broader GPU resources and pipelines.
+3. **Evidence collaborators — WebGPU portability and procedural-generation
+   developers.** They can supply devices, adversarial cases, and architectural
+   critique even when Matter Field is not directly installable in their stack.
+
+Generic web developers, shader-art-only projects, ML training systems, and
+Unity/Godot/Unreal projects are not present product audiences.
+
+The architecture should be explained as one product, two entry points, and one
+authority:
+
+| Surface | Role | Present source status |
+|---|---|---|
+| Core + native Three.js TSL | Primary dependency-free entry; f64, f32 diagnostic, dual gradients, WebGPU, and WebGL2 | Materialized structurally from the adapter-authored field |
+| Optional TypeGPU + `@typegpu/three` | WebGPU-oriented entry for TypeGPU users | Precompiled and assayed, but currently a handwritten field twin |
+| Adapter-authored field | Numeric and identity authority | Canonical today |
+| Research canonical IR | Candidate future generation boundary | Dunes recorder/source-emitter prototype exists; not shipped architecture or GPU evidence |
 
 ## What it should not claim
 
@@ -58,9 +93,9 @@ responsibility: typed shader authoring, data layouts, resources, pipelines,
 and WebGPU application structure. Matter Field should acknowledge that overlap
 and should not present itself as the first shared CPU/GPU source approach.
 
-The authoritative Matter Field backend targets caller-supplied Three.js TSL
-because that is the concrete integration extracted and measured. The optional
-preview `matter-field/typegpu` subpath hand-ports the shipped fields into
+The primary Matter Field path targets caller-supplied Three.js TSL because that
+is the concrete integration extracted, dogfooded, and measured. The optional
+`matter-field/typegpu` subpath hand-ports the shipped fields into
 precompiled TypeGPU functions with pinned optional peers; it does not yet
 materialize arbitrary adapter-authored fields. A future generated TypeGPU
 backend could translate the same restricted adapter operations while leaving
@@ -80,6 +115,12 @@ at named CPU samples, measures four GPU scalar outputs against existing field
 budgets, and smoke-tests the five Three helpers. It does not establish a speed
 advantage, a cross-vendor result, numeric serpent parity, or a generated
 single-source architecture. Keep it separate from the native-TSL vendor matrix.
+
+The TypeGPU lane is therefore a supported experiment and comparison surface,
+not the brand headline. Projects that need general typed WebGPU programming,
+buffers, compute, inference kernels, or ordinary control flow should generally
+start with TypeGPU itself. Matter Field should earn adoption through the
+narrower authority-and-evidence job.
 
 ## Application-level precedent
 
@@ -110,6 +151,14 @@ Keep four questions separate:
 The current repository has meaningful evidence for the first two, interactive
 illustrations for the third, and only machine-local total-cost timings for the
 fourth. It does not yet prove adoption, necessity, or superior performance.
+
+## Deferred positions
+
+Do not use raw WGSL, neural networks, or general-engine portability to enlarge
+the launch story. They dilute the tested job and currently lack shipped
+integration evidence. Reconsider them only after the canonical authority work
+is stable and a real adopter demonstrates a use case the two current entry
+points cannot serve.
 
 ## Contributor appeal
 

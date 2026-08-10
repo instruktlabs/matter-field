@@ -1,0 +1,408 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://instruktlabs.github.io/matter-field/schemas/receipts/native-v2.schema.json",
+  "title": "Matter Field native GPU parity receipt v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "backend",
+    "adapter",
+    "goldenSet",
+    "pointCount",
+    "sampleSemantics",
+    "dispatchAndReadbackMs",
+    "pass",
+    "passCriterion",
+    "fields",
+    "hash",
+    "browser",
+    "os",
+    "chromeGpu",
+    "run"
+  ],
+  "properties": {
+    "schema": {
+      "const": "matter-field-gpu-parity/v2"
+    },
+    "backend": {
+      "enum": [
+        "webgpu",
+        "webgl2"
+      ]
+    },
+    "adapter": {
+      "type": "object"
+    },
+    "goldenSet": {
+      "$ref": "#/$defs/goldenSet"
+    },
+    "pointCount": {
+      "const": 300
+    },
+    "sampleSemantics": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dispatchAndReadbackMs": {
+      "type": "number",
+      "minimum": 0
+    },
+    "pass": {
+      "type": "boolean"
+    },
+    "passCriterion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "error": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    },
+    "hash": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/hashSummary"
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "probeBundleSha256"
+      ],
+      "properties": {
+        "probeBundleSha256": {
+          "anyOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "browser": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/browser"
+    },
+    "os": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/os"
+    },
+    "chromeGpu": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/chromeGpu"
+    },
+    "run": {
+      "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/nativeRun"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "backend": {
+            "const": "webgpu"
+          }
+        },
+        "required": [
+          "backend"
+        ]
+      },
+      "then": {
+        "properties": {
+          "adapter": {
+            "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/webGpuAdapter"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "adapter": {
+            "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/webGl2Adapter"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "pass": {
+            "const": true
+          }
+        },
+        "required": [
+          "pass"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fields": {
+            "items": {
+              "properties": {
+                "pass": {
+                  "const": true
+                }
+              },
+              "required": [
+                "pass"
+              ]
+            }
+          },
+          "hash": {
+            "properties": {
+              "bitExact": {
+                "const": true
+              }
+            },
+            "required": [
+              "bitExact"
+            ]
+          }
+        }
+      },
+      "else": {
+        "anyOf": [
+          {
+            "properties": {
+              "fields": {
+                "contains": {
+                  "properties": {
+                    "pass": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "pass"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "hash": {
+                "properties": {
+                  "bitExact": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "bitExact"
+                ]
+              }
+            }
+          },
+          {
+            "required": [
+              "error"
+            ],
+            "properties": {
+              "error": {
+                "type": "string",
+                "minLength": 1
+              },
+              "run": {
+                "properties": {
+                  "softwareAdapter": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "softwareAdapter"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "error": {}
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "then": {
+        "properties": {
+          "pass": {
+            "const": false
+          },
+          "run": {
+            "properties": {
+              "softwareAdapter": {
+                "const": true
+              }
+            },
+            "required": [
+              "softwareAdapter"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "goldenSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "generator",
+        "seed",
+        "extent",
+        "coordinateType",
+        "composition",
+        "pointCount",
+        "fields",
+        "coordinatesSha256",
+        "valuesSha256",
+        "sourceSha256",
+        "packageVersion",
+        "threeVersion",
+        "sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "matter-field-assay-set/v2"
+        },
+        "generator": {
+          "const": "matter-field-assay-points/v2"
+        },
+        "seed": {
+          "const": "0x9e3779b9"
+        },
+        "extent": {
+          "const": 20000
+        },
+        "coordinateType": {
+          "const": "f32"
+        },
+        "composition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pointCount": {
+          "const": 300
+        },
+        "fields": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "dunes"
+            },
+            {
+              "const": "swell(A,x,z,A.f(2.5))"
+            },
+            {
+              "const": "wind(A,x,z,A.f(1)).wx"
+            },
+            {
+              "const": "wind(A,x,z,A.f(1)).wz"
+            }
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "coordinatesSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "valuesSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "sourceSha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        },
+        "packageVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "threeVersion": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/semver"
+        },
+        "sha256": {
+          "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "fields": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "dunes"
+                },
+                "budget": {
+                  "const": 0.004
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "swell-t2.5"
+                },
+                "budget": {
+                  "const": 0.001
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "wind.wx-t1"
+                },
+                "budget": {
+                  "const": 0.0001
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://instruktlabs.github.io/matter-field/schemas/receipts/common.schema.json#/$defs/fieldSummary"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "wind.wz-t1"
+                },
+                "budget": {
+                  "const": 0.0001
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "items": false,
+      "minItems": 4,
+      "maxItems": 4
+    }
+  }
+}

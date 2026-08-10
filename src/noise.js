@@ -5,7 +5,29 @@
 // branches, no transcendentals, randomness only via floor -> latt -> hash01.
 // Rotation constants are f64 literals folded on the host (rule 5).
 
+// @matter-field-type-only-start
+/** @import { Adapter } from './adapter.js' */
+
+/**
+ * @typedef {{
+ *   cx: number,
+ *   cz: number,
+ *   rIn: number,
+ *   rOut: number,
+ *   level: number,
+ * }} StampOptions
+ */
+// @matter-field-type-only-end
 /** Quintic fade: t^3 (t (6t - 15) + 10). C1-continuous value noise. */
+// @matter-field-type-only-start
+/**
+ * @template V
+ * @template L
+ * @param {Adapter<V, L>} A
+ * @param {V} t
+ * @returns {V}
+ */
+// @matter-field-type-only-end
 export function fade(A, t) {
   const t3 = A.mul(A.mul(t, t), t);
   return A.mul(t3, A.add(A.mul(t, A.sub(A.mul(t, A.f(6)), A.f(15))), A.f(10)));
@@ -20,6 +42,18 @@ export function fade(A, t) {
  * @param {number} [ox] channel offset (decorrelates layers)
  * @param {number} [oz] channel offset
  */
+// @matter-field-type-only-start
+/**
+ * @template V
+ * @template L
+ * @param {Adapter<V, L>} A
+ * @param {V} x
+ * @param {V} z
+ * @param {number} [ox]
+ * @param {number} [oz]
+ * @returns {V}
+ */
+// @matter-field-type-only-end
 export function vnoise(A, x, z, ox = 0, oz = 0) {
   const fx = A.cache(A.floor(x));
   const fz = A.cache(A.floor(z));
@@ -57,10 +91,27 @@ const OSZ = 17.34;
  * @param {number} [gain] amplitude falloff per octave
  * @param {number} [lac] lacunarity (frequency growth per octave)
  */
+// @matter-field-type-only-start
+/**
+ * @template V
+ * @template L
+ * @param {Adapter<V, L>} A
+ * @param {V} x0
+ * @param {V} z0
+ * @param {number} freq
+ * @param {number} oct
+ * @param {number} [gain]
+ * @param {number} [lac]
+ * @returns {V}
+ */
+// @matter-field-type-only-end
 export function fbm(A, x0, z0, freq, oct, gain = 0.5, lac = 2.03) {
   let x = A.cache(A.mul(x0, A.f(freq)));
   let z = A.cache(A.mul(z0, A.f(freq)));
   let amp = 0.5;
+  // @matter-field-type-only-start
+  /** @type {any} */
+  // @matter-field-type-only-end
   let sum = null;
   let norm = 0;
   for (let i = 0; i < oct; i++) {
@@ -87,6 +138,16 @@ export function fbm(A, x0, z0, freq, oct, gain = 0.5, lac = 2.03) {
  * @param {*} n V in [0, 1]
  * @param {number} sharp plain, in [1, 2]
  */
+// @matter-field-type-only-start
+/**
+ * @template V
+ * @template L
+ * @param {Adapter<V, L>} A
+ * @param {V} n
+ * @param {number} sharp
+ * @returns {V}
+ */
+// @matter-field-type-only-end
 export function ridge(A, n, sharp) {
   const r = A.sub(A.f(1), A.abs(A.sub(A.mul(n, A.f(2)), A.f(1))));
   return A.cache(A.mix(r, A.mul(r, r), A.f(sharp - 1)));
@@ -102,6 +163,15 @@ export function ridge(A, n, sharp) {
  * fractional precision. Feed it `phase` in periods (already scaled).
  * @param {*} t V, in periods
  */
+// @matter-field-type-only-start
+/**
+ * @template V
+ * @template L
+ * @param {Adapter<V, L>} A
+ * @param {V} t
+ * @returns {V}
+ */
+// @matter-field-type-only-end
 export function pwave(A, t) {
   const saw = A.sub(t, A.floor(t));
   const tri = A.sub(A.f(1), A.abs(A.sub(A.mul(saw, A.f(2)), A.f(1))));
@@ -120,6 +190,18 @@ export function pwave(A, t) {
  * @param {*} x V
  * @param {*} z V
  */
+// @matter-field-type-only-start
+/**
+ * @template V
+ * @template L
+ * @param {Adapter<V, L>} A
+ * @param {V} h
+ * @param {V} x
+ * @param {V} z
+ * @param {StampOptions} options
+ * @returns {V}
+ */
+// @matter-field-type-only-end
 export function stamp(A, h, x, z, { cx, cz, rIn, rOut, level }) {
   const dx = A.sub(x, A.f(cx));
   const dz = A.sub(z, A.f(cz));

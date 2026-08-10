@@ -5,6 +5,12 @@ receipts. The project is small by design: contributions should make the field
 contract easier to trust, measure, understand, or use without turning it into
 a general-purpose engine.
 
+The repository is one product with two integration entry points. The
+dependency-free core plus native Three.js TSL path is primary; the precompiled
+TypeGPU path is optional and separately assayed. The adapter-authored field is
+the current authority. `src/typegpu/` remains a handwritten twin until reviewed
+canonical-IR generation demonstrably replaces it.
+
 By participating, you agree to follow the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## Good first contributions
@@ -14,6 +20,8 @@ By participating, you agree to follow the [Code of Conduct](./CODE_OF_CONDUCT.md
 - Improve an example's keyboard, touch, reduced-motion, or screen-reader path.
 - Clarify a limit or replace an equality claim with measured language.
 - Add a test for an adapter operation or field identity rule.
+- Improve JSDoc, generated declarations, or an external TypeScript consumer
+  test for an existing public export.
 
 Before starting a large backend or API change, open a proposal issue so scope
 can be aligned before implementation.
@@ -27,6 +35,7 @@ and the current `unplugin-typegpu` toolchain requires that newer runtime.
 ```bash
 npm ci
 npm test
+npm run test:types
 npm run test:package
 ```
 
@@ -41,6 +50,7 @@ npm run site:smoke
 npm run test:browsers
 npm run build:typegpu
 npm run test:typegpu:build
+npm run test:ir:build
 npm run test:typegpu:types
 npm run test:typegpu:consumer
 ```
@@ -118,11 +128,18 @@ A backend proposal should explain:
 - whether it adds runtime or peer dependencies.
 
 Matter Field currently prioritizes JavaScript and caller-supplied Three.js TSL,
-with a precompiled optional TypeGPU integration. A raw WGSL or other backend
-should remain optional and should not broaden the core contract without
-evidence. Proposals to expand TypeGPU should state whether they preserve the
-current handwritten-port boundary or replace it with reviewed generation from
-a canonical representation.
+with a precompiled optional TypeGPU integration. The current backend priority
+is generating TypeGPU from a reviewed canonical representation, starting with
+one field, without changing numeric identity. Proposals to expand TypeGPU
+should state whether they preserve the current handwritten-port boundary or
+replace it with that reviewed generation.
+
+Raw WGSL, non-JavaScript engine integrations, neural-network demonstrations,
+and general shader/resource frameworks are deferred. Do not begin one as a
+routine backend contribution: first demonstrate a real adopter need that the
+two current entry points cannot serve, identify an owner, and propose an
+evidence plan after the canonical-authority gate in [ROADMAP.md](./ROADMAP.md)
+has been met.
 
 ## Hardware receipts
 
@@ -187,8 +204,12 @@ unrelated machine-local artifacts.
 ## Commit and release policy
 
 Maintainers control releases. Contributors should not publish the package to
-npm or create release tags. The project is intentionally holding npm release
-until the source-bound v2 receipts and initial hardware matrix are reviewed.
+npm or create release tags. The GitHub prerelease
+[`v0.0.1-preview.2`](https://github.com/instruktlabs/matter-field/releases/tag/v0.0.1-preview.2)
+already provides a tested tarball; it is not an npm publication or stable-API
+promise. The project is holding npm release until the source-bound evidence,
+initial hardware matrix, public type surface, and authority story pass the
+roadmap gates.
 
 ## Reporting problems
 

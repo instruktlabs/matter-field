@@ -8,7 +8,15 @@
 const F32 = new Float32Array(1);
 const U32 = new Uint32Array(F32.buffer);
 
-/** f32 bit pattern of a number (after f32 rounding). */
+/** @typedef {{ id: string, x: number, z: number }} GoldenPoint */
+
+/** @typedef {GoldenPoint & { v: number, f32: number }} GoldenRecord */
+
+/** @typedef {GoldenPoint & { want: number, got: number, ulp: number, abs: number }} GoldenMismatch */
+
+/** @typedef {{ maxUlp: number, maxAbs: number, worst: GoldenMismatch | null, n: number }} GoldenComparison */
+
+/** @param {number} n @returns {number} f32 bit pattern after rounding. */
 export function f32Bits(n) {
   F32[0] = n;
   return U32[0];
@@ -18,6 +26,9 @@ export function f32Bits(n) {
  * Distance in f32 ulps between two numbers (after rounding each to f32).
  * Uses the monotonic total-order trick so values straddling zero measure
  * correctly. Identical bit patterns are 0.
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
  */
 export function ulpDelta32(a, b) {
   const ia = orderable(f32Bits(a));
@@ -25,12 +36,17 @@ export function ulpDelta32(a, b) {
   return Math.abs(ia - ib);
 }
 
+/** @param {number} bits @returns {number} */
 function orderable(bits) {
   // Map IEEE-754 bits onto a monotonically increasing integer line.
   return bits & 0x80000000 ? -(bits & 0x7fffffff) : bits;
 }
 
-/** Deterministic LCG so golden coordinates never depend on Math.random. */
+/**
+ * Deterministic LCG so golden coordinates never depend on Math.random.
+ * @param {number} [seed]
+ * @returns {() => number}
+ */
 export function makeLcg(seed = 0x9e3779b9) {
   let s = seed >>> 0;
   return function next() {
@@ -42,8 +58,8 @@ export function makeLcg(seed = 0x9e3779b9) {
 /**
  * Deterministic golden coordinates over a world extent.
  * @param {number} n point count
- * @param {object} [opts] { extent = 20000, seed } world half-extent in units
- * @returns {{ id: string, x: number, z: number }[]}
+ * @param {{ extent?: number, seed?: number }} [opts] world extent and seed
+ * @returns {GoldenPoint[]}
  */
 export function makeGoldenPoints(n, { extent = 20000, seed = 0x9e3779b9 } = {}) {
   const rand = makeLcg(seed);
@@ -62,6 +78,8 @@ export function makeGoldenPoints(n, { extent = 20000, seed = 0x9e3779b9 } = {}) 
  * Record a golden report: field values at each point, as f64 and f32 bits.
  * Serializable; commit it next to the field it describes.
  * @param {(x: number, z: number) => number} sample plain-number field eval
+ * @param {readonly GoldenPoint[]} points coordinates to record
+ * @returns {GoldenRecord[]}
  */
 export function captureGolden(sample, points) {
   return points.map((p) => {
@@ -73,12 +91,13 @@ export function captureGolden(sample, points) {
 /**
  * Compare a backend's values against a golden recording.
  * @param {(x: number, z: number) => number} sample backend eval
- * @param {ReturnType<typeof captureGolden>} golden
- * @returns {{ maxUlp: number, maxAbs: number, worst: object | null, n: number }}
+ * @param {readonly GoldenRecord[]} golden
+ * @returns {GoldenComparison}
  */
 export function compareToGolden(sample, golden) {
   let maxUlp = 0;
   let maxAbs = 0;
+  /** @type {GoldenMismatch | null} */
   let worst = null;
   for (const g of golden) {
     const v = sample(g.x, g.z);

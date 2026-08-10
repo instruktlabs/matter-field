@@ -51,7 +51,52 @@
 //      the type discipline is the only fence (use the dual backend in tests
 //      to catch this: naked arithmetic on a dual object yields NaN).
 
+// @matter-field-type-only-start
+/**
+ * A backend for Matter Field's restricted expression vocabulary.
+ *
+ * `V` is the backend value (number, dual, or shader node). `L` is the
+ * backend's lattice-integer representation. Keeping both generic prevents a
+ * field from accidentally escaping into native JavaScript arithmetic.
+ *
+ * @template V
+ * @template L
+ * @typedef {Readonly<{
+ *   f: (x: number) => V,
+ *   add: (a: V, b: V) => V,
+ *   sub: (a: V, b: V) => V,
+ *   mul: (a: V, b: V) => V,
+ *   abs: (a: V) => V,
+ *   floor: (a: V) => V,
+ *   sqrt: (a: V) => V,
+ *   min: (a: V, b: V) => V,
+ *   max: (a: V, b: V) => V,
+ *   mix: (a: V, b: V, t: V) => V,
+ *   clamp01: (a: V) => V,
+ *   smooth: (e0: number, e1: number, x: V) => V,
+ *   latt: (flooredValue: V) => L,
+ *   hash01: (ix: L, iz: L, ox: number, oz: number) => V,
+ *   cache: (value: V) => V,
+ * }>} Adapter
+ */
+
+/**
+ * A field specialized to one adapter value/lattice pair and input tuple.
+ * Adapter-authored field functions can themselves be generic and therefore
+ * satisfy several specializations of this type.
+ *
+ * @template V
+ * @template L
+ * @template {readonly unknown[]} Args
+ * @typedef {(adapter: Adapter<V, L>, ...args: Args) => V} Field
+ */
+
+/** @typedef {'f'|'add'|'sub'|'mul'|'abs'|'floor'|'sqrt'|'min'|'max'|'mix'|'clamp01'|'smooth'|'latt'|'hash01'|'cache'} AdapterOp */
+// @matter-field-type-only-end
 /** Op names every adapter must provide. */
+// @matter-field-type-only-start
+/** @type {readonly AdapterOp[]} */
+// @matter-field-type-only-end
 export const ADAPTER_OPS = Object.freeze([
   'f', 'add', 'sub', 'mul', 'abs', 'floor', 'sqrt', 'min', 'max',
   'mix', 'clamp01', 'smooth', 'latt', 'hash01', 'cache',
@@ -63,6 +108,10 @@ export const ADAPTER_OPS = Object.freeze([
  * @param {object} A candidate adapter
  * @returns {string[]} list of problems, empty when structurally conformant
  */
+// @matter-field-type-only-start
+/** @overload @param {unknown} A @returns {string[]} */
+/** @param {any} A @returns {string[]} */
+// @matter-field-type-only-end
 export function adapterProblems(A) {
   const problems = [];
   if (!A || typeof A !== 'object') return ['adapter is not an object'];
@@ -82,9 +131,36 @@ export function adapterProblems(A) {
  * @param {number} [tol] absolute tolerance (default 1e-12; use ~1e-6 for f32)
  * @returns {string[]} list of failed identities, empty when conformant
  */
+// @matter-field-type-only-start
+/**
+ * @overload
+ * @param {Adapter<number, number>} A
+ * @param {(v: number) => number} [read]
+ * @param {number} [tol]
+ * @returns {string[]}
+ */
+/**
+ * @template V
+ * @template L
+ * @overload
+ * @param {Adapter<V, L>} A
+ * @param {(v: V) => number} read
+ * @param {number} [tol]
+ * @returns {string[]}
+ */
+/**
+ * @param {Adapter<any, any>} A
+ * @param {(v: any) => number} [read]
+ * @param {number} [tol]
+ * @returns {string[]}
+ */
+// @matter-field-type-only-end
 export function numericAdapterProblems(A, read = (v) => v, tol = 1e-12) {
   const problems = adapterProblems(A);
   if (problems.length) return problems;
+  // @matter-field-type-only-start
+  /** @param {any} got @param {number} want @param {string} label */
+  // @matter-field-type-only-end
   const near = (got, want, label) => {
     if (!(Math.abs(read(got) - want) <= tol)) {
       problems.push(`${label}: got ${read(got)}, want ${want}`);

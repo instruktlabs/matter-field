@@ -5,6 +5,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { makeGoldenPoints } from '../parity/golden.js';
 import { cpuFieldBits } from './cpu-browser-parity-core.js';
+import { sourceContentSha256 } from './source-identity.mjs';
+
+export { sourceContentSha256 } from './source-identity.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const FIELD_IDENTITY = Object.freeze([
@@ -35,11 +38,6 @@ const ADVERSARIAL_COORDINATES = Object.freeze([
   [90.90909, 357.14285], [-90.90909, -357.14285],
   [19999.999, 19999.999], [-19999.999, -19999.999], [20000, -20000], [-20000, 20000],
 ]);
-
-export function sourceContentSha256(source) {
-  const canonical = String(source).replace(/\r\n?/g, '\n');
-  return createHash('sha256').update(canonical, 'utf8').digest('hex');
-}
 
 export function makeAssayPoints(count) {
   const fixed = ADVERSARIAL_COORDINATES.slice(0, count).map(([x, z], index) => ({

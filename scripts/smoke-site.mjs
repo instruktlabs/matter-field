@@ -76,6 +76,9 @@ try {
     '/examples/serpent.html',
     '/examples/parity.html',
     '/reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json',
+    '/schemas/receipts/common.schema.json',
+    '/schemas/receipts/native-v2.schema.json',
+    '/schemas/receipts/typegpu-v1.schema.json',
     '/fieldwork/assets/manifest.json',
     '/fieldwork/assets/ui/fieldwork-sigil.webp',
     '/LICENSE',
@@ -91,6 +94,36 @@ try {
   assert.equal(state.renderer, 'webgl2');
   assert.equal(state.materializer, 'native-tsl-webgl2');
   assert.equal(state.phase, 'briefing');
+  assert.equal(
+    await page.locator('[data-materializer-lane][aria-current="page"]').getAttribute('data-materializer-lane'),
+    'native-tsl-webgl2',
+  );
+
+  await page.goto(`${origin}/fieldwork/`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  await page.waitForFunction(() => globalThis.__FIELDWORK__ ?? null, null, { timeout: 90_000 });
+  const defaultLane = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
+  if (defaultLane.renderer === 'webgpu') {
+    assert.equal(defaultLane.materializer, 'native-tsl-webgpu');
+    assert.equal(
+      await page.locator('[data-materializer-lane][aria-current="page"]').getAttribute('data-materializer-lane'),
+      'native-tsl-webgpu',
+    );
+    await page.goto(`${origin}/fieldwork/?materializer=typegpu`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await page.waitForFunction(() => globalThis.__FIELDWORK__ ?? null, null, { timeout: 90_000 });
+    const typegpuWebGPU = JSON.parse(await page.evaluate(() => globalThis.render_game_to_text()));
+    assert.equal(typegpuWebGPU.renderer, 'webgpu');
+    assert.equal(typegpuWebGPU.materializer, 'typegpu-webgpu');
+    assert.equal(
+      await page.locator('[data-materializer-lane][aria-current="page"]').getAttribute('data-materializer-lane'),
+      'typegpu-webgpu',
+    );
+  } else {
+    assert.equal(defaultLane.renderer, 'webgl2');
+    assert.equal(defaultLane.materializer, 'native-tsl-webgl2');
+  }
+
+  await page.goto(`${origin}/fieldwork/?backend=webgl2`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  await page.waitForFunction(() => globalThis.__FIELDWORK__ ?? null, null, { timeout: 90_000 });
 
   await page.click('#start-game');
   await page.waitForFunction(() => {

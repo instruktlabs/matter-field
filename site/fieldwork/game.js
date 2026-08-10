@@ -79,7 +79,8 @@ export const FIELDWORK_DOM_CONTRACT = Object.freeze({
     'fullscreen-game', 'recorder-toggle', 'recorder-panel',
     'objective-value', 'timer-value', 'integrity-value', 'integrity-bar',
     'route-value', 'backend-value', 'materializer-value', 'readback-value',
-    'queries-value', 'drift-value', 'mode-value', 'status-line', 'event-log',
+    'queries-value', 'drift-value', 'mode-value', 'status-line', 'status-live',
+    'event-log',
   ],
   touchControls: '[data-control="left"], [data-control="forward"], [data-control="reverse"], [data-control="right"]',
 });
@@ -153,7 +154,9 @@ function collectDom(root) {
 }
 
 function setText(node, value) {
-  if (node) node.textContent = String(value);
+  if (!node) return;
+  const next = String(value);
+  if (node.textContent !== next) node.textContent = next;
 }
 
 function setVisible(node, visible) {
@@ -593,7 +596,45 @@ async function createRenderer(canvas) {
   return renderer;
 }
 
+function createNativeMaterializer(isWebGPU, fallback = false) {
+  const A = makeTslAdapter(tsl, {
+    fnName: fallback ? 'mfFieldworkFallbackHash' : 'mfFieldworkNativeHash',
+  });
+  const target = isWebGPU ? 'WGSL' : 'WebGL2 / GLSL';
+  return Object.freeze({
+    lane: fallback
+      ? 'native-tsl-fallback'
+      : `native-tsl-${isWebGPU ? 'webgpu' : 'webgl2'}`,
+    label: fallback
+      ? `native TSL fallback → ${target}`
+      : `adapter → native TSL → ${target}`,
+    webgpu: true,
+    webgl2: true,
+    dunes: (x, z) => dunesField(A, x, z),
+    swell: (x, z, time) => swellField(A, x, z, time),
+    wind: (x, z, time) => {
+      const node = windField(A, x, z, time);
+      return { x: node.wx, z: node.wz };
+    },
+    serpentSpine: (u, time) => serpentSpine(A, u, time),
+    serpentRadius: (u) => serpentRadius(A, u),
+  });
+}
+
+function markActiveMaterializerLane(root, materializer, isWebGPU) {
+  const actualLane = materializer.lane === 'native-tsl-fallback'
+    ? `native-tsl-${isWebGPU ? 'webgpu' : 'webgl2'}`
+    : materializer.lane;
+  for (const link of root.querySelectorAll('[data-materializer-lane]')) {
+    if (link.dataset.materializerLane === actualLane) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
+}
+
 async function createMaterializer(isWebGPU) {
+  const requested = new URLSearchParams(location.search).get('materializer');
+  if (!isWebGPU || requested !== 'typegpu') return createNativeMaterializer(isWebGPU);
+
   const bridge = await import('../../dist-typegpu/three.js');
   if (isWebGPU) {
     return Object.freeze({
@@ -611,39 +652,7 @@ async function createMaterializer(isWebGPU) {
       serpentRadius: bridge.typegpuSerpentRadiusNode,
     });
   }
-  const compat = bridge.makeNativeTslCompatibility(tsl, { fnName: 'mfFieldworkNativeHash' });
-  return Object.freeze({
-    lane: 'native-tsl-webgl2',
-    label: 'adapter → native TSL → WebGL2',
-    webgpu: true,
-    webgl2: true,
-    dunes: compat.dunes,
-    swell: compat.swell,
-    wind: (x, z, time) => {
-      const node = compat.wind(x, z, time);
-      return { x: node.wx, z: node.wz };
-    },
-    serpentSpine: compat.serpentSpine,
-    serpentRadius: compat.serpentRadius,
-  });
-}
-
-function createNativeEmergencyMaterializer() {
-  const A = makeTslAdapter(tsl, { fnName: 'mfFieldworkEmergencyHash' });
-  return Object.freeze({
-    lane: 'native-tsl-emergency',
-    label: 'native TSL emergency lane (TypeGPU artifact unavailable)',
-    webgpu: true,
-    webgl2: true,
-    dunes: (x, z) => dunesField(A, x, z),
-    swell: (x, z, time) => swellField(A, x, z, time),
-    wind: (x, z, time) => {
-      const node = windField(A, x, z, time);
-      return { x: node.wx, z: node.wz };
-    },
-    serpentSpine: (u, time) => serpentSpine(A, u, time),
-    serpentRadius: (u) => serpentRadius(A, u),
-  });
+  return createNativeMaterializer(false);
 }
 
 function setShadowFlags(object) {
@@ -1554,8 +1563,12 @@ export class FieldworkGame {
       this.lastDriftAt = now;
     }
     setText(this.dom.drift_value, `CPU f32 estimate ${this.lastDrift.toExponential(2)} · GPU unmeasured`);
-    setText(this.dom.mode_value, state.fault ? 'FAULT · stale coarse CPU proxy' : 'UNIFIED · authored CPU fields');
+    const authorityMode = this.materializer.lane === 'typegpu-webgpu'
+      ? 'SYNCED PORT · CPU authority'
+      : 'STRUCTURAL · shared adapter field';
+    setText(this.dom.mode_value, state.fault ? 'FAULT · stale coarse CPU proxy' : authorityMode);
     setText(this.dom.status_line, state.status);
+    setText(this.dom.status_live, state.status);
     setText(this.dom.event_log, state.eventLog.join('\n'));
     setPressed(this.dom.fault_game, state.fault);
     setPressed(this.dom.pause_game, state.phase === 'paused');
@@ -1660,8 +1673,9 @@ export async function bootstrapFieldwork(root = document) {
     materializer = await createMaterializer(isWebGPU);
   } catch (error) {
     console.error('[FIELDWORK] TypeGPU package artifact unavailable; using the explicit emergency lane.', error);
-    materializer = createNativeEmergencyMaterializer();
+    materializer = createNativeMaterializer(isWebGPU, true);
   }
+  markActiveMaterializerLane(root, materializer, isWebGPU);
   const world = await createWorld(renderer, materializer);
   const game = new FieldworkGame({ root, dom, renderer, materializer, world });
   try {
@@ -1712,7 +1726,9 @@ if (typeof document !== 'undefined') {
     window.__FIELDWORK_BOOTSTRAP__ = bootstrapFieldwork().catch((error) => {
       console.error('[FIELDWORK] bootstrap failed', error);
       const status = document.querySelector('#status-line');
+      const liveStatus = document.querySelector('#status-live');
       if (status) status.textContent = `Unable to initialize fieldwork: ${error?.message ?? error}`;
+      if (liveStatus) liveStatus.textContent = `Unable to initialize fieldwork: ${error?.message ?? error}`;
       const title = document.querySelector('#result-title');
       const copy = document.querySelector('#result-copy');
       const result = document.querySelector('#result');
