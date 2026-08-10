@@ -1,3 +1,4 @@
+import { mountFieldNav } from './field-nav.js';
 import { runDunesPlayground } from './dunes-playground.js';
 import { runSerpentPlayground, runSwellPlayground, runWindPlayground } from './three-playgrounds.js';
 import { setStageStatus } from './runtime.js';
@@ -6,6 +7,8 @@ const canvas = document.querySelector('#demo');
 const readouts = document.querySelector('#readouts');
 const controls = document.querySelector('#controls');
 const demo = document.body.dataset.demo;
+
+mountFieldNav();
 
 const runners = {
   dunes: runDunesPlayground,

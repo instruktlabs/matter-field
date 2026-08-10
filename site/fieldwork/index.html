@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07110f">
-  <meta name="description" content="FIELDWORK: Breach Run is a playable Matter Field dogfood mission where assayed GPU materializations are paired with CPU gameplay authority.">
+  <meta name="description" content="FIELDWORK: Breach Run is an integrated Matter Field application where assayed GPU materializations are paired with CPU gameplay authority.">
   <meta property="og:title" content="FIELDWORK: Breach Run — Matter Field">
   <meta property="og:description" content="Recover the core. Cross a flooded dune basin. Survive the breach. One set of authored fields drives rendering, buoyancy, wind, and collision.">
   <meta property="og:type" content="website">
@@ -19,7 +19,7 @@
   <meta name="twitter:image" content="https://instruktlabs.github.io/matter-field/fieldwork/assets/ui/fieldwork-sigil.webp">
   <meta name="twitter:image:alt" content="Fieldwork topographic survey insignia in bone, chartreuse, teal, and coral">
   <link rel="canonical" href="https://instruktlabs.github.io/matter-field/fieldwork/">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="../assets/brand/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./fieldwork.css">
   <title>FIELDWORK: Breach Run — Matter Field</title>
 </head>
@@ -27,17 +27,17 @@
   <a class="skip-link" href="#mission">Skip to mission</a>
   <header class="masthead">
     <a class="brand" href="../index.html" aria-label="Back to Matter Field">
-      <span class="brand-mark" aria-hidden="true">MF</span>
+      <img class="brand-mark" src="../assets/brand/matter-field-mark-inverse.svg" width="34" height="34" alt="">
       <span>Matter Field</span>
     </a>
-    <div class="masthead-meta"><span>Dogfood mission 01</span><span>Field authority / live</span></div>
+    <div class="masthead-meta"><span>Integrated field mission</span><span>Field authority / live</span></div>
     <a class="source-link" href="https://github.com/instruktlabs/matter-field/tree/main/site/fieldwork">Source ↗</a>
   </header>
 
   <main id="mission">
     <section class="mission-head" aria-labelledby="page-title">
       <div>
-        <p class="eyebrow">FIELDWORK / 01</p>
+        <p class="eyebrow">Integrated field application</p>
         <h1 id="page-title">Breach Run</h1>
       </div>
       <p>Recover a stranded survey core and carry it across a flooded dune basin to the authored landing pad. The terrain, swell, wind, and moving breach body are not backdrop: CPU game rules query the canonical fields while the GPU consumes a named, assayed materialization.</p>
@@ -136,15 +136,15 @@
 
     <section class="architecture" id="architecture" aria-labelledby="architecture-title">
       <header>
-        <p class="eyebrow">Dogfood map</p>
+        <p class="eyebrow">Application map</p>
         <h2 id="architecture-title">The abstraction has to survive contact with a game.</h2>
         <p>This is not a benchmark dressed as a game. It is a compact application pressure test: sparse authoritative queries on the CPU, dense visual materialization on the GPU, no per-frame readback, and an explicit fallback path.</p>
       </header>
       <div class="field-cards">
-        <article><span>01 / scalar + dual</span><h3>Dunes</h3><p>GPU displacement paired with CPU contact height, analytic slope, and skiff attitude.</p></article>
-        <article><span>02 / time field</span><h3>Swell</h3><p>GPU water displacement; CPU four-probe buoyancy at the same game clock.</p></article>
-        <article><span>03 / vector field</span><h3>Wind</h3><p>GPU flow tracers; CPU force continuously changes the route and handling.</p></article>
-        <article><span>04 / parametric volume</span><h3>Breach</h3><p>GPU body animation; CPU proximity and collision against the authored spine and radius.</p></article>
+        <article><span>scalar + dual</span><h3>Dunes</h3><p>GPU displacement paired with CPU contact height, analytic slope, and skiff attitude.</p></article>
+        <article><span>time field</span><h3>Swell</h3><p>GPU water displacement; CPU four-probe buoyancy at the same game clock.</p></article>
+        <article><span>vector field</span><h3>Wind</h3><p>GPU flow tracers; CPU force continuously changes the route and handling.</p></article>
+        <article><span>parametric volume</span><h3>Breach</h3><p>GPU body animation; CPU proximity and collision against the authored spine and radius.</p></article>
       </div>
       <div class="truth-note">
         <strong>What the renderer path proves</strong>
@@ -153,7 +153,7 @@
     </section>
   </main>
 
-  <footer><span>FIELDWORK is a Matter Field dogfood surface.</span><span><a href="../LICENSE">Code: MIT</a> · asset rights documented in source · <a href="../THIRD_PARTY_NOTICES.md">third-party notices</a></span></footer>
+  <footer><span>FIELDWORK is a Matter Field integrated application.</span><span><a href="../LICENSE">Code: MIT</a> · asset rights documented in source · <a href="../THIRD_PARTY_NOTICES.md">third-party notices</a></span></footer>
   <script type="module" src="./game.js"></script>
 </body>
 </html>

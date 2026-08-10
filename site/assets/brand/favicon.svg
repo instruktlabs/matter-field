@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Matter Field">
+  <rect width="32" height="32" rx="6" fill="#f4f0e6"/>
+  <g fill="none" stroke="#174e52" stroke-linecap="round" stroke-width="2.5">
+    <path d="M3 5c7 0 12 5 12 12M29 5c-7 0-12 5-12 12"/>
+    <path d="M3 27c7 0 12-5 12-12M29 27c-7 0-12-5-12-12"/>
+  </g>
+  <path fill="#b7442e" d="m16 12 4 4-4 4-4-4z"/>
+</svg>

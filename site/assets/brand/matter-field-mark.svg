@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Matter Field</title>
+  <desc id="desc">Four scalar-field contours converge around a sampled saddle point.</desc>
+  <g fill="none" stroke="#174e52" stroke-linecap="round" stroke-width="4">
+    <path d="M5 7c13 0 24 9 25 22M5 18c8 0 15 6 16 13"/>
+    <path d="M59 7c-13 0-24 9-25 22M59 18c-8 0-15 6-16 13"/>
+    <path d="M5 57c13 0 24-9 25-22M5 46c8 0 15-6 16-13"/>
+    <path d="M59 57c-13 0-24-9-25-22M59 46c-8 0-15-6-16-13"/>
+  </g>
+  <path fill="#b7442e" d="m32 26 6 6-6 6-6-6z"/>
+</svg>

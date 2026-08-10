@@ -1,3 +1,4 @@
+import { mountFieldNav } from './field-nav.js';
 import { runGpuProbe } from '../../parity/gpu-probe-template.js';
 
 const status = document.querySelector('#status');
@@ -6,6 +7,8 @@ const download = document.querySelector('#download');
 const buttons = [document.querySelector('#run-webgpu'), document.querySelector('#run-webgl2')];
 const identity = document.querySelector('#identity');
 let current = null;
+
+mountFieldNav();
 
 function probeConfig() {
   const config = globalThis.__MATTER_FIELD_PROBE_CONFIG__;

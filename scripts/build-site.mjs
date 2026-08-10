@@ -9,6 +9,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const FONT_SOURCE = join(ROOT, 'node_modules', '@fontsource-variable');
 const FONT_DIST = join(DIST, 'assets', 'fonts');
+const BRAND_DIST = join(DIST, 'assets', 'brand');
 const TYPEGPU_DIST = join(ROOT, 'dist-typegpu');
 const TYPEGPU_RECEIPT = 'windows-rtx3070-chrome-webgpu-2026-08-09.json';
 const REPORTS = [
@@ -54,6 +55,7 @@ await mkdir(join(DIST, 'reports', 'typegpu'), { recursive: true });
 await mkdir(join(DIST, 'examples'), { recursive: true });
 await mkdir(join(DIST, 'fieldwork', 'assets', 'ui'), { recursive: true });
 await mkdir(FONT_DIST, { recursive: true });
+await mkdir(BRAND_DIST, { recursive: true });
 const examplePages = ['dunes.html', 'swell.html', 'wind.html', 'serpent.html', 'parity.html'];
 await Promise.all([
   copyFile(join(ROOT, 'site', 'index.html'), join(DIST, 'index.html')),
@@ -62,6 +64,7 @@ await Promise.all([
   copyFile(join(ROOT, 'LICENSE'), join(DIST, 'LICENSE')),
   copyFile(join(ROOT, 'THIRD_PARTY_NOTICES.md'), join(DIST, 'THIRD_PARTY_NOTICES.md')),
   cp(join(ROOT, 'schemas'), join(DIST, 'schemas'), { recursive: true }),
+  cp(join(ROOT, 'site', 'assets', 'brand'), BRAND_DIST, { recursive: true }),
   copyFile(join(FONT_SOURCE, 'newsreader', 'files', 'newsreader-latin-standard-normal.woff2'), join(FONT_DIST, 'newsreader-latin-standard-normal.woff2')),
   copyFile(join(FONT_SOURCE, 'recursive', 'files', 'recursive-latin-full-normal.woff2'), join(FONT_DIST, 'recursive-latin-full-normal.woff2')),
   copyFile(join(FONT_SOURCE, 'newsreader', 'LICENSE'), join(FONT_DIST, 'newsreader-OFL.txt')),

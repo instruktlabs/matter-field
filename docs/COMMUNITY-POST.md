@@ -32,7 +32,7 @@ WebGPU, game-development, procedural-generation, or ML community.
 > 3070 WebGPU receipt. These are finite regression observations, not universal
 > bounds or speed results.
 >
-> I dogfooded the package in **FIELDWORK: Breach Run**: one 3D mission where CPU
+> I exercised the package in **FIELDWORK: Breach Run**: one 3D mission where CPU
 > dunes drive contact and slope, swell drives four-point buoyancy, wind pushes
 > the skiff, and a GPU-animated serpent has a CPU-queryable collision volume.
 > Gameplay performs zero per-frame GPU readbacks. The default WebGPU and
@@ -74,7 +74,7 @@ WebGPU, game-development, procedural-generation, or ML community.
 > `use gpu`, or is the restriction greater than the maintenance risk it removes?
 >
 > Release: https://github.com/instruktlabs/matter-field/releases/tag/v0.0.1-preview.2
-> Live dogfood and assays: https://instruktlabs.github.io/matter-field/
+> Live application and assays: https://instruktlabs.github.io/matter-field/
 
 ## Reddit / forum version
 

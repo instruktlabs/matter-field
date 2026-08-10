@@ -54,7 +54,7 @@ lane. See the [prototype record](./research/canonical-ir/README.md).
 
 Three.js developers are the initial product beachhead because TSL rendering
 plus immediate CPU gameplay queries is the concrete problem already extracted,
-dogfooded, and measured here. TypeGPU developers are the closest adjacent
+exercised, and measured here. TypeGPU developers are the closest adjacent
 audience, not a reason to turn Matter Field into a general WebGPU framework.
 
 ## Optional TypeGPU materialization
@@ -242,7 +242,7 @@ The examples are small field laboratories, not benchmark claims against other
 libraries:
 
 - **[FIELDWORK: Breach Run](https://instruktlabs.github.io/matter-field/fieldwork/)** —
-  the integrated 3D dogfood mission combining dunes, swell, wind, and the
+  the integrated 3D application combining dunes, swell, wind, and the
   serpent field in one fixed-step CPU-authoritative game. Read its
   [architecture and asset record](./docs/FIELDWORK.md).
 - [Dunes + collision](https://instruktlabs.github.io/matter-field/examples/dunes.html)
@@ -375,7 +375,7 @@ parity/typegpu-gpu-probe.js     TypeGPU compute and Three integration assay
 parity/reports/                committed measured receipts
 benchmarks/                    controlled CPU comparison and clean-host gate
 examples/                      teaching fields and consumers
-site/fieldwork/                integrated 3D dogfood mission
+site/fieldwork/                integrated 3D application
 site/                          GitHub Pages source and focused labs
 test/                          contract, examples, hash, and assay tests
 tooling-tests/                 precompiled TypeGPU artifact checks
@@ -411,6 +411,7 @@ Matter Field's code and package documentation are available under the
 release conditions are recorded separately in [docs/FIELDWORK.md](./docs/FIELDWORK.md).
 Bundled dependency licenses and attributions are retained in
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
-The adapter pattern was generalized from a pattern used in the proprietary OBJEKT-62 game;
+The adapter pattern was generalized from a pattern used in the proprietary
+[OBJEKT-62](https://objekt62.com/) game;
 the standalone examples contain no OBJEKT-62 game content. See
 [PROVENANCE.md](./PROVENANCE.md) for the extraction record.

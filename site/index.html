@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#f4f0e6">
   <meta name="color-scheme" content="light">
   <link rel="canonical" href="https://instruktlabs.github.io/matter-field/">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23f4f0e6'/%3E%3Cpath d='M8 38c9-17 16-21 25-9s14 10 23-5M8 46c10-16 17-18 25-7s14 8 23-3' fill='none' stroke='%23174e52' stroke-width='4'/%3E%3Cpath d='M32 13v12M26 19h12' stroke='%23b7442e' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="icon" href="./assets/brand/favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Matter Field — the field you draw is the field gameplay can query">
   <meta property="og:description" content="One procedural 3D field for GPU rendering, CPU gameplay queries, and measured CPU↔GPU parity.">
@@ -25,7 +25,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="nav shell">
     <a class="mark" href="#top" aria-label="Matter Field home">
-      <svg aria-hidden="true" viewBox="0 0 44 36"><path d="M2 22C9 7 17 7 23 18s11 10 19-4"/><path d="M2 30c8-14 16-13 22-3s11 7 18-1"/><path class="registration" d="M22 2v10M17 7h10"/></svg>
+      <img src="./assets/brand/matter-field-mark.svg" width="38" height="38" alt="">
       <span>matter-field</span>
     </a>
     <nav aria-label="Primary navigation">
@@ -39,12 +39,11 @@
   <main id="main">
     <section class="hero shell" id="top" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow"><span>01</span> Shared field math for 3D worlds · CPU + TSL + optional TypeGPU</p>
+        <p class="eyebrow">Procedural field contract · CPU + TSL + optional TypeGPU</p>
         <h1 id="hero-title">The field you draw is the field you can <em>touch.</em></h1>
         <p class="lede">Let CPU collision, buoyancy, forces, and hit tests query procedural fields that Three.js materializes on the GPU—then measure the remaining float drift instead of asserting equality.</p>
         <div class="actions">
-          <a class="button primary" href="./fieldwork/">Play the dogfood mission</a>
-          <a class="button" href="https://github.com/instruktlabs/matter-field">Read the contract <span aria-hidden="true">↗</span></a>
+          <a class="button primary" href="https://github.com/instruktlabs/matter-field#what-is-actually-guaranteed">Read the contract <span aria-hidden="true">↗</span></a>
         </div>
         <ul class="proof-strip" aria-label="Project facts">
           <li>MIT</li>
@@ -54,7 +53,7 @@
         </ul>
       </div>
 
-      <figure class="field-instrument" aria-labelledby="instrument-title" aria-describedby="instrument-help">
+      <figure class="field-instrument" aria-labelledby="instrument-title" aria-describedby="instrument-help drift-help">
         <figcaption class="instrument-head">
           <span><b id="instrument-title">Live 3D terrain instrument</b> / dunesField</span>
           <span id="sample-count">sampling…</span>
@@ -62,10 +61,11 @@
         <div class="instrument-toolbar" aria-label="Field view">
           <div class="mode-switch" role="group" aria-label="Visualization mode">
             <button type="button" class="mode-button is-active" data-field-mode="surface" aria-pressed="true">Surface</button>
-            <button type="button" class="mode-button" data-field-mode="residual" aria-pressed="false">Residual ×10k</button>
+            <button type="button" class="mode-button" data-field-mode="residual" aria-pressed="false" aria-describedby="drift-help">Drift contrast</button>
           </div>
           <p id="instrument-help">Drag or use arrow keys to move the probe.</p>
         </div>
+        <p class="instrument-note" id="drift-help">Drift contrast shows the absolute f64 ↔ f32 difference. Color is normalized to this sampled map and square-root stretched so tiny differences are visible; the readout remains the actual difference in field units.</p>
         <div class="canvas-wrap">
           <canvas id="field" width="480" height="320" tabindex="0" aria-label="Interactive procedural dune field. Move the probe to compare CPU f64 and f32-emulated samples."></canvas>
           <span class="axis axis-x" aria-hidden="true">+x</span>
@@ -83,7 +83,7 @@
     <section class="problem ruled-section" id="contract">
       <div class="shell problem-grid">
         <div>
-          <p class="eyebrow"><span>02</span> The split-world problem</p>
+          <p class="eyebrow">The split-world problem</p>
           <h2>GPU 3D displacement is invisible to CPU gameplay.</h2>
         </div>
         <div class="problem-copy">
@@ -95,7 +95,7 @@
 
     <section class="code-section shell" aria-labelledby="one-field-title">
       <div class="code-intro">
-        <p class="eyebrow"><span>03</span> One expression tree</p>
+        <p class="eyebrow">Field contract</p>
         <h2 id="one-field-title">Write the field, not its copies.</h2>
         <div class="code-card">
           <div class="code-label"><span>terrain.js</span><span>one field</span></div>
@@ -109,55 +109,54 @@
         </div>
       </div>
       <div class="materializations" aria-label="Field materializations">
-        <article><b>01</b><div><span>numberAdapter</span><h3>CPU oracle</h3><p>Collision, AI, Workers, and Node servers evaluate the authoritative ECMAScript f64 tree.</p></div></article>
-        <article><b>02</b><div><span>makeTslAdapter</span><h3>Native GPU graph</h3><p>The zero-dependency core accepts the caller’s <code>three/tsl</code> namespace and preserves one adapter-authored tree.</p></div></article>
-        <article><b>03</b><div><span>dualAdapter</span><h3>Analytic gradients</h3><p>Dual numbers derive normals and tangents from the exact same expression tree.</p></div></article>
-        <article><b>04</b><div><span>matter-field/typegpu</span><h3>TypeGPU materialization</h3><p>An optional, separately authored WebGPU port is precompiled for TypeGPU and <code>@typegpu/three</code>, then checked against the canonical fields.</p></div></article>
+        <article><b>F64</b><div><span>numberAdapter</span><h3>CPU oracle</h3><p>Collision, AI, Workers, and Node servers evaluate the authoritative ECMAScript f64 tree.</p></div></article>
+        <article><b>TSL</b><div><span>makeTslAdapter</span><h3>Native GPU graph</h3><p>The zero-dependency core accepts the caller’s <code>three/tsl</code> namespace and preserves one adapter-authored tree.</p></div></article>
+        <article><b>∂</b><div><span>dualAdapter</span><h3>Analytic gradients</h3><p>Dual numbers derive normals and tangents from the exact same expression tree.</p></div></article>
+        <article><b>TGPU</b><div><span>matter-field/typegpu</span><h3>TypeGPU materialization</h3><p>An optional, separately authored WebGPU port is precompiled for TypeGPU and <code>@typegpu/three</code>, then checked against the canonical fields.</p></div></article>
       </div>
     </section>
 
     <section class="live ruled-section" id="examples">
       <div class="shell">
         <div class="section-head">
-          <div><p class="eyebrow"><span>04</span> Touch the contract</p><h2>One game. Four labs. Consequences you can feel.</h2></div>
-          <p>FIELDWORK combines the package into one mission. The focused labs isolate each field and its CPU gameplay consumer.</p>
+          <div><p class="eyebrow">Live field index</p><h2>Where the contract has consequences.</h2></div>
+          <p>Start with a focused field, inspect the integrated basin, or follow the production lineage. Each entry names the CPU consumer instead of hiding the work behind a shader.</p>
         </div>
-        <div class="live-grid">
-          <a class="demo-link demo-featured demo-game" href="./fieldwork/">
-            <span class="demo-index">FIELDWORK / dogfood mission</span>
-            <div><h3>Run the flooded basin</h3><p>Recover a survey core while dunes, swell, wind, and a moving breach body all affect one amphibious craft.</p></div>
-            <strong>Play Breach Run <span aria-hidden="true">→</span></strong>
+        <div class="field-index" aria-label="Matter Field examples and lineage">
+          <a class="field-entry field-entry-featured" href="./fieldwork/">
+            <span class="field-kind">Integrated application</span>
+            <div><h3>FIELDWORK / Flooded Basin</h3><p>Dunes, swell, wind, and a moving breach body affect one amphibious craft through CPU gameplay queries and GPU materializations.</p></div>
+            <strong>Run the flooded basin <span aria-hidden="true">→</span></strong>
           </a>
-          <a class="demo-link" href="./examples/dunes.html">
-            <span class="demo-index">01 / 3D terrain</span>
-            <div class="demo-contour terrain-contour" aria-hidden="true"></div>
-            <div><h3>Drive the 3D dunes</h3><p>Move across GPU-displaced terrain while the CPU collision oracle samples the same function.</p></div>
-            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          <a class="field-entry" href="./examples/dunes.html">
+            <span class="field-kind">Terrain contact</span>
+            <div><h3>Dunes</h3><p>Drive over GPU-displaced terrain while four CPU contact probes sample the authoritative field.</p></div>
+            <strong>Open field <span aria-hidden="true">→</span></strong>
           </a>
-          <a class="demo-link" href="./examples/swell.html">
-            <span class="demo-index">02 / 3D water</span>
-            <div><h3>Steer the hull</h3><p>One field drives the GPU-rendered swell and its CPU four-point buoyancy response.</p></div>
-            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          <a class="field-entry" href="./examples/swell.html">
+            <span class="field-kind">Four-point buoyancy</span>
+            <div><h3>Swell</h3><p>Pilot a hull whose heave, pitch, and roll come from the same field shaping the GPU water.</p></div>
+            <strong>Open field <span aria-hidden="true">→</span></strong>
           </a>
-          <a class="demo-link" href="./examples/wind.html">
-            <span class="demo-index">03 / 3D flow</span>
-            <div><h3>Push with wind</h3><p>GPU particles reveal the same vector field applying force to a CPU gameplay body.</p></div>
-            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          <a class="field-entry" href="./examples/wind.html">
+            <span class="field-kind">Vector force</span>
+            <div><h3>Wind</h3><p>Fly through a visible flow volume while the CPU samples that vector field as a gameplay force.</p></div>
+            <strong>Open field <span aria-hidden="true">→</span></strong>
           </a>
-          <a class="demo-link" href="./examples/serpent.html">
-            <span class="demo-index">04 / TSL animation</span>
-            <div><h3>Probe the moving volume</h3><p>Freely orbit the animated 3D body while a CPU world ray queries its authored spine and changing radius.</p></div>
-            <strong>Open live field <span aria-hidden="true">→</span></strong>
+          <a class="field-entry" href="./examples/serpent.html">
+            <span class="field-kind">Moving-volume query</span>
+            <div><h3>Serpent</h3><p>Orbit an animated procedural body while CPU world rays query its authored spine and radius.</p></div>
+            <strong>Open field <span aria-hidden="true">→</span></strong>
           </a>
-          <a class="demo-link demo-assay" href="./examples/parity.html">
-            <span class="demo-index">Lab / your hardware</span>
-            <div><h3>Measure the 3D field</h3><p>Run the same TSL graphs used by the 3D demos on WebGPU or WebGL2 and keep the JSON receipt.</p></div>
-            <strong>Run parity assay <span aria-hidden="true">→</span></strong>
+          <a class="field-entry field-entry-evidence" href="./examples/parity.html">
+            <span class="field-kind">Hardware evidence</span>
+            <div><h3>Parity assay</h3><p>Run the TSL field graphs on this browser’s WebGPU or WebGL2 backend and download a device-scoped receipt.</p></div>
+            <strong>Run assay <span aria-hidden="true">→</span></strong>
           </a>
-          <a class="demo-link" href="./reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json">
-            <span class="demo-index">TypeGPU / exact artifact</span>
-            <div><h3>Inspect the port receipt</h3><p>One clean RTX 3070 WebGPU run records adapter-oracle migration, numeric drift, raw u32 hash agreement, and five Three integration smokes.</p></div>
-            <strong>Open raw JSON <span aria-hidden="true">→</span></strong>
+          <a class="field-entry field-entry-lineage" href="https://objekt62.com/">
+            <span class="field-kind">Production lineage</span>
+            <div><h3>OBJEKT-62</h3><p>The game where the shared terrain-adapter pattern was pressure-tested before being generalized into Matter Field.</p></div>
+            <strong>Visit project <span aria-hidden="true">↗</span></strong>
           </a>
         </div>
       </div>
@@ -165,7 +164,7 @@
 
     <section class="evidence shell" id="evidence" aria-labelledby="receipts-title">
       <div class="section-head">
-        <div><p class="eyebrow"><span>05</span> Measured, not asserted</p><h2 id="receipts-title">Current hardware receipts</h2></div>
+        <div><p class="eyebrow">Measured, not asserted</p><h2 id="receipts-title">Current hardware receipts</h2></div>
         <p>Absolute error in field units decides pass/fail. ULP counts remain diagnostic because they explode near zero crossings.</p>
       </div>
       <div class="matrix-wrap">
@@ -177,12 +176,12 @@
       </div>
       <div class="matrix-footer">
         <p>Six receipts now cover three physical NVIDIA/AMD adapters on Windows and Linux. Intel and Apple silicon remain unmeasured; Apple / Metal is the highest-value missing result because it adds a distinct compiler/backend family and an important consumer platform.</p>
-        <a class="text-link" href="./examples/parity.html">Contribute this hardware <span aria-hidden="true">→</span></a>
+        <div class="matrix-links"><a class="text-link" href="./examples/parity.html">Contribute this hardware <span aria-hidden="true">→</span></a><a class="text-link" href="./reports/typegpu/windows-rtx3070-chrome-webgpu-2026-08-09.json">Inspect TypeGPU receipt <span aria-hidden="true">→</span></a></div>
       </div>
     </section>
 
     <section class="tiers shell" aria-labelledby="tiers-title">
-      <header><p class="eyebrow"><span>06</span> The honest contract</p><h2 id="tiers-title">Three contract levels, no stronger.</h2></header>
+      <header><p class="eyebrow">The honest contract</p><h2 id="tiers-title">Three contract levels, no stronger.</h2></header>
       <ol>
         <li><span>Tier 1</span><div><h3>CPU ↔ CPU</h3><strong>tested bit-exact</strong><p>One committed golden agrees in browser, Worker, and supported Node CI.</p></div></li>
         <li><span>Tier 2</span><div><h3>Integer hash</h3><strong>observed bit-exact</strong><p>Eleven raw u32 vectors agree in the current hardware receipts.</p></div></li>
@@ -192,7 +191,7 @@
 
     <section class="contribute ruled-section">
       <div class="shell contribute-grid">
-        <div><p class="eyebrow"><span>07</span> Open fieldwork</p><h2>Bring a GPU.<br>Add a receipt.</h2></div>
+        <div><p class="eyebrow">Open measurement</p><h2>Bring a GPU.<br>Add a receipt.</h2></div>
         <div><p>The parity claim gets stronger through public measurement, not louder marketing. Run the assay, inspect the JSON, and contribute a missing vendor cell.</p><a class="button primary" href="./examples/parity.html">Run on this hardware</a></div>
       </div>
     </section>

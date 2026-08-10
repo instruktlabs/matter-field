@@ -43,6 +43,11 @@ a { color: inherit; }
 header { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--rule); }
 header a { color: var(--ink-700); text-decoration: none; font: 600 12px/1 "Recursive", ui-monospace, monospace; font-variation-settings: "MONO" 1, "CASL" 0; }
 header a:hover, header a:focus-visible { color: var(--signal); }
+.field-switcher { min-height: 48px; display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px; padding-block: 8px; border-bottom: 1px solid var(--rule); }
+.field-switcher > span { margin-right: 7px; color: var(--signal); font: 700 9px/1 "Recursive", ui-monospace, monospace; font-variation-settings: "MONO" 1, "CASL" 0; letter-spacing: .09em; text-transform: uppercase; }
+.field-switcher a { min-height: 36px; display: inline-flex; align-items: center; padding: 7px 9px; border: 1px solid transparent; color: var(--ink-700); font: 620 10px/1 "Recursive", ui-monospace, monospace; font-variation-settings: "MONO" 1, "CASL" 0; text-decoration: none; }
+.field-switcher a:hover { color: var(--field); border-color: var(--rule); }
+.field-switcher a[aria-current="page"] { color: var(--paper-0); border-color: var(--field); background: var(--field); }
 main { padding: 72px 0 112px; }
 .eyebrow { margin: 0 0 13px; color: var(--signal); text-transform: uppercase; letter-spacing: .15em; font: 700 11px/1.2 "Recursive", ui-monospace, monospace; font-variation-settings: "MONO" 1, "CASL" 0; }
 h1 { max-width: 900px; margin: 0; font: 520 clamp(52px, 7vw, 88px)/.92 "Newsreader", Georgia, serif; letter-spacing: -.04em; }
@@ -97,6 +102,9 @@ pre { white-space: pre-wrap; margin: 0; color: #d4e0dc; font: 12px/1.55 "Recursi
   .shell { width: min(100% - 20px, 1120px); }
   header { min-height: 64px; }
   header a { font-size: 10px; }
+  .field-switcher { gap: 4px; }
+  .field-switcher > span { flex-basis: 100%; margin-bottom: 3px; }
+  .field-switcher a { min-height: 44px; }
   main { padding-top: 38px; }
   h1 { font-size: 48px; }
   .intro { font-size: 16px; }

@@ -28,7 +28,7 @@ hardware-scoped receipts.
 ## Market and product shape
 
 Three.js is the beachhead, not an arbitrary limitation. The repository's
-native TSL path, WebGPU/WebGL2 assays, examples, and FIELDWORK dogfood game all
+native TSL path, WebGPU/WebGL2 assays, examples, and FIELDWORK application all
 exercise one concrete user problem: a GPU-rendered procedural world that CPU
 gameplay must query immediately.
 
@@ -94,7 +94,7 @@ and WebGPU application structure. Matter Field should acknowledge that overlap
 and should not present itself as the first shared CPU/GPU source approach.
 
 The primary Matter Field path targets caller-supplied Three.js TSL because that
-is the concrete integration extracted, dogfooded, and measured. The optional
+is the concrete integration extracted, exercised, and measured. The optional
 `matter-field/typegpu` subpath hand-ports the shipped fields into
 precompiled TypeGPU functions with pinned optional peers; it does not yet
 materialize arbitrary adapter-authored fields. A future generated TypeGPU
