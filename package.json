@@ -155,7 +155,7 @@
     "typegpu": "0.11.9",
     "typescript": "npm:tsover@6.0.2",
     "typescript-upstream": "npm:typescript@7.0.2",
-    "unplugin-typegpu": "0.11.6"
+    "unplugin-typegpu": "0.12.3"
   },
   "allowScripts": {
     "esbuild@0.28.2": true
