@@ -112,7 +112,7 @@
     "node": ">=18"
   },
   "peerDependencies": {
-    "@typegpu/three": "0.11.0",
+    "@typegpu/three": "0.12.1",
     "@types/three": "0.185.4",
     "three": "0.185.1",
     "typegpu": "0.11.9"
@@ -145,7 +145,7 @@
   "devDependencies": {
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource-variable/recursive": "^5.3.0",
-    "@typegpu/three": "0.11.0",
+    "@typegpu/three": "0.12.1",
     "@types/three": "0.185.4",
     "@webgpu/types": "0.1.71",
     "ajv": "8.20.0",
