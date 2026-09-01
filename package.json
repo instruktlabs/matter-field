@@ -115,7 +115,7 @@
     "@typegpu/three": "0.11.0",
     "@types/three": "0.185.4",
     "three": "0.185.1",
-    "typegpu": "0.11.9"
+    "typegpu": "0.12.4"
   },
   "peerDependenciesMeta": {
     "@typegpu/three": {
@@ -152,7 +152,7 @@
     "esbuild": "^0.28.2",
     "playwright": "^1.59.1",
     "three": "0.185.1",
-    "typegpu": "0.11.9",
+    "typegpu": "0.12.4",
     "typescript": "npm:tsover@6.0.2",
     "typescript-upstream": "npm:typescript@7.0.2",
     "unplugin-typegpu": "0.11.6"
